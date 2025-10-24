@@ -1,0 +1,7 @@
+INDEX VERSION 1.4+D:\PROYECTOS IGM\prueba_maven\.metadata\.plugins\org.eclipse.wst.jsdt.core\indexes
+3064081667.index
+2324172711.index
+4144783241.index
+2386797774.index
+3069290071.index
+2199055052.index

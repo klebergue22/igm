@@ -1,0 +1,266 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package ec.gob.prueba.prueba_maven.servicio;
+
+import ec.gob.prueba.prueba_maven.modelo.DatEmpleado;
+import ec.gob.prueba.prueba_maven.modelo.enums.EstadoContrato;
+import javax.persistence.*;
+import java.util.Date;
+import ec.gob.prueba.prueba_maven.modelo.Contratacion;
+import ec.gob.prueba.prueba_maven.modelo.ContratacionId;
+
+
+import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
+import java.math.BigDecimal;
+import java.util.List;
+
+/**
+ *
+ * @author GUERRA_KLEBER
+ */
+@Stateless
+public class ContratacionService {
+
+    @PersistenceContext(unitName = "rhPU")
+    private EntityManager em;
+
+    public Contratacion crear(Contratacion c) {
+        em.persist(c);
+        return c;
+    }
+
+//    public Contratacion porId(BigDecimal noPersona, BigDecimal noCont) {
+//        List<Contratacion> l = em.createQuery(
+//                "SELECT c FROM Contratacion c WHERE c.noPersona=:p AND c.noCont=:n",
+//                Contratacion.class)
+//                .setParameter("p", noPersona)
+//                .setParameter("n", noCont)
+//                .setMaxResults(1)
+//                .getResultList();
+//        return l.isEmpty() ? null : l.get(0);
+//    }
+public Contratacion porId(BigDecimal noPersona, BigDecimal noCont) {
+    try {
+        // Crear la clave primaria compuesta usando ContratacionId
+        ContratacionId pk = new ContratacionId(noPersona, noCont);
+        
+        // Buscar la entidad usando EntityManager
+        Contratacion c = em.find(Contratacion.class, pk);
+        
+        if (c != null) {
+            System.out.println(">>> SERVICE.porId() - Contrato encontrado:");
+            System.out.println("    NO_PERSONA: " + c.getNoPersona());
+            System.out.println("    NO_CONT: " + c.getNoCont());
+            System.out.println("    ESTADO: " + c.getEstado());
+           // System.out.println("    TIPO_CONTRATO: " + c.getTipoContrato()); // Cambiado
+            System.out.println("    RMU: " + c.getRmu());
+        } else {
+            System.out.println(">>> SERVICE.porId() - Contrato NO encontrado");
+        }
+        
+        return c;
+        
+    } catch (Exception e) {
+        System.err.println("Error al buscar contrato: " + e.getMessage());
+        e.printStackTrace();
+        throw new RuntimeException("Error al buscar contrato", e);
+    }
+}
+
+    public List<Contratacion> listarPorPersona(BigDecimal noPersona) {
+        String jpql = "SELECT c FROM Contratacion c WHERE c.id.noPersona = :noPersona ORDER BY c.id.noCont";
+        Query q = em.createQuery(jpql);
+        q.setParameter("noPersona", noPersona);
+        return q.getResultList();
+    }
+
+ 
+    
+    public BigDecimal siguienteNoCont(BigDecimal noPersona) {
+    try {
+        String jpql = "SELECT MAX(c.id.noCont) FROM Contratacion c WHERE c.id.noPersona = :noPersona";
+        BigDecimal max = em.createQuery(jpql, BigDecimal.class)
+                          .setParameter("noPersona", noPersona)
+                          .getSingleResult();
+        
+        return (max == null) ? BigDecimal.ONE : max.add(BigDecimal.ONE);
+    } catch (Exception e) {
+        System.err.println("Error al obtener siguiente NO_CONT: " + e.getMessage());
+        return BigDecimal.ONE;
+    }
+}
+    
+
+
+    
+    
+    
+    
+    public Contratacion actualizar(Contratacion c) {
+        return em.merge(c);
+    }
+
+    public void eliminar(BigDecimal noPersona, BigDecimal noCont) {
+        Contratacion c = porId(noPersona, noCont);
+        if (c != null) {
+            em.remove(c);
+        }
+    }
+
+    public List<Contratacion> porPersona(BigDecimal noPersona, int page, int size) {
+        return em.createQuery(
+                "SELECT c FROM Contratacion c "
+                + "WHERE c.noPersona = :noPersona "
+                + "ORDER BY c.feContrato DESC", Contratacion.class)
+                .setParameter("noPersona", noPersona)
+                .setFirstResult(page * size)
+                .setMaxResults(size)
+                .getResultList();
+    }
+
+    public List<Contratacion> vigentesPorPersona(BigDecimal noPersona) {
+        return em.createQuery(
+                "SELECT c FROM Contratacion c "
+                + "WHERE c.noPersona = :p AND c.estado = :est "
+                + "ORDER BY c.feContrato DESC", Contratacion.class)
+                .setParameter("p", noPersona)
+                .setParameter("est", EstadoContrato.VIGENTE)
+                .getResultList();
+    }
+
+    public List<Contratacion> porRangoFechas(Date desde, Date hasta, int page, int size) {
+        return em.createQuery(
+                "SELECT c FROM Contratacion c "
+                + "WHERE c.feContrato BETWEEN :d AND :h "
+                + "ORDER BY c.feContrato DESC", Contratacion.class)
+                .setParameter("d", desde, TemporalType.DATE)
+                .setParameter("h", hasta, TemporalType.DATE)
+                .setFirstResult(page * size)
+                .setMaxResults(size)
+                .getResultList();
+    }
+
+    public long contarPorPersona(BigDecimal noPersona) {
+        return em.createQuery(
+                "SELECT COUNT(c) FROM Contratacion c WHERE c.noPersona = :noPersona",
+                Long.class)
+                .setParameter("noPersona", noPersona)
+                .getSingleResult();
+    }
+
+    public boolean existePersona(BigDecimal noPersona) {
+        Long cnt = em.createQuery(
+                "SELECT COUNT(d) FROM DatEmpleado d WHERE d.noPersona = :p", Long.class)
+                .setParameter("p", noPersona)
+                .getSingleResult();
+        return cnt != null && cnt > 0;
+    }
+
+    /**
+     * Trae el empleado (para nombre/campos iniciales).
+     */
+    public DatEmpleado obtenerEmpleado(BigDecimal noPersona) {
+        List<DatEmpleado> l = em.createQuery(
+                "SELECT d FROM DatEmpleado d WHERE d.noPersona = :p", DatEmpleado.class)
+                .setParameter("p", noPersona)
+                .setMaxResults(1)
+                .getResultList();
+        return l.isEmpty() ? null : l.get(0);
+    }
+
+
+    /**
+     * Cuenta contratos por persona (para decidir si preguntar).
+     */
+    public long contarContratosPorPersona(BigDecimal noPersona) {
+        return em.createQuery(
+                "SELECT COUNT(c) FROM Contratacion c WHERE c.noPersona = :p", Long.class)
+                .setParameter("p", noPersona)
+                .getSingleResult();
+    }
+
+    public long contarVigentesPorPersona(BigDecimal noPersona) {
+        return em.createQuery(
+                "SELECT COUNT(c) FROM Contratacion c "
+                + "WHERE c.noPersona = :p AND c.estado = 'V'", Long.class)
+                .setParameter("p", noPersona)
+                .getSingleResult();
+    }
+
+    public List<Contratacion> porPersonaTodos(BigDecimal noPersona) {
+        return em.createQuery(
+                "SELECT c FROM Contratacion c WHERE c.noPersona = :noPersona ORDER BY c.feContrato DESC",
+                Contratacion.class)
+                .setParameter("noPersona", noPersona)
+                .getResultList();
+    }
+
+    /**
+     * Verifica si existe un contrato VIGENTE sin fecha de salida.
+     *
+     * @param noPersona Número de persona a validar
+     * @return true si existe al menos un contrato vigente sin fecha de salida
+     */
+    public boolean existeContratoVigenteSinSalida(BigDecimal noPersona) {
+        Long count = em.createQuery(
+                "SELECT COUNT(c) FROM Contratacion c "
+                + "WHERE c.noPersona = :p AND c.estado = :est AND c.feSalida IS NULL",
+                Long.class)
+                .setParameter("p", noPersona)
+                .setParameter("est", EstadoContrato.VIGENTE)
+                .getSingleResult();
+        return count != null && count > 0;
+    }
+
+    /**
+     *
+     * @param noPersona
+     * @return
+     */
+    public Contratacion obtenerContratoVigenteSinSalida(BigDecimal noPersona) {
+        try {
+            return em.createQuery(
+                    "SELECT c FROM Contratacion c "
+                    + "WHERE c.noPersona = :noPersona "
+                    + "AND c.estado = :estadoVigente "
+                    + "AND c.feSalida IS NULL",
+                    Contratacion.class)
+                    .setParameter("noPersona", noPersona)
+                    .setParameter("estadoVigente", EstadoContrato.VIGENTE)
+                    .setMaxResults(1)
+                    .getSingleResult();
+        } catch (NoResultException e) {
+            return null;
+        }
+    }
+
+    @TransactionAttribute(TransactionAttributeType.REQUIRED)
+    public Contratacion guardarNuevo(Contratacion c) {
+        em.persist(c);
+        return c;
+    }
+    @TransactionAttribute(TransactionAttributeType.REQUIRED)
+public Contratacion guardar(Contratacion c) {
+    if (c.getNoCont() == null) {
+        // NUEVO: calcula el siguiente correlativo por persona
+        BigDecimal sig = siguienteNoCont(c.getNoPersona());
+        c.setNoCont(sig);
+        em.persist(c);
+        em.flush();
+        return c;
+    } else {
+        // EDICIÓN: merge directo del objeto que viene de la UI
+        Contratacion merged = em.merge(c);
+        em.flush();
+        return merged;
+    }
+}
+}

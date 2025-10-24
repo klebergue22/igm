@@ -1,0 +1,267 @@
+/* ============================================================
+   IGM ECUADOR · Estilo Militar Moderno (global)
+   ============================================================ */
+
+/* ---------- PALETA ---------- */
+:root{
+  --olive-900:#1b3524;
+  --olive-800:#2f4325;
+  --olive-700:#436137;   /* encabezados / barra */
+  --olive-600:#5a7b49;   /* botones / triggers */
+  --olive-500:#6f915c;   /* bordes/acento suave */
+  --insignia-gold:#d8c36a;
+  --khaki-200:#ece7c9;
+  --khaki-100:#f6f6f0;
+  --paper:#ffffff;
+  --ink:#1f2a18;
+  --ink-soft:#3a4b32;
+
+  --shadow-1:0 2px 6px rgba(0,0,0,.10);
+  --shadow-2:0 8px 20px rgba(0,0,0,.18);
+
+  --font-ui:"Inter","Segoe UI",Roboto,Arial,sans-serif;
+}
+
+/* ---------- BASE ---------- */
+html,body{
+  background:var(--khaki-100);
+  color:var(--ink);
+  font-family:var(--font-ui);
+  line-height:1.45;
+  letter-spacing:.2px;
+}
+
+.page-container{ max-width:1100px; margin:18px auto; }
+
+/* ---------- MENÚ SUPERIOR ---------- */
+.navbar-militar{
+  background:linear-gradient(180deg,var(--olive-600),var(--olive-700));
+  border:1px solid var(--insignia-gold);
+  border-radius:12px;
+  box-shadow:var(--shadow-2);
+  padding:8px 10px;
+}
+.navbar-militar .ui-menuitem-link{
+  color:#fff !important; font-weight:600; border-radius:8px;
+  padding:6px 12px; text-shadow:0 1px 1px rgba(0,0,0,.35);
+  transition:all .18s ease;
+}
+.navbar-militar .ui-menuitem-link:hover,
+.navbar-militar .ui-menuitem-link.ui-state-hover{
+  background:var(--insignia-gold); color:var(--ink) !important; transform:translateY(-1px);
+}
+.navbar-militar .brand{ color:#fff; font-weight:700; }
+
+/* ---------- BOTONES ---------- */
+.ui-button{
+  background:linear-gradient(180deg,var(--olive-500),var(--olive-600));
+  border:1px solid var(--insignia-gold); color:#fff;
+  font-weight:700; letter-spacing:.5px; text-transform:uppercase;
+  border-radius:8px; box-shadow:var(--shadow-1); transition:all .18s ease;
+}
+.ui-button:hover{
+  background:var(--insignia-gold); color:var(--ink);
+  border-color:var(--olive-700); box-shadow:var(--shadow-2);
+}
+
+/* ---------- INPUTS / SELECT / DATEPICKER ---------- */
+.ui-outputlabel{ color:var(--ink-soft); font-weight:600; }
+
+input.ui-inputfield, textarea.ui-inputfield{
+  background:#f2f5ec !important;
+  border:1px solid var(--olive-500) !important;
+  border-radius:8px; color:var(--ink); transition:all .18s ease;
+}
+input.ui-inputfield:focus, textarea.ui-inputfield:focus{
+  background:#fff !important; border-color:var(--insignia-gold) !important;
+  box-shadow:0 0 0 3px rgba(216,195,106,.25) !important;
+}
+
+/* SelectOneMenu */
+.ui-selectonemenu{
+  width:100% !important;
+  background:#f2f5ec !important;
+  border:1px solid var(--olive-500) !important; border-radius:8px;
+}
+.ui-selectonemenu .ui-selectonemenu-label{
+  background:transparent !important; color:var(--ink);
+  height:36px; line-height:36px; padding:0 10px;
+}
+.ui-selectonemenu .ui-selectonemenu-trigger{
+  width:36px; border-left:1px solid var(--olive-500) !important;
+  background:var(--olive-600); color:#fff;
+}
+.ui-selectonemenu .ui-selectonemenu-trigger:hover{
+  background:var(--insignia-gold); color:var(--ink);
+}
+
+/* DatePicker trigger (botón calendario) */
+.ui-datepicker-trigger{
+  height:34px; width:34px; margin-left:4px;
+  display:inline-flex; align-items:center; justify-content:center;
+  background:var(--olive-600) !important; color:#fff !important;
+  border:1px solid var(--insignia-gold) !important; border-radius:6px;
+}
+.ui-datepicker-trigger:hover{ background:var(--insignia-gold) !important; color:var(--ink) !important; }
+
+/* ---------- TABLAS ---------- */
+.ui-datatable thead th{
+  background:linear-gradient(180deg,var(--olive-600),var(--olive-700)) !important;
+  color:#fff !important; border:1px solid var(--insignia-gold); text-align:center;
+}
+.ui-datatable tbody td{
+  border:1px solid #cfcfb9; background:var(--paper); color:var(--ink);
+}
+.ui-datatable tr.ui-state-highlight{
+  background:var(--insignia-gold) !important; color:var(--ink) !important;
+}
+
+/* ---------- DIÁLOGOS ---------- */
+.ui-dialog .ui-dialog-titlebar{
+  background:linear-gradient(180deg,var(--olive-600),var(--olive-700)) !important;
+  color:#fff; border-bottom:1px solid var(--insignia-gold);
+}
+.ui-dialog .ui-dialog-content{ background:var(--paper); }
+.ui-dialog .ui-dialog-footer{ background:#fafaf8; border-top:1px solid rgba(50,60,40,.12); }
+
+/* ---------- FOOTER ---------- */
+.footer-militar{ text-align:center; color:var(--ink-soft); padding:8px 0 18px; }
+
+/* ============================================================
+   FORMULARIOS PrimeFaces · Alineación con panelGrid
+   ============================================================ */
+
+/* ============ 3 columnas (Label | Field | Message) ============ */
+/* XHTML: <p:panelGrid columns="3" styleClass="emp-3col ui-fluid"
+          columnClasses="lab,fld,msg"> */
+.emp-3col .ui-panelgrid,
+.emp-3col .ui-panelgrid .ui-panelgrid-content{
+  width:100%; table-layout:fixed; display:table !important;
+}
+.emp-3col .ui-panelgrid tbody tr>td{
+  padding:6px 8px; vertical-align:middle; border-top:1px solid rgba(50,60,40,.08);
+}
+.emp-3col .ui-panelgrid-cell.lab,
+.emp-3col .ui-panelgrid tbody tr>td:nth-child(3n+1){
+  width:210px; text-align:left; color:var(--ink-soft); white-space:nowrap; font-weight:600;
+}
+.emp-3col .ui-panelgrid-cell.fld,
+.emp-3col .ui-panelgrid tbody tr>td:nth-child(3n+2){ width:100%; }
+.emp-3col .ui-panelgrid-cell.msg,
+.emp-3col .ui-panelgrid tbody tr>td:nth-child(3n+3){ width:30px; }
+.emp-3col .ui-panelgrid-cell.fld > *{ width:100% !important; box-sizing:border-box; }
+.emp-3col input.ui-inputfield,
+.emp-3col .ui-selectonemenu,
+.emp-3col .ui-selectonemenu-label{ height:34px !important; line-height:32px !important; }
+.emp-3col .ui-message{ display:inline-flex; align-items:center; height:22px; }
+
+/* Responsive: apilar en móvil */
+@media (max-width:900px){
+  .emp-3col .ui-panelgrid,
+  .emp-3col .ui-panelgrid .ui-panelgrid-content{ display:block !important; }
+  .emp-3col .ui-panelgrid tbody tr>td{ display:block !important; width:100% !important; }
+}
+
+/* ============ 6 columnas (L|F|M | L|F|M) ============ */
+/* XHTML: <p:panelGrid columns="6" styleClass="emp-6col ui-fluid"
+          columnClasses="lab,fld,msg,lab,fld,msg"> */
+.emp-6col .ui-panelgrid,
+.emp-6col .ui-panelgrid .ui-panelgrid-content{
+  width:100%; table-layout:fixed; display:table !important;
+}
+.emp-6col .ui-panelgrid tbody tr>td{
+  padding:6px 8px; vertical-align:middle; border-top:1px solid rgba(50,60,40,.08);
+}
+.emp-6col .ui-panelgrid-cell.lab{ width:210px; text-align:left; color:var(--ink-soft); white-space:nowrap; font-weight:600; }
+.emp-6col .ui-panelgrid-cell.fld{ width:100%; }
+.emp-6col .ui-panelgrid-cell.msg{ width:30px; }
+.emp-6col .ui-panelgrid-cell.fld > *{ width:100% !important; box-sizing:border-box; }
+.emp-6col input.ui-inputfield,
+.emp-6col .ui-selectonemenu,
+.emp-6col .ui-selectonemenu-label{ height:34px !important; line-height:32px !important; }
+.emp-6col .ui-message{ display:inline-flex; align-items:center; height:22px; }
+
+/* Responsive: apilar (mantiene orden L|F|M por bloque) */
+@media (max-width:980px){
+  .emp-6col .ui-panelgrid,
+  .emp-6col .ui-panelgrid .ui-panelgrid-content{ display:block !important; }
+  .emp-6col .ui-panelgrid tbody tr>td{ display:block !important; width:100% !important; }
+}
+
+/* (higiene) PanelGrid sin bordes extra de contenedor interno */
+.emp-3col .ui-panelgrid-content,
+.emp-6col .ui-panelgrid-content{
+  border:0 !important; padding:0 !important;
+}
+.topbar{
+  display:flex; align-items:center; gap:12px;
+}
+.topbar .navbar-militar{ flex:1 1 auto; }
+.topbar .brand{ color:#fff; font-weight:700; margin-left:8px; }
+
+/* ===================== SOLO DIALOGO EMPLEADO ===================== */
+/* Escapamos el ':' en el id renderizado por JSF: layoutForm:dlg */
+#layoutForm\\:dlg .ui-dialog-content{
+  padding: 10px 14px;
+}
+
+/* PanelGrid 3C: Label | Field | Msg (solo en el diálogo) */
+#layoutForm\\:dlg .emp-3col .ui-panelgrid,
+#layoutForm\\:dlg .emp-3col .ui-panelgrid .ui-panelgrid-content{
+  display: table !important;
+  width: 100%;
+  table-layout: fixed;   /* evita saltos y columnas raras */
+}
+
+#layoutForm\\:dlg .emp-3col .ui-panelgrid tbody tr>td{
+  padding: 6px 8px !important;
+  vertical-align: middle !important;
+  border-top: 1px solid rgba(50,60,40,.08);
+}
+
+/* Anchos por columna (sólo diálogo) */
+#layoutForm\\:dlg .emp-3col .ui-panelgrid tbody tr>td:nth-child(3n+1){ width: 230px; } /* Label */
+#layoutForm\\:dlg .emp-3col .ui-panelgrid tbody tr>td:nth-child(3n+2){ width: auto;  } /* Field */
+#layoutForm\\:dlg .emp-3col .ui-panelgrid tbody tr>td:nth-child(3n+3){ width: 28px;  } /* Msg */
+
+/* Campos 100% + altura uniforme */
+#layoutForm\\:dlg .emp-3col .ui-panelgrid-cell.fld > *{
+  width:100% !important; box-sizing: border-box;
+}
+#layoutForm\\:dlg .emp-3col input.ui-inputfield,
+#layoutForm\\:dlg .emp-3col .ui-selectonemenu,
+#layoutForm\\:dlg .emp-3col .ui-selectonemenu-label{
+  height:34px !important; line-height:32px !important;
+}
+
+/* SelectOneMenu trigger consistente */
+#layoutForm\\:dlg .emp-3col .ui-selectonemenu-trigger{
+  width:36px; border-left:1px solid var(--olive-500) !important;
+}
+
+/* DatePicker: icono alineado al campo (y sin romper columnas) */
+#layoutForm\\:dlg .emp-3col .ui-datepicker-trigger{
+  height:34px; width:34px; margin-left:6px;
+  display:inline-flex; align-items:center; justify-content:center;
+}
+
+/* Mensajes compactos */
+#layoutForm\\:dlg .emp-3col .ui-message{
+  display:inline-flex; align-items:center; height:22px;
+}
+
+/* Footer del diálogo (manteniendo tu paleta) */
+#layoutForm\\:dlg .ui-dialog-footer .ui-button{
+  text-transform: uppercase; font-weight:700; border-radius:8px;
+}
+
+/* Responsive sólo para el diálogo */
+@media (max-width:900px){
+  #layoutForm\\:dlg .emp-3col .ui-panelgrid,
+  #layoutForm\\:dlg .emp-3col .ui-panelgrid .ui-panelgrid-content{ display:block !important; }
+  #layoutForm\\:dlg .emp-3col .ui-panelgrid tbody tr>td{
+    display:block !important; width:100% !important; border-top:0;
+  }
+}
+
+

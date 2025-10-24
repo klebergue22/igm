@@ -1,0 +1,238 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package ec.gob.prueba.prueba_maven.web;
+
+import ec.gob.prueba.prueba_maven.modelo.DatEmpleado;
+import ec.gob.prueba.prueba_maven.modelo.enums.EstadoCivil;
+import ec.gob.prueba.prueba_maven.modelo.enums.GrupoSangre;
+import ec.gob.prueba.prueba_maven.modelo.enums.Sexo;
+import ec.gob.prueba.prueba_maven.servicio.EmpleadoService;
+import javax.annotation.PostConstruct;
+import javax.ejb.EJB;
+import javax.faces.application.FacesMessage;
+import javax.faces.view.ViewScoped;
+import javax.inject.Named;
+import java.io.Serializable;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
+import javax.faces.component.UIComponent;
+import javax.faces.context.FacesContext;
+import javax.faces.validator.ValidatorException;
+import org.primefaces.PrimeFaces;
+
+/**
+ *
+ * @author GUERRA_KLEBER
+ */
+@Named("empleadoController")
+@ViewScoped
+public class EmpleadoController implements Serializable {
+
+    @EJB
+    private EmpleadoService empleadoService;
+
+    private List<DatEmpleado> lista;
+    private DatEmpleado seleccionado;
+    private String filtroApellidos;
+    private String filtroGlobal;
+
+    private Date fechaMaxNacimiento; // hoy - 18 años
+
+    @PostConstruct
+    public void init() {
+        seleccionado = new DatEmpleado();
+        lista = empleadoService.listarTodos();
+        fechaMaxNacimiento = calcularFechaMaxNacimiento();
+    }
+
+    //METODOS
+    public void validarMayorDeEdad(FacesContext ctx, UIComponent comp, Object value) {
+        if (value == null) {
+            return;
+        }
+        Date fecha = (Date) value;
+        Date limite = calcularFechaMaxNacimiento(); // hoy - 18
+        if (fecha.after(limite)) {
+            throw new ValidatorException(
+                    new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                            "Debe ser mayor de 18 años.",
+                            "Seleccione una fecha de nacimiento válida (≥ 18 años).")
+            );
+        }
+    }
+
+    private Date calcularFechaMaxNacimiento() {
+        Calendar cal = Calendar.getInstance();
+        cal.set(Calendar.HOUR_OF_DAY, 0);
+        cal.set(Calendar.MINUTE, 0);
+        cal.set(Calendar.SECOND, 0);
+        cal.set(Calendar.MILLISECOND, 0);
+        cal.add(Calendar.YEAR, -18); // hoy - 18
+        return cal.getTime();
+    }
+
+    public void buscarPorApellidos() {
+        lista = empleadoService.buscarPorApellidos(filtroApellidos);
+    }
+
+public void nuevo() {
+    seleccionado = new DatEmpleado();
+
+    // Limpia inputs del diálogo por si había valores previos o estados de validación
+    PrimeFaces.current().resetInputs("layoutForm:dlg");
+
+    // Actualiza el diálogo y mensajes
+     PrimeFaces.current().ajax().update("layoutForm:dialogZone", "layoutForm:msgsEmpl");
+
+    // Abre el diálogo desde el servidor (más confiable que oncomplete del cliente)
+    PrimeFaces.current().executeScript("PF('dlgEmp').show()");
+}
+
+public void editar(Integer noPersona) {
+    seleccionado = empleadoService.buscarPorId(noPersona);
+    PrimeFaces.current().resetInputs("layoutForm:dialogZone");
+    PrimeFaces.current().ajax().update("layoutForm:dialogZone", "layoutForm:msgsEmpl");
+    PrimeFaces.current().executeScript("PF('dlgEmp').show()");
+}
+
+
+//    public void guardar() {
+//
+//         
+//    boolean esNuevo = (seleccionado.getNoPersona() == null);
+//
+//    try {
+//        // Si tu servicio ya hace persist/merge, déjalo tal cual.
+//        // Si no, ver abajo el snippet del service.
+//        System.out.println("DEBUG -> cedula=" + seleccionado.getNoCedula()
+//                + ", sexo=" + seleccionado.getSexo()
+//                + ", estCivil=" + seleccionado.getEstCivil()
+//                + ", gSangre=" + seleccionado.getGrupoSangre());
+//        empleadoService.guardar(seleccionado);
+//
+//        // refresca el listado
+//        lista = empleadoService.listarTodos();
+//
+//        // Mensaje amigable: creado vs actualizado
+//        FacesMessage msg = new FacesMessage(
+//                FacesMessage.SEVERITY_INFO,
+//                esNuevo ? "Empleado creado" : "Empleado actualizado",
+//                "Cédula: " + seleccionado.getNoCedula()
+//        );
+//        FacesContext.getCurrentInstance().addMessage(null, msg);
+//
+//        // Para que el JS sepa que todo fue OK (no falló validación)
+//        org.primefaces.PrimeFaces.current().ajax().addCallbackParam("validationFailed", false);
+//
+//    } catch (Exception ex) {
+//        FacesMessage msg = new FacesMessage(
+//                FacesMessage.SEVERITY_ERROR,
+//                "Error al guardar",
+//                ex.getMessage()
+//        );
+//        FacesContext.getCurrentInstance().addMessage(null, msg);
+//
+//        // Indica al front que hubo error
+//        org.primefaces.PrimeFaces.current().ajax().addCallbackParam("validationFailed", true);
+//    }
+//      buscarPorApellidos();
+//}
+
+public void guardar() {
+    boolean validationFailed = FacesContext.getCurrentInstance().isValidationFailed();
+    if (validationFailed) {
+        PrimeFaces.current().ajax().addCallbackParam("validationFailed", true);
+        return; // JSF ya puso los mensajes de required en los componentes
+    }
+
+    boolean esNuevo = (seleccionado.getNoPersona() == null);
+    try {
+        empleadoService.guardar(seleccionado);
+        lista = empleadoService.listarTodos();
+
+        FacesMessage msg = new FacesMessage(
+            FacesMessage.SEVERITY_INFO,
+            esNuevo ? "Empleado creado" : "Empleado actualizado",
+            "Cédula: " + seleccionado.getNoCedula()
+        );
+        FacesContext.getCurrentInstance().addMessage(null, msg); // global -> msgsEmpl
+
+        PrimeFaces.current().ajax().addCallbackParam("validationFailed", false);
+    } catch (Exception ex) {
+        FacesContext.getCurrentInstance().addMessage(null,
+            new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error al guardar", ex.getMessage()));
+        PrimeFaces.current().ajax().addCallbackParam("validationFailed", true);
+    }
+}
+
+    
+
+    public void eliminar(Integer noPersona) {
+        empleadoService.eliminar(noPersona);
+        buscarPorApellidos();
+    }
+
+    private void info(String m) {
+        javax.faces.context.FacesContext.getCurrentInstance()
+                .addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, m, null));
+    }
+
+    // getters/setters
+    public List<DatEmpleado> getLista() {
+        return lista;
+    }
+
+    public void setLista(List<DatEmpleado> lista) {
+        this.lista = lista;
+    }
+
+    public DatEmpleado getSeleccionado() {
+        return seleccionado;
+    }
+
+    public void setSeleccionado(DatEmpleado seleccionado) {
+        this.seleccionado = seleccionado;
+    }
+
+    public String getFiltroApellidos() {
+        return filtroApellidos;
+    }
+
+    public void setFiltroApellidos(String filtroApellidos) {
+        this.filtroApellidos = filtroApellidos;
+    }
+
+    public String getFiltroGlobal() {
+        return filtroGlobal;
+    }
+
+    public void setFiltroGlobal(String filtroGlobal) {
+        this.filtroGlobal = filtroGlobal;
+    }
+
+    public Date getFechaMaxNacimiento() {
+        return fechaMaxNacimiento;
+    }
+    // Items siempre disponibles en postback
+
+    public GrupoSangre[] getGruposSangre() {
+        return GrupoSangre.values();
+    }
+
+    public Sexo[] getSexos() {
+        return Sexo.values();
+    }
+
+    public EstadoCivil[] getEstadosCiviles() {
+        return EstadoCivil.values();
+    }
+
+    public int getAnioActual() {
+        return java.time.Year.now().getValue();
+    }
+
+}

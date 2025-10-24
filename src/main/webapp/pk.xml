@@ -1,0 +1,162 @@
+ // ec/gob/prueba/prueba_maven/modelo/Contratacion.java
+package ec.gob.prueba.prueba_maven.modelo;
+
+ 
+import ec.gob.prueba.prueba_maven.modelo.enums.*;
+import ec.gob.prueba.prueba_maven.modelo.converter.*;
+
+import lombok.*;
+
+import javax.persistence.*;
+import java.io.Serializable;
+import java.math.BigDecimal;
+import java.time.format.DateTimeFormatter;
+import java.util.Date;
+
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+@Entity
+@Table(name = "T_CONTRATACIONES", schema = "RH")
+@IdClass(ContratacionId.class)
+public class Contratacion implements Serializable {
+
+    // ===== PK =====
+    @Id
+    @Column(name = "NO_PERSONA", nullable = false, precision = 6, scale = 0)
+    private BigDecimal noPersona;
+
+    @Id
+    @Column(name = "NO_CONT", nullable = false, precision = 6, scale = 0)
+    private BigDecimal noCont;
+
+    // ===== Campos =====
+    @Convert(converter = TipoContratoConverter.class)
+    @Column(name = "C_CONTRATO", precision = 3, scale = 0)
+    private TipoContrato ceContrato;
+
+    @Column(name = "NO_DOC", length = 10)
+    private String noDoc;
+
+    @Column(name = "RESPONSABLE", length = 50)
+    private String responsable;
+
+    @Column(name = "NIVEL", length = 2)
+    private String nivel;
+
+    @Column(name = "CATEGORIA", length = 2)
+    private String categoria;
+
+    @Column(name = "NO_FUNCION", precision = 3, scale = 0)
+    private BigDecimal noFuncion;
+
+    @Column(name = "NO_EMP", precision = 3, scale = 0)
+    private BigDecimal noEmp;
+
+    @Temporal(TemporalType.DATE)
+    @Column(name = "F_CONTRATO")
+    private Date feContrato;
+
+    @Temporal(TemporalType.DATE)
+    @Column(name = "F_SALIDA")
+    private Date feSalida;
+
+    @Column(name = "T_SALIDA", length = 1)
+    private String tSalida;
+
+    @Convert(converter = EstadoContratoConverter.class)
+    @Column(name = "ESTADO", length = 1)
+    private EstadoContrato estado;
+
+    @Column(name = "C_MONEDA", precision = 3, scale = 0)
+    private BigDecimal cMoneda;
+
+    @Column(name = "V_SUELDO_IMPONIBLE", precision = 15, scale = 2)
+    private BigDecimal vSueldoImponible;
+
+    @Column(name = "COSTO_HORA", precision = 15, scale = 2)
+    private BigDecimal costoHora;
+
+    @Column(name = "COSTO_HORA_EXTRA", precision = 15, scale = 2)
+    private BigDecimal costoHoraExtra;
+
+    @Column(name = "NO_BANCO", precision = 3, scale = 0)
+    private BigDecimal noBanco;
+
+    @Column(name = "NO_CTA", length = 15)
+    private String noCta;
+
+    @Convert(converter = Flag01Converter.class)
+    @Column(name = "L_LICENCIA", precision = 1, scale = 0)
+    private Flag01 lLicencia;
+
+    @Column(name = "DIAS_LICENCIA", precision = 3, scale = 0)
+    private BigDecimal diasLicencia;
+
+    @Column(name = "DIAS_UTILIZADOS", precision = 3, scale = 0)
+    private BigDecimal diasUtilizados;
+
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "HORA_INGRESO")
+    private Date horaIngreso;
+
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "HORA_SALIDA")
+    private Date horaSalida;
+
+    @Convert(converter = Flag01Converter.class)
+    @Column(name = "L_GENERA_ROL", precision = 1, scale = 0)
+    private Flag01 lGeneraRol;
+
+    @Column(name = "OBS", length = 250)
+    private String obs;
+
+    @Column(name = "NO_EMP_PRE", precision = 3, scale = 0)
+    private BigDecimal noEmpPre;
+
+    @Column(name = "NO_CD_PRE", precision = 3, scale = 0)
+    private BigDecimal noCdPre;
+
+    @Column(name = "NO_CARGO", precision = 3, scale = 0)
+    private BigDecimal noCargo;
+
+    @Column(name = "V_SUELDO_IMPONIBLE_SUC", precision = 15, scale = 2)
+    private BigDecimal vSueldoImponibleSuc;
+
+    @Column(name = "COSTO_HORA_SUC", precision = 15, scale = 2)
+    private BigDecimal costoHoraSuc;
+
+    @Column(name = "COSTO_HORA_EXTRA_SUC", precision = 15, scale = 2)
+    private BigDecimal costoHoraExtraSuc;
+
+    @Column(name = "NO_EMP_MATRIZ", precision = 3, scale = 0)
+    private BigDecimal noEmpMatriz;
+
+    @Column(name = "NO_CD", precision = 4, scale = 0)
+    private BigDecimal noCd;
+
+    @Column(name = "MANO_OBRA", length = 1)
+    private String manoObra;
+
+    @Column(name = "PROYECTO_CODIGO", precision = 3, scale = 0)
+    private BigDecimal proyectoCodigo;
+
+    @Column(name = "TIPO_VIATICO", length = 1)
+    private String tipoViatico;
+
+    @Column(name = "NO_CD_PRE_ANT", precision = 3, scale = 0)
+    private BigDecimal noCdPreAnt;
+
+    @Column(name = "NIVEL_APROBACION", precision = 2, scale = 0)
+    private BigDecimal nivelAprobacion;
+
+    @Column(name = "RMU", precision = 15, scale = 2)
+    private BigDecimal rmu;
+    
+    
+ 
+
+    
+         
+}

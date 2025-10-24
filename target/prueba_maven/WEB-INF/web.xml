@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app version="3.1"
+         xmlns="http://xmlns.jcp.org/xml/ns/javaee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd">
+
+  <!-- === JSF en modo desarrollo === -->
+  <context-param>
+    <param-name>javax.faces.PROJECT_STAGE</param-name>
+    <param-value>Development</param-value>
+  </context-param>
+
+  <!-- Guardar estado en cliente (útil en redeploy) -->
+  <context-param>
+    <param-name>javax.faces.STATE_SAVING_METHOD</param-name>
+    <param-value>client</param-value>
+  </context-param>
+
+  <!-- Las vistas físicas son .xhtml, pero las URLs serán .jsf -->
+  <context-param>
+    <param-name>javax.faces.FACELETS_SUFFIX</param-name>
+    <param-value>.xhtml</param-value>
+  </context-param>
+
+  <!-- Tema de PrimeFaces -->
+  <context-param>
+    <param-name>primefaces.THEME</param-name>
+    <param-value>nova-light</param-value>
+  </context-param>
+  
+  <context-param>
+  <param-name>com.sun.faces.responseBufferSize</param-name>
+  <param-value>65536</param-value> <!-- 64 KB, puedes subir a 131072 -->
+</context-param>
+
+
+  <!-- === FacesServlet (núcleo JSF) === -->
+  <servlet>
+    <servlet-name>Faces Servlet</servlet-name>
+    <servlet-class>javax.faces.webapp.FacesServlet</servlet-class>
+    <load-on-startup>1</load-on-startup>
+  </servlet>
+
+  <!-- URLs con .jsf pasan por JSF -->
+  <servlet-mapping>
+    <servlet-name>Faces Servlet</servlet-name>
+    <url-pattern>*.jsf</url-pattern>
+  </servlet-mapping>
+
+  <!-- Tipos MIME útiles para fuentes -->
+  <mime-mapping>
+    <extension>ttf</extension>
+    <mime-type>font/ttf</mime-type>
+  </mime-mapping>
+  <mime-mapping>
+    <extension>woff</extension>
+    <mime-type>application/font-woff</mime-type>
+  </mime-mapping>
+  <mime-mapping>
+    <extension>woff2</extension>
+    <mime-type>font/woff2</mime-type>
+  </mime-mapping>
+
+  <!-- Sesión -->
+  <session-config>
+    <session-timeout>30</session-timeout>
+  </session-config>
+
+  <!-- Página de inicio (URL .jsf) -->
+  <welcome-file-list>
+    <welcome-file>index.jsf</welcome-file>
+  </welcome-file-list>
+
+  <!-- (OPCIONAL) Bloquear acceso directo a .xhtml en el navegador -->
+  <!--
+  <security-constraint>
+    <web-resource-collection>
+      <web-resource-name>NoXhtml</web-resource-name>
+      <url-pattern>*.xhtml</url-pattern>
+    </web-resource-collection>
+    <user-data-constraint>
+      <transport-guarantee>NONE</transport-guarantee>
+    </user-data-constraint>
+  </security-constraint>
+  -->
+
+</web-app>

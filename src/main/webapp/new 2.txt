@@ -1,0 +1,14 @@
+ 	
+User  RH
+	
+URL jdbc:oracle:thin:@192.168.35.88:1521:IGEO
+	
+PortNumber 1521
+	
+Password oraclerrhh2010
+	
+driverClass oracle.jdbc.OracleDriver
+	
+serverName 192.168.35.88
+	
+databaseName IGM1

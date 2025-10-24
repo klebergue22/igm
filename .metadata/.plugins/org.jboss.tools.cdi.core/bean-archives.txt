@@ -1,0 +1,9 @@
+path=D:\MAE\ControlA\control-ambiental\control-ambiental\web\src\main\webapp\WEB-INF\lib\ReproyeccionCoordenadas.jar
+size=76151
+archive=0
+path=D:\MAE\ControlA\control-ambiental\control-ambiental\web\src\main\webapp\WEB-INF\lib\Arcon.jar
+size=11323
+archive=0
+path=D:\MAE\ControlA\control-ambiental\control-ambiental\web\src\main\webapp\WEB-INF\lib\primefaces-suia.jar
+size=29132
+archive=0
