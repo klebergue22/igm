@@ -90,6 +90,10 @@
                     <f:convertDateTime pattern="dd/MM/yyyy" timeZone="America/Guayaquil"/>
                 </h:outputText>
             </p:column>
+            <p:column headerText="Observaciones" sortBy="#{c.obs}">
+                <h:outputText rendered="#{not empty c.obs}" value="#{c.obs}">
+                </h:outputText>
+            </p:column>
 
             <p:column headerText="Acciones" style="width:160px" exportable="false" filterable="false">
                 <p:commandButton value="Editar"
@@ -110,7 +114,7 @@
                   widgetVar="dlgCont"
                   header="Contratación"
                   modal="true"
-                   
+
                   width="900"
                   resizable="true"
                   closeOnEscape="false">

@@ -9,6 +9,12 @@
     <title><ui:insert name="title">RRHH</ui:insert></title>
     <h:outputStylesheet library="css" name="igm.css"/>
 
+    <!-- ✅ Favicon en PNG -->
+    <link rel="icon" type="image/png"
+          href="#{request.contextPath}/resources/images/LOGO_IGM_FULL_COLOR.png" />
+
+ 
+    
     <style>
       .loading-dialog .ui-dialog-content {
         text-align: center;
@@ -51,6 +57,7 @@
           <p:submenu label="Módulos" icon="pi pi-sitemap">
             <p:menuitem value="Empleados" icon="pi pi-users" outcome="/empleados.xhtml"/>
             <p:menuitem value="Contrataciones" icon="pi pi-briefcase" outcome="/contrataciones.xhtml"/>
+             <p:menuitem value="Salud" icon="pi pi-plus-circle" outcome="/centroMedico.xhtml"/>
           </p:submenu>
         </p:menubar>
         <span class="brand">RRHH · Demo</span>

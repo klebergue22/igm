@@ -1,468 +1,367 @@
 <ui:composition template="/templates/template.xhtml"
-                xmlns="http://www.w3.org/1999/xhtml"
-                xmlns:h="http://xmlns.jcp.org/jsf/html"
-                xmlns:p="http://primefaces.org/ui"
-                xmlns:f="http://xmlns.jcp.org/jsf/core"
-                xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:h="http://xmlns.jcp.org/jsf/html"
+    xmlns:f="http://xmlns.jcp.org/jsf/core"
+    xmlns:p="http://primefaces.org/ui"
+    xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
 
-    <ui:define name="title">Contrataciones</ui:define>
+  <ui:define name="title">Evaluación Médica Ocupacional</ui:define>
 
-    <!-- Usa SOLO el <h:form id="layoutForm"> del template -->
+  <ui:define name="content">
+    <h:outputStylesheet library="primefaces" name="primeicons/primeicons.css"/>
 
-    <ui:define name="content">
+    <h:form id="form" enctype="multipart/form-data" styleClass="ui-fluid">
 
-        <!-- ============================================ -->
-        <!-- PANEL DE DEBUG (Eliminar después de pruebas) -->
-        <!-- ============================================ -->
-        <p:panel header="🔍 DEBUG - Eliminar después de las pruebas"
-                 style="background:#ffffcc;margin-bottom:20px"
-                 toggleable="true">
-            <h:panelGrid columns="2" styleClass="ui-fluid">
-                <h:outputLabel value="Controller existe:" style="font-weight:bold;"/>
-                <h:outputText value="#{contratacionController != null ? 'SI' : 'NO'}"
-                              style="color:blue;font-weight:bold;"/>
+      <!-- Wizard sin barra nativa; usamos barra propia para asegurar back/next -->
+      <p:wizard widgetVar="wiz" showNavBar="false" showStepStatus="true"
+                nextLabel="Siguiente" backLabel="Anterior">
 
-                <h:outputLabel value="FiltroNoPersona:" style="font-weight:bold;"/>
-                <h:outputText value="#{contratacionController.filtroNoPersona != null ? contratacionController.filtroNoPersona : '(vacío)'}"
-                              style="color:blue;font-weight:bold;"/>
+        <!-- ===================================================== -->
+        <!-- STEP 1: FORMULARIO DE EVALUACIÓN MÉDICA (A–F)         -->
+        <!-- ===================================================== -->
+        <p:tab id="step1" title="Formulario (A–F)">
 
-                <h:outputLabel value="Lista:" style="font-weight:bold;"/>
-                <h:outputText value="#{contratacionController.lista != null ? contratacionController.lista.size() : 0} registros"
-                              style="color:green;font-weight:bold;"/>
+          <!-- A. Datos del establecimiento / usuario -->
+          <p:panel header="A. Datos del establecimiento / usuario">
+            <h:panelGrid columns="4" columnClasses="w-15rem, w-35rem, w-15rem, w-35rem" styleClass="ui-fluid">
+
+              <h:outputLabel value="Institución del Sistema"/><p:inputText placeholder="Institución"/>
+              <h:outputLabel value="RUC"/>
+              <p:inputText maxlength="13" placeholder="RUC"   requiredMessage="El ruc"> <p:keyFilter mask="num"/> <f:validateRegex pattern="\d{10}"/> </p:inputText>
+              <h:outputLabel value="CIIU"/><p:inputText maxlength="10" placeholder="CIIU"/>
+              <h:outputLabel value="Centro de trabajo"/><p:inputText placeholder="Centro de trabajo"/>
+              <h:outputLabel value="N° Historia clínica"/><p:inputText placeholder="Historia clínica"/>
+              <h:outputLabel value="N° Archivo"/><p:inputText placeholder="Archivo"/>
+
+              <h:outputLabel value="Primer apellido"/><p:inputText placeholder="Primer apellido"/>
+              <h:outputLabel value="Segundo apellido"/><p:inputText placeholder="Segundo apellido"/>
+              <h:outputLabel value="Primer nombre"/><p:inputText placeholder="Primer nombre"/>
+              <h:outputLabel value="Segundo nombre"/><p:inputText placeholder="Segundo nombre"/>
+              <!-- ATENCIÓN PRIORITARIA -->
+<p:panel header="ATENCIÓN PRIORITARIA" styleClass="mb-2">
+  <div class="p-formgrid p-grid">
+    <div class="p-field-checkbox p-col-12 p-md-2">
+      <p:selectBooleanCheckbox id="ap_emb"/>
+      <h:outputLabel for="ap_emb" value="Embarazada"/>
+    </div>
+    <div class="p-field-checkbox p-col-12 p-md-2">
+      <p:selectBooleanCheckbox id="ap_disc"/>
+      <h:outputLabel for="ap_disc" value="Persona con Discapacidad"/>
+    </div>
+    <div class="p-field-checkbox p-col-12 p-md-2">
+      <p:selectBooleanCheckbox id="ap_cat"/>
+      <h:outputLabel for="ap_cat" value="E. Catastrófica"/>
+    </div>
+    <div class="p-field-checkbox p-col-12 p-md-2">
+      <p:selectBooleanCheckbox id="ap_lac"/>
+      <h:outputLabel for="ap_lac" value="Lactancia"/>
+    </div>
+    <div class="p-field-checkbox p-col-12 p-md-2">
+      <p:selectBooleanCheckbox id="ap_am"/>
+      <h:outputLabel for="ap_am" value="Adulto Mayor"/>
+    </div>
+  </div>
+</p:panel>
+              
+              
+
+
+              <h:outputLabel value="Sexo"/>
+              <p:selectOneRadio>
+                <f:selectItem itemLabel="Hombre" itemValue="M"/>
+                <f:selectItem itemLabel="Mujer"  itemValue="F"/>
+              </p:selectOneRadio>
+
+              <h:outputLabel value="Fecha de nacimiento"/><p:calendar pattern="dd/MM/yyyy" navigator="true"/>
+              <h:outputLabel value="Grupo sanguíneo"/>
+              <p:selectOneMenu>
+                <f:selectItem itemLabel="--" itemValue=""/>
+                <f:selectItem itemLabel="O+" itemValue="O+"/>
+                <f:selectItem itemLabel="O-" itemValue="O-"/>
+                <f:selectItem itemLabel="A+" itemValue="A+"/>
+                <f:selectItem itemLabel="A-" itemValue="A-"/>
+                <f:selectItem itemLabel="B+" itemValue="B+"/>
+                <f:selectItem itemLabel="B-" itemValue="B-"/>
+                <f:selectItem itemLabel="AB+" itemValue="AB+"/>
+                <f:selectItem itemLabel="AB-" itemValue="AB-"/>
+              </p:selectOneMenu>
+
+              <h:outputLabel value="Lateralidad"/>
+              <p:selectOneMenu>
+                <f:selectItem itemLabel="--" itemValue=""/>
+                <f:selectItem itemLabel="Diestro" itemValue="DIESTRO"/>
+                <f:selectItem itemLabel="Zurdo" itemValue="ZURDO"/>
+                <f:selectItem itemLabel="Ambidiestro" itemValue="AMBIDIESTRO"/>
+              </p:selectOneMenu>
+
+            </h:panelGrid>
+          </p:panel>
+
+          <p:separator/>
+
+          <!-- B. Motivo de consulta -->
+          <p:panel header="B. Motivo de consulta">
+            <h:panelGrid columns="4" columnClasses="w-15rem, w-35rem, w-15rem, w-35rem" styleClass="ui-fluid">
+              <h:outputLabel value="Puesto de trabajo (CIUO)"/><p:inputText placeholder="CIUO"/>
+              <h:outputLabel value="Fecha de atención"/><p:calendar pattern="dd/MM/yyyy" navigator="true"/>
+              <h:outputLabel value="Fecha de ingreso"/><p:calendar pattern="dd/MM/yyyy"/>
+              <h:outputLabel value="Fecha de reintegro"/><p:calendar pattern="dd/MM/yyyy"/>
+              <h:outputLabel value="Último día laboral"/><p:calendar pattern="dd/MM/yyyy"/>
+
+              <h:outputLabel value="Evaluación"/>
+              <p:selectOneRadio>
+                <f:selectItem itemLabel="Ingreso" itemValue="INGRESO"/>
+                <f:selectItem itemLabel="Periódico" itemValue="PERIODICO"/>
+                <f:selectItem itemLabel="Reintegro" itemValue="REINTEGRO"/>
+                <f:selectItem itemLabel="Retiro" itemValue="RETIRO"/>
+              </p:selectOneRadio>
+
+              <h:outputLabel value="Observación"/><p:inputTextarea rows="3" autoResize="true" placeholder="Observación"/>
+            </h:panelGrid>
+          </p:panel>
+
+          <p:separator/>
+
+          <!-- C. Antecedentes personales -->
+          <p:panel header="C. Antecedentes personales">
+            <h:panelGrid columns="2" columnClasses="w-20rem," styleClass="ui-fluid">
+              <h:outputLabel value="Clínicos y quirúrgicos"/><p:inputTextarea rows="3" autoResize="true"/>
+              <h:outputLabel value="Familiares"/><p:inputTextarea rows="3" autoResize="true"/>
+              <h:outputLabel value="Condición especial (urgencias/tx)"/><p:inputTextarea rows="2" autoResize="true"/>
+              <h:outputLabel value="Autoriza transfusiones"/>
+              <p:selectOneRadio>
+                <f:selectItem itemLabel="Sí" itemValue="S"/>
+                <f:selectItem itemLabel="No" itemValue="N"/>
+              </p:selectOneRadio>
+
+              <h:outputLabel value="Tratamiento hormonal"/>
+              <p:selectOneRadio>
+                <f:selectItem itemLabel="Sí" itemValue="S"/>
+                <f:selectItem itemLabel="No" itemValue="N"/>
+              </p:selectOneRadio>
+              <h:outputLabel value="¿Cuál?"/><p:inputText/>
+
+              <p:separator/>
+
+              <h:outputLabel value="FUM"/><p:calendar pattern="dd/MM/yyyy"/>
+              <h:outputLabel value="Gestas"/><p:inputNumber decimalPlaces="0"/>
+              <h:outputLabel value="Partos"/><p:inputNumber decimalPlaces="0"/>
+              <h:outputLabel value="Cesáreas"/><p:inputNumber decimalPlaces="0"/>
+              <h:outputLabel value="Abortos"/><p:inputNumber decimalPlaces="0"/>
+
+              <h:outputLabel value="Planificación familiar"/>
+              <p:selectOneMenu>
+                <f:selectItem itemLabel="--" itemValue=""/>
+                <f:selectItem itemLabel="Sí" itemValue="SI"/>
+                <f:selectItem itemLabel="No" itemValue="NO"/>
+                <f:selectItem itemLabel="No responde" itemValue="NR"/>
+              </p:selectOneMenu>
+              <h:outputLabel value="¿Cuál?"/><p:inputText/>
+
+              <p:separator/>
+
+              <h:outputLabel value="Exámenes repro. masculinos (¿cuál?)"/><p:inputText/>
+              <h:outputLabel value="Tiempo (años)"/><p:inputNumber decimalPlaces="0"/>
+
+              <p:separator/>
+
+              <h:outputLabel value="Actividad física"/><p:inputText/>
+              <h:outputLabel value="Condición preexistente"/><p:inputText/>
+              <h:outputLabel value="Medicación habitual"/><p:inputText/>
+              <h:outputLabel value="Observación"/><p:inputTextarea rows="2" autoResize="true"/>
+            </h:panelGrid>
+          </p:panel>
+
+          <p:separator/>
+
+          <!-- D. Enfermedad o problema actual -->
+          <p:panel header="D. Enfermedad o problema actual">
+            <p:inputTextarea rows="5" style="width:100%" placeholder="Descripción del problema actual"/>
+          </p:panel>
+
+          <p:separator/>
+
+          <!-- E. Constantes vitales y antropometría -->
+          <p:panel header="E. Constantes vitales y antropometría">
+            <h:panelGrid columns="8" styleClass="ui-fluid">
+              <h:outputText value="Temp (°C)"/><p:inputNumber decimalPlaces="1"/>
+              <h:outputText value="PA (mmHg)"/><p:inputText placeholder="120/80"/>
+              <h:outputText value="FC"/><p:inputNumber decimalPlaces="0"/>
+              <h:outputText value="FR"/><p:inputNumber decimalPlaces="0"/>
+              <h:outputText value="Sat O₂ (%)"/><p:inputNumber decimalPlaces="0"/>
+              <h:outputText value="Peso (kg)"/><p:inputNumber decimalPlaces="2"/>
+              <h:outputText value="Talla (cm)"/><p:inputNumber decimalPlaces="1"/>
+              <h:outputText value="IMC"/><p:inputNumber decimalPlaces="2" disabled="true"/>
+              <h:outputText value="Perímetro abd (cm)"/><p:inputNumber decimalPlaces="1"/>
+            </h:panelGrid>
+          </p:panel>
+
+          <p:separator/>
+
+          <!-- F. Examen físico regional (simplificado) -->
+          <p:panel header="F. Examen físico regional">
+            <h:panelGrid columns="4" styleClass="ui-fluid">
+              <h:outputText value="Piel - Cicatrices"/><p:selectBooleanCheckbox/><h:outputText value="Numeral"/><p:inputText/>
+              <h:outputText value="Ojos - Párpados"/><p:selectBooleanCheckbox/><h:outputText value="Numeral"/><p:inputText/>
+              <h:outputText value="Oído - CAE"/><p:selectBooleanCheckbox/><h:outputText value="Numeral"/><p:inputText/>
+              <h:outputText value="Tórax - Pulmones"/><p:selectBooleanCheckbox/><h:outputText value="Numeral"/><p:inputText/>
+              <h:outputText value="Abdomen - Vísceras"/><p:selectBooleanCheckbox/><h:outputText value="Numeral"/><p:inputText/>
+              <h:outputText value="Extremidades - Vascular"/><p:selectBooleanCheckbox/><h:outputText value="Numeral"/><p:inputText/>
+              <h:outputText value="Neurológico - Reflejos"/><p:selectBooleanCheckbox/><h:outputText value="Numeral"/><p:inputText/>
+              <h:outputText value="Observación global"/><p:inputTextarea rows="2" autoResize="true" />
+            </h:panelGrid>
+          </p:panel>
+        </p:tab>
+
+        <!-- ===================================================== -->
+        <!-- STEP 2: G. FACTORES DE RIESGO DEL TRABAJO ACTUAL       -->
+        <!-- ===================================================== -->
+        <p:tab id="step2" title="Riesgos (G)">
+          <p:panel header="G. Factores de riesgo del trabajo actual">
+            <h:panelGrid columns="2" styleClass="ui-fluid" columnClasses="w-15rem,">
+              <h:outputText value="Puesto de trabajo"/><p:inputText/>
+              <h:outputText value="Actividades importantes"/><p:inputTextarea rows="3" autoResize="true"/>
             </h:panelGrid>
 
             <p:separator/>
 
-            <h4>Botones de prueba:</h4>
+            <!-- Matriz simple: ejemplo de filas -->
+            <h:panelGrid columns="4" styleClass="ui-fluid">
+              <h:outputText value="FÍSICO - Ruido"/>
+              <p:selectOneRadio>
+                <f:selectItem itemLabel="1" itemValue="1"/><f:selectItem itemLabel="2" itemValue="2"/>
+                <f:selectItem itemLabel="3" itemValue="3"/><f:selectItem itemLabel="4" itemValue="4"/>
+                <f:selectItem itemLabel="5" itemValue="5"/><f:selectItem itemLabel="6" itemValue="6"/>
+                <f:selectItem itemLabel="7" itemValue="7"/>
+              </p:selectOneRadio>
+              <h:outputText value="Otro:"/><p:inputText placeholder="Detalle (opcional)"/>
 
-            <!-- JSF -->
-            <h:commandButton value="TEST: JSF Ping"
-                             action="#{contratacionController.ping}"
-                             styleClass="ui-button ui-widget ui-button-success"
-                             style="margin:5px">
-                <f:ajax execute="@form" render=":layoutForm:msgsPage"/>
-            </h:commandButton>
+              <h:outputText value="ERGONÓMICO - Posturas forzadas"/>
+              <p:selectOneRadio>
+                <f:selectItem itemLabel="1" itemValue="1"/><f:selectItem itemLabel="2" itemValue="2"/>
+                <f:selectItem itemLabel="3" itemValue="3"/><f:selectItem itemLabel="4" itemValue="4"/>
+                <f:selectItem itemLabel="5" itemValue="5"/><f:selectItem itemLabel="6" itemValue="6"/>
+                <f:selectItem itemLabel="7" itemValue="7"/>
+              </p:selectOneRadio>
+              <h:outputText value="Otro:"/><p:inputText/>
 
-            <!-- PrimeFaces -->
-            <p:commandButton value="TEST: PF Ping"
-                             actionListener="#{contratacionController.ping}"
-                             update=":layoutForm:msgsPage"
-                             styleClass="ui-button-warning"
-                             style="margin:5px"/>
+              <h:outputText value="PSICOSOCIAL - Sobrecarga laboral"/>
+              <p:selectOneRadio>
+                <f:selectItem itemLabel="1" itemValue="1"/><f:selectItem itemLabel="2" itemValue="2"/>
+                <f:selectItem itemLabel="3" itemValue="3"/><f:selectItem itemLabel="4" itemValue="4"/>
+                <f:selectItem itemLabel="5" itemValue="5"/><f:selectItem itemLabel="6" itemValue="6"/>
+                <f:selectItem itemLabel="7" itemValue="7"/>
+              </p:selectOneRadio>
+              <h:outputText value="Otro:"/><p:inputText/>
+            </h:panelGrid>
 
-            <p:commandButton value="TEST: PF Buscar (sin filtro)"
-                             actionListener="#{contratacionController.buscar}"
-                             update=":layoutForm:msgsPage :layoutForm:tbl"
-                             styleClass="ui-button-info"
-                             style="margin:5px"
-                             onclick="console.log('Click en TEST Buscar');"/>
-        </p:panel>
+            <p:separator/>
 
-        <!-- ============================================ -->
-        <!-- MENSAJES (renombrado a msgsPage)            -->
-        <!-- ============================================ -->
-        <p:messages id="msgsPage" closable="true" showIcon="true"/>
+            <h:panelGrid columns="2" styleClass="ui-fluid">
+              <h:outputText value="Medidas preventivas"/><p:inputTextarea rows="3" autoResize="true"/>
+            </h:panelGrid>
+          </p:panel>
+        </p:tab>
 
-        <!-- ============================================ -->
-        <!-- FILTRO Y BÚSQUEDA                            -->
-        <!-- ============================================ -->
-        <p:toolbar class="p-mb-2 p-pt-0">
-            <p:toolbarGroup>
-                <p:inputNumber id="filtroNoPersona"
-                               value="#{contratacionController.filtroNoPersona}"
-                               decimalPlaces="0"
-                               thousandSeparator=""
-                               minValue="1"
-                               placeholder="No Persona"
-                               style="width:180px"
-                               onchange="console.log('InputNumber changed to:', this.value);"/>
+        <!-- ===================================================== -->
+        <!-- STEP 3: H–O (Historia, resultados, aptitud, etc.)      -->
+        <!-- ===================================================== -->
+        <p:tab id="step3" title="Historia / Resultados (H–O)">
+          <p:panel header="H. Actividad laboral / Incidentes / Accidentes / EO">
+            <p:inputTextarea rows="3" style="width:100%"/>
+          </p:panel>
 
-                <!-- Botón Buscar ORIGINAL con debug -->
-                <p:commandButton value="Buscar"
-                                 icon="pi pi-search"
-                                 actionListener="#{contratacionController.buscar}"
-                                 process="@this filtroNoPersona"
-                                 update=":layoutForm:msgsPage :layoutForm:tbl"
-                                 style="margin-left:5px"
-                                 onclick="console.log('Click en Buscar ORIGINAL'); console.log('Filtro value:', document.getElementById('layoutForm:filtroNoPersona_input')?.value); return true;"/>
+          <p:separator/>
 
-                <!-- Botón alternativo SIN process -->
-                <p:commandButton value="Buscar (v2)"
-                                 icon="pi pi-search"
-                                 actionListener="#{contratacionController.buscar}"
-                                 update=":layoutForm:msgsPage :layoutForm:tbl"
-                                 style="margin-left:5px;background:orange"
-                                 onclick="console.log('Click en Buscar V2');"/>
+          <p:panel header="I. Actividades extralaborales">
+            <p:inputTextarea rows="3" style="width:100%"/>
+          </p:panel>
 
-                <!-- Botón JSF puro -->
-                <h:commandButton value="Buscar (JSF)"
-                                 action="#{contratacionController.buscar}"
-                                 styleClass="ui-button ui-widget"
-                                 style="margin-left:5px;background:purple;color:white;border:none;padding:8px 16px;">
-                    <f:ajax execute="@form" render=":layoutForm:msgsPage :layoutForm:tbl"/>
-                </h:commandButton>
-            </p:toolbarGroup>
+          <p:separator/>
 
-            <p:toolbarGroup align="right">
-                <p:commandButton value="Nuevo"
-                                 icon="pi pi-plus"
-                                 actionListener="#{contratacionController.nuevoDesdeBoton}"
-                                 process="@this filtroNoPersona"
-                                 update=":layoutForm:dlg"
-                                 oncomplete="if (!args.validationFailed) PF('dlgCont').show()"/>
-            </p:toolbarGroup>
-        </p:toolbar>
+          <p:panel header="J. Resultados de exámenes (imagen / laboratorio / otros)">
+            <p:inputTextarea rows="3" style="width:100%" placeholder="Listado / resumen"/>
+          </p:panel>
 
-        <!-- ============================================ -->
-        <!-- TABLA DE RESULTADOS                          -->
-        <!-- ============================================ -->
-        <p:dataTable id="tbl"
-                     value="#{contratacionController.lista}"
-                     var="c"
-                     widgetVar="tblContWV"
-                     paginator="true"
-                     rows="20"
-                     rowsPerPageTemplate="10,20,50,100"
-                     emptyMessage="Sin resultados - Haga clic en Buscar"
-                     filterEvent="keyup"
-                     filterDelay="400">
+          <p:separator/>
 
-            <p:column headerText="NoPersona"
-                      sortBy="#{c.noPersona}"
-                      filterBy="#{c.noPersona}"
-                      filterMatchMode="contains">
-                <h:outputText value="#{c.noPersona}"/>
-            </p:column>
+          <p:panel header="K. Diagnóstico (PRE / DEF)">
+            <h:panelGrid columns="4" styleClass="ui-fluid">
+              <h:outputText value="Diagnóstico presuntivo"/><p:inputText/>
+              <h:outputText value="Diagnóstico definitivo"/><p:inputText/>
+              <h:outputText value="CIE-10 (opcional)"/><p:inputText/>
+            </h:panelGrid>
+          </p:panel>
 
-            <p:column headerText="No Cont"
-                      sortBy="#{c.noCont}"
-                      filterBy="#{c.noCont}"
-                      filterMatchMode="contains">
-                <h:outputText value="#{c.noCont}"/>
-            </p:column>
+          <p:separator/>
 
-            <!-- ESTADO -->
-            <p:column headerText="Estado" sortBy="#{c.estado}">
-                <h:outputText value="#{c.estado != null ? c.estado.descripcion : '(sin estado)'}"/>
-            </p:column>
+          <p:panel header="L. Aptitud médica para el trabajo">
+            <p:selectOneRadio>
+              <f:selectItem itemLabel="APTO" itemValue="APTO"/>
+              <f:selectItem itemLabel="APTO EN OBSERVACIÓN" itemValue="APTO_OBS"/>
+              <f:selectItem itemLabel="APTO CON LIMITACIONES" itemValue="APTO_LIMIT"/>
+              <f:selectItem itemLabel="NO APTO" itemValue="NO_APTO"/>
+            </p:selectOneRadio>
+          </p:panel>
 
-            <!-- F. CONTRATO -->
-            <p:column headerText="F. Contrato" sortBy="#{c.feContrato}">
-                <h:outputText rendered="#{not empty c.feContrato}" value="#{c.feContrato}">
-                    <f:convertDateTime pattern="dd/MM/yyyy" timeZone="America/Guayaquil"/>
-                </h:outputText>
-                <h:outputText rendered="#{empty c.feContrato}" value=""/>
-            </p:column>
+          <p:separator/>
 
-            <!-- F. SALIDA -->
-            <p:column headerText="F. Salida" sortBy="#{c.feSalida}">
-                <h:outputText rendered="#{not empty c.feSalida}" value="#{c.feSalida}">
-                    <f:convertDateTime pattern="dd/MM/yyyy" timeZone="America/Guayaquil"/>
-                </h:outputText>
-                <h:outputText rendered="#{empty c.feSalida}" value=""/>
-            </p:column>
+          <p:panel header="M. Recomendaciones y/o tratamiento">
+            <p:inputTextarea rows="3" style="width:100%"/>
+          </p:panel>
 
+          <p:separator/>
 
-            <p:column headerText="Acciones"
-                      style="width:180px"
-                      exportable="false"
-                      filterable="false">
+          <p:panel header="N. Retiro (evaluación)">
+            <p:inputTextarea rows="2" style="width:100%" placeholder="Detalle de retiro (si aplica)"/>
+          </p:panel>
 
-                <p:commandButton value="Editar"
-                                 icon="pi pi-pencil"
-                                 styleClass="p-button-text"
-                                 process="@this"
-                                 actionListener="#{contratacionController.editar(c)}"
-                                 update=":layoutForm:dlg :layoutForm:msgsPage"  
-                                 oncomplete="PF('dlgCont').show()" />
-            </p:column>
-        </p:dataTable>
+          <p:separator/>
 
-        <!-- ============================================ -->
-        <!-- DIÁLOGO PRINCIPAL (appendTo=body -> propio form) -->
-        <!-- ============================================ -->
-        <!-- ============================================ -->
-        <!-- DIÁLOGO PRINCIPAL (appendTo=body -> propio form) -->
-        <!-- ============================================ -->
-        <p:dialog id="dlg" 
-                  widgetVar="dlgCont" 
-                  header="Contratación"
-                  modal="true" 
-                  appendTo="@(body)" 
-                  width="900" 
-                  resizable="true"
-                  closeOnEscape="false">
+          <p:panel header="O. Datos del profesional">
+            <h:panelGrid columns="4" styleClass="ui-fluid">
+              <h:outputText value="Nombre y apellido"/><p:inputText/>
+              <h:outputText value="Código médico"/><p:inputText/>
+            </h:panelGrid>
+          </p:panel>
+        </p:tab>
 
+        <!-- ===================================================== -->
+        <!-- STEP 4: Visor PDF – Certificado                       -->
+        <!-- ===================================================== -->
+        <p:tab id="step4" title="Certificado (PDF)">
+          <p:panel header="Certificado - Evaluación Médica Ocupacional">
+            <!-- Ajusta la ruta a un PDF real en tu app, por ejemplo resources/pdf/ejemplo.pdf -->
+            <object id="pdf_certificado" type="application/pdf"
+                    data="/resources/pdf/ejemplo.pdf?pfdrid_c=true"
+                    width="100%" height="600px">
+              Su navegador no soporta PDF.
+              <p:commandButton value="Descargar" ajax="false" icon="pi pi-download"/>
+            </object>
+          </p:panel>
+        </p:tab>
 
+      </p:wizard>
 
-            <!-- Mensajes -->
-            <p:messages id="dlgMsgs" showIcon="true" closable="true"/>
-            <h:panelGroup id="dlgForm">
-                <!-- Panel con rendered -->
-                <p:outputPanel id="dlgBody"
-                               rendered="#{contratacionController.seleccionado ne null}">
+      <!-- Barra de navegación propia: SIEMPRE funciona -->
+      <p:toolbar styleClass="mt-3">
+        <p:toolbarGroup>
+          <p:commandButton value="Anterior"
+                           type="button"
+                           icon="pi pi-angle-left"
+                           onclick="PF('wiz').back();"
+                           process="@this"
+                           update=":form"/>
+          <p:spacer width="8"/>
+          <p:commandButton value="Siguiente"
+                           type="button"
+                           icon="pi pi-angle-right"
+                           onclick="PF('wiz').next();"
+                           process=":form"
+                           update=":form"/>
+        </p:toolbarGroup>
+      </p:toolbar>
 
-                    <!-- TABLA HTML PURA (sin bordes, estilo militar) -->
-                    <table class="emp-3col-table" style="width:100%;">
-                        <tbody>
-
-                            <!-- FILA 1: Estado -->
-                            <tr>
-                                <td class="lab">
-                                    <p:outputLabel for="estado" value="Estado *"/>
-                                </td>
-                                <td class="fld">
-                                    <p:selectOneMenu id="estado"
-                                                     value="#{contratacionController.seleccionado.estado}"
-
-                                                     required="true" 
-                                                     requiredMessage="Estado es obligatorio"
-                                                     style="width:100%">
-                                        <f:selectItems value="#{contratacionController.estadosEnum}" 
-                                                       var="e"
-                                                       itemLabel="#{e.descripcion}" 
-                                                       itemValue="#{e}"/>
-                                    </p:selectOneMenu>
-                                </td>
-                                <td class="msg">
-                                    <p:message for="estado"/>
-                                </td>
-                            </tr>
-
-                            <!-- FILA 2: Tipo Contrato -->
-                            <tr>
-                                <td class="lab">
-                                    <p:outputLabel for="ceContrato" value="Tipo Contrato *"/>
-                                </td>
-                                <td class="fld">
-                                    <p:selectOneMenu id="ceContrato"
-                                                     value="#{contratacionController.seleccionado.ceContrato}"
-
-                                                     required="true" 
-                                                     requiredMessage="Tipo Contrato es obligatorio"
-                                                     style="width:100%">
-                                        <f:selectItems value="#{contratacionController.tiposContratoEnum}" 
-                                                       var="t"
-                                                       itemLabel="#{t.descripcion}" 
-                                                       itemValue="#{t}"/>
-                                    </p:selectOneMenu>
-                                </td>
-                                <td class="msg">
-                                    <p:message for="ceContrato"/>
-                                </td>
-                            </tr>
-
-                            <!-- FILA 3: No Persona -->
-                            <tr>
-                                <td class="lab">
-                                    <p:outputLabel for="noPersona" value="No Persona *"/>
-                                </td>
-                                <td class="fld">
-                                    <p:inputNumber id="noPersona"
-                                                   value="#{contratacionController.seleccionado.noPersona}"
-                                                   decimalPlaces="0" 
-                                                   thousandSeparator=""
-                                                   required="true" 
-                                                   requiredMessage="No Persona es obligatorio"
-                                                   style="width:100%"/>
-                                </td>
-                                <td class="msg">
-                                    <p:message for="noPersona"/>
-                                </td>
-                            </tr>
-
-                            <!-- FILA 4: No Contrato -->
-                            <tr>
-                                <td class="lab">
-                                    <p:outputLabel for="noCont" value="No Contrato *"/>
-                                </td>
-                                <td class="fld">
-                                    <p:inputNumber id="noCont"
-                                                   value="#{contratacionController.seleccionado.noCont}"
-                                                   decimalPlaces="0" 
-                                                   thousandSeparator=""
-
-                                                   requiredMessage="No Contrato es obligatorio"
-                                                   style="width:100%" disabled="true"/>
-                                </td>
-                                <td class="msg">
-                                    <p:message for="noCont"/>
-                                </td>
-                            </tr>
-
-                            <!-- FILA 5: Fecha Contrato -->
-                            <tr>
-                                <td class="lab">
-                                    <p:outputLabel for="feContrato" value="Fecha Contrato *"/>
-                                </td>
-                                <td class="fld">
-                                    <p:calendar id="feContrato"
-                                                value="#{contratacionController.seleccionado.feContrato}"
-                                                pattern="dd/MM/yyyy" 
-                                                required="true" 
-                                                requiredMessage="Fecha Contrato es obligatoria"
-                                                style="width:100%"/>
-                                </td>
-                                <td class="msg">
-                                    <p:message for="feContrato"/>
-                                </td>
-                            </tr>
-
-                            <!-- FILA 6: Fecha Salida -->
-                            <tr>
-                                <td class="lab">
-                                    <p:outputLabel for="feSalida" value="Fecha Salida"/>
-                                </td>
-                                <td class="fld">
-                                    <p:calendar id="feSalida"
-                                                value="#{contratacionController.seleccionado.feSalida}"
-                                                pattern="dd/MM/yyyy" 
-
-                                                style="width:100%"/>
-                                </td>
-                                <td class="msg">
-                                    <p:message for="feSalida"/>
-                                </td>
-                            </tr>
-
-                            <!-- FILA 7: No Documento -->
-                            <tr>
-                                <td class="lab">
-                                    <p:outputLabel for="noDoc" value="No Documento"/>
-                                </td>
-                                <td class="fld">
-                                    <p:inputText id="noDoc"
-                                                 value="#{contratacionController.seleccionado.noDoc}"
-                                                 maxlength="10"
-                                                 style="width:100%"/>
-                                </td>
-                                <td class="msg">
-                                    <p:message for="noDoc"/>
-                                </td>
-                            </tr>
-
-                            <!-- FILA 8: Responsable -->
-                            <tr>
-                                <td class="lab">
-                                    <p:outputLabel for="responsable" value="Responsable"/>
-                                </td>
-                                <td class="fld">
-                                    <p:inputText id="responsable"
-                                                 value="#{contratacionController.seleccionado.responsable}"
-                                                 maxlength="50"
-                                                 style="width:100%"/>
-                                </td>
-                                <td class="msg">
-                                    <p:message for="responsable"/>
-                                </td>
-                            </tr>
-
-                            <!-- FILA 9: Nivel -->
-                            <tr>
-                                <td class="lab">
-                                    <p:outputLabel for="nivel" value="Nivel"/>
-                                </td>
-                                <td class="fld">
-                                    <p:inputText id="nivel"
-                                                 value="#{contratacionController.seleccionado.nivel}"
-                                                 maxlength="2"
-                                                 style="width:100%"/>
-                                </td>
-                                <td class="msg">
-                                    <p:message for="nivel"/>
-                                </td>
-                            </tr>
-
-                            <!-- FILA 10: Categoría -->
-                            <tr>
-                                <td class="lab">
-                                    <p:outputLabel for="categoria" value="Categoría"/>
-                                </td>
-                                <td class="fld">
-                                    <p:inputText id="categoria"
-                                                 value="#{contratacionController.seleccionado.categoria}"
-                                                 maxlength="2"
-                                                 style="width:100%"/>
-                                </td>
-                                <td class="msg">
-                                    <p:message for="categoria"/>
-                                </td>
-                            </tr>
-
-
-
-
-                            <!-- FILA 12: Observaciones -->
-                            <tr>
-                                <td class="lab">
-                                    <p:outputLabel for="obs" value="Observaciones"/>
-                                </td>
-                                <td class="fld">
-                                    <p:inputTextarea id="obs"
-                                                     value="#{contratacionController.seleccionado.obs}"
-                                                     rows="3"
-                                                     maxlength="250"
-                                                     style="width:100%"/>
-                                </td>
-                                <td class="msg">
-                                    <p:message for="obs"/>
-                                </td>
-                            </tr>
-
-                        </tbody>
-                    </table>
-
-                </p:outputPanel>
-            </h:panelGroup> 
-
-
-
-            <f:facet name="footer">
-                <p:commandButton value="Guardar"
-                                 icon="pi pi-check"
-                                 action="#{contratacionController.guardar}"
-                                 process=":layoutForm:dlgForm"
-                                 update=":layoutForm:dlg :layoutForm:tbl :layoutForm:msgsPage"
-                                 oncomplete="if (args &amp;&amp; args.validationFailed) { PF('dlgCont').show(); } else { PF('dlgCont').hide(); }"/>
-
-                <p:commandButton type="button"
-                                 value="Cancelar"
-                                 icon="pi pi-times"
-                                 onclick="PF('dlgCont').hide()"
-                                 styleClass="ui-button-secondary"/>
-
-            </f:facet>
-        </p:dialog>
-
-
-
-        <!-- ============================================ -->
-        <!-- DIÁLOGO crear nuevo (con su propio form)     -->
-        <!-- ============================================ -->
-        <p:dialog id="dlgCrear"
-                  widgetVar="dlgCrear"
-                  header="Sin contratos"
-                  modal="true"
-                  width="400">
-            <h:form id="dlgCrearForm">
-                <h:outputText value="No se encontraron contratos para: #{contratacionController.nombreEmpleado}"/>
-                <br/><br/>
-                <h:outputText value="¿Desea crear uno nuevo?"/>
-
-                <f:facet name="footer">
-                    <p:commandButton value="Sí, crear"
-                                     icon="pi pi-check"
-                                     actionListener="#{contratacionController.crearNuevoDesdeDialogo}"
-                                     update=":layoutForm:dlg"
-                                     styleClass="ui-button-success"
-                                     oncomplete="PF('dlgCont').show(); PF('dlgCrear').hide();"/>
-                    <p:commandButton value="No"
-                                     icon="pi pi-times"
-                                     onclick="PF('dlgCrear').hide(); return false;"
-                                     styleClass="ui-button-secondary"/>
-                </f:facet>
-            </h:form>
-        </p:dialog>
-
-    </ui:define>
+    </h:form>
+  </ui:define>
 </ui:composition>

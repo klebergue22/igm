@@ -264,4 +264,111 @@ input.ui-inputfield:focus, textarea.ui-inputfield:focus{
   }
 }
 
+/* === Colores globales === */
+:root {
+  --igm-verde: #d8f3d8;     /* fondo paneles (verde claro Excel) */
+  --igm-verde-oscuro: #0f3d0f; /* texto títulos */
+  --igm-boton: #406343;     /* botón principal */
+  --igm-boton-hover: #2e4b31; /* hover */
+}
+
+/* Paneles PrimeFaces */
+.ui-panel {
+  background: var(--igm-verde) !important;
+  border: 1px solid #b7d8b7 !important;
+}
+
+/* Títulos de panel */
+.ui-panel-titlebar {
+  background: var(--igm-verde-oscuro) !important;
+  color: white !important;
+  font-weight: bold !important;
+}
+
+/* Steps (Wizard Tabs) */
+.ui-wizard-step-title {
+  background: var(--igm-verde) !important;
+  color: var(--igm-verde-oscuro) !important;
+  font-weight: bold !important;
+}
+
+/* Botones */
+.ui-button, .ui-button-text-only {
+  background: var(--igm-boton) !important;
+  border: 1px solid var(--igm-boton-hover) !important;
+}
+
+.ui-button:hover {
+  background: var(--igm-boton-hover) !important;
+}
+
+/* Inputs en fondo claro pero legibles */
+.ui-inputfield {
+  background-color: #ffffff !important;
+  border: 1px solid #cccccc !important;
+}
+
+/* Etiquetas (labels) */
+.ui-panelgrid .ui-outputlabel {
+  color: #1a1a1a !important;
+  font-weight: 600;
+}
+
+/* ====== ✅ RADIO BUTTON (p:selectOneRadio) ====== */
+.ui-radiobutton .ui-radiobutton-box {
+    border: 2px solid #406343 !important; /* borde verde oscuro */
+    background: #ffffff !important;
+}
+
+.ui-radiobutton .ui-radiobutton-box.ui-state-active {
+    border-color: #0f3d0f !important; /* verde más intenso */
+    background: #0f3d0f !important;   /* color del círculo lleno */
+}
+
+.ui-radiobutton .ui-radiobutton-box .ui-radiobutton-icon {
+    background: white !important; /* centro del radio */
+    border-radius: 50%;
+}
+
+/* ====== ✅ CHECKBOX (p:selectBooleanCheckbox y selectManyCheckbox) ====== */
+.ui-chkbox .ui-chkbox-box {
+    border: 2px solid #406343 !important;
+    background: #ffffff !important;
+}
+
+.ui-chkbox .ui-chkbox-box.ui-state-active {
+    border-color: #0f3d0f !important;
+    background: #0f3d0f !important;
+}
+
+.ui-chkbox .ui-chkbox-box .ui-chkbox-icon {
+    color: #ffffff !important; /* tilde en blanco */
+}
+
+/* ====== ✅ COMBOBOX (p:selectOneMenu) ====== */
+.ui-selectonemenu {
+    border: 1px solid #406343 !important; /* borde verde */
+    background-color: #ffffff !important;
+}
+
+.ui-selectonemenu:hover {
+    border-color: #0f3d0f !important;
+}
+
+.ui-selectonemenu .ui-selectonemenu-trigger {
+    background: #406343 !important;
+    color: white !important;
+    border-left: 1px solid #0f3d0f !important;
+}
+
+.ui-selectonemenu-panel {
+    background: #ffffff !important;
+    border: 1px solid #406343 !important;
+}
+
+.ui-selectonemenu-items .ui-selectonemenu-item:hover {
+    background: #d8f3d8 !important; /* verde claro hover */
+    color: #0f3d0f !important;
+}
+
 
