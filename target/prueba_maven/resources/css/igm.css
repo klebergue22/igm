@@ -372,3 +372,277 @@ input.ui-inputfield:focus, textarea.ui-inputfield:focus{
 }
 
 
+/* === Utilidades de ancho para columnClasses === */
+.w-10rem{width:10rem}.w-12rem{width:12rem}.w-15rem{width:15rem}
+.w-20rem{width:20rem}.w-25rem{width:25rem}.w-30rem{width:30rem}
+.w-35rem{width:35rem}.w-40rem{width:40rem}
+
+/* Panel con scroll horizontal cuando el contenido es ancho (tablas grandes) */
+.panel-scroll > .ui-panel-content {
+  overflow-x: auto;
+  padding-bottom: 8px; /* evita que la barra tape contenido */
+}
+
+/* Tablas anchas (Riesgos y Sección H) */
+.fit-table {
+  table-layout: fixed;
+  width: 100%;
+  min-width: 1100px; /* ajusta si necesitas */
+  border-collapse: collapse;
+  font-size: 13px;
+  margin: 0 auto;
+}
+.fit-table th, .fit-table td {
+  border: 1px solid #ccc;
+  padding: 6px 4px;
+  vertical-align: middle;
+  word-wrap: break-word;
+  white-space: normal;
+}
+.fit-header { background:#eaeaea; font-weight:600; text-align:center; }
+
+/* Matriz de riesgos (G) */
+.risk-label { width: 22rem; }
+.risk-cols { text-align: center; width: 8rem; }
+.cell-input { width: 100%; }
+.cell-textarea { width: 100%; resize: vertical; }
+
+/* Sección H – columnas */
+.h-col-ct{width:14rem}.h-col-acts{width:16rem}
+.h-col-chk{width:4rem; text-align:center}
+.h-col-tiempo{width:8rem}.h-col-fecha{width:8rem}
+.h-col-espec{width:12rem}.h-col-obsv{width:14rem}
+.h-note{color:#666; font-size:11px}
+
+/* Columnas fijas para todas las tablas del Step 2 */
+.risk-col-label { width: 22rem; }     /* primera columna: texto del riesgo */
+.risk-col       { width: 10rem; }     /* 7 columnas numéricas iguales */
+
+/* La tabla se expande si hace falta pero respeta las columnas fijas */
+.fit-table{
+  table-layout: fixed;
+  width: 100%;
+  min-width: calc(22rem + 7 * 10rem); /* 22rem + 70rem */
+  border-collapse: collapse;
+  font-size: 13px;
+  margin: 0 auto;
+}
+.fit-table th, .fit-table td{
+  border: 1px solid #ccc;
+  padding: 6px 4px;
+  vertical-align: middle;
+  word-wrap: break-word;
+  white-space: normal;
+}
+.fit-header{ background:#eaeaea; font-weight:600; text-align:center }
+
+/* (Opcional) inputs ajustados a celda */
+.cell-input{ width:100% }
+
+
+/* ====== Sección I (Actividades extralaborales) ====== */
+.i-grid{
+  table-layout: fixed;
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  margin: 0 auto;
+}
+.i-grid th, .i-grid td{
+  border: 1px solid #ccc;
+  padding: 6px 4px;
+  vertical-align: middle;
+  word-wrap: break-word;
+  white-space: normal;
+}
+.i-header{ background:#eaeaea; font-weight:600; text-align:center }
+
+/* Columnas en porcentaje para que NO se desborde */
+.i-col-type{ width: 25%; }
+.i-col-date{ width: 15%; text-align: center; }
+.i-col-desc{ width: 60%; }
+
+/* Asegura scroll horizontal si algo excede */
+.panel-scroll > .ui-panel-content{
+  overflow-x: auto;
+  padding-bottom: 8px;
+}
+.cell-input{ width:100% }
+.cell-textarea{ width:100%; resize:vertical }
+
+/* ===== Sección I: calendario bien encuadrado ===== */
+.i-grid{
+  table-layout: fixed;
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  margin: 0 auto;
+}
+.i-grid th, .i-grid td{
+  border: 1px solid #ccc;
+  padding: 6px 8px;           /* un poco más para el botón */
+  vertical-align: middle;
+  word-wrap: break-word;
+  white-space: normal;
+}
+.i-header{ background:#eaeaea; font-weight:600; text-align:center }
+
+/* Columnas */
+.i-col-type{ width: 25%; }
+.i-col-date{ width: 15%; }
+.i-col-desc{ width: 60%; }
+
+/* Celda de fecha: alineación perfecta del calendario */
+.i-date .ui-calendar{
+  display: flex;              /* input + botón en fila */
+  align-items: center;
+  width: 100%;
+}
+.i-date .ui-calendar input.ui-inputfield{
+  flex: 1 1 auto;             /* el input ocupa todo el ancho posible */
+  min-width: 0;               /* evita overflow con flex */
+  box-sizing: border-box;
+}
+.i-date .ui-calendar .ui-button{
+  flex: 0 0 auto;
+  margin-left: 6px;           /* separa botón del input */
+}
+
+/* Asegura que siempre quepa dentro del panel */
+.panel-scroll > .ui-panel-content{
+  overflow-x: auto;
+  padding-bottom: 8px;
+}
+
+/* Inputs genéricos usados aquí */
+.cell-input{ width:100% }
+.cell-textarea{ width:100%; resize:vertical }
+
+
+/* ===== Sección J (Resultados de exámenes) ===== */
+.j-grid{
+  table-layout: fixed;
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  margin: 0 auto;
+}
+.j-grid th, .j-grid td{
+  border: 1px solid #ccc;
+  padding: 6px 8px;
+  vertical-align: middle;
+  word-wrap: break-word;
+  white-space: normal;
+}
+.j-header{ background:#eaeaea; font-weight:600; text-align:center }
+
+/* Columnas en porcentaje para encuadre dentro del panel */
+.j-col-exam{ width:35% }
+.j-col-date{ width:15% }
+.j-col-res { width:50% }
+
+/* Alineación del calendar dentro de la celda */
+.j-date .ui-calendar{
+  display:flex;            /* input + botón en fila */
+  align-items:center;
+  width:100%;
+}
+.j-date .ui-calendar input.ui-inputfield{
+  flex:1 1 auto;
+  min-width:0;
+  box-sizing:border-box;
+}
+.j-date .ui-calendar .ui-button{
+  flex:0 0 auto;
+  margin-left:6px;
+}
+
+/* Inputs utilitarios ya usados en otras secciones */
+.cell-input{ width:100% }
+.cell-textarea{ width:100%; resize:vertical }
+
+/* Asegura que el contenido no se salga del panel */
+.panel-scroll > .ui-panel-content{
+  overflow-x:auto;
+  padding-bottom:8px;
+}
+/* ===== Sección K (Diagnóstico) ===== */
+.k-grid {
+  table-layout: fixed;
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  margin: 0 auto;
+}
+.k-grid th, .k-grid td {
+  border: 1px solid #ccc;
+  padding: 6px 8px;
+  vertical-align: middle;
+  word-wrap: break-word;
+  white-space: normal;
+}
+.k-head {
+  background: #eaeaea;
+  font-weight: 600;
+  text-align: center;
+}
+.k-sub {
+  background: #eaf7e8;
+  font-weight: 600;
+  text-align: center;
+}
+.k-col-cie { width: 20%; }
+.k-col-desc { width: 60%; }
+.k-col-pre, .k-col-def { width: 10%; text-align: center; }
+
+/* ===== Sección L: Aptitud médica ===== */
+.l-grid{ table-layout:fixed; width:100%; border-collapse:collapse; font-size:13px; }
+.l-grid th,.l-grid td{ border:1px solid #ccc; padding:6px; vertical-align:middle; }
+.l-head{ background:#eaf7e8; text-align:center; font-weight:600; }
+.l-col-opt{ width:25%; }
+.l-cell-radio{ text-align:center; }
+
+/* Observaciones anchas y con estilo institucional */
+.l-observaciones{
+  width:98% !important;
+  min-height:90px !important;
+  background:#f6f8f2;
+  border:1px solid #98b38d;
+  border-radius:6px;
+  box-sizing:border-box;
+  padding:8px;
+}
+
+/* ===== Sección N: Retiro (evaluación) ===== */
+.n-grid{
+  table-layout: fixed;
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.n-grid th, .n-grid td{
+  border: 1px solid #ccc;
+  padding: 6px 8px;
+  vertical-align: middle;
+}
+.n-sub{
+  background: #eaf7e8;   /* verde suave de encabezado SI/NO */
+  text-align: center;
+  font-weight: 600;
+}
+.n-col-label{ width: 70%; }
+.n-col-si, .n-col-no{ width: 15%; text-align: center; }
+.n-center{ text-align: center; }
+
+/* Observación amplia con estilo IGM */
+.n-observacion{
+  width: 98% !important;
+  min-height: 80px !important;
+  background: #f6f8f2;
+  border: 1px solid #98b38d;
+  border-radius: 6px;
+  box-sizing: border-box;
+  padding: 8px;
+}
+
+
