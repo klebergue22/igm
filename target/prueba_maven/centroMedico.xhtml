@@ -214,50 +214,297 @@
         <!-- STEP 2: G. FACTORES DE RIESGO DEL TRABAJO ACTUAL       -->
         <!-- ===================================================== -->
         <p:tab id="step2" title="Riesgos (G)">
-          <p:panel header="G. Factores de riesgo del trabajo actual">
-            <h:panelGrid columns="2" styleClass="ui-fluid" columnClasses="w-15rem,">
-              <h:outputText value="Puesto de trabajo"/><p:inputText/>
-              <h:outputText value="Actividades importantes"/><p:inputTextarea rows="3" autoResize="true"/>
-            </h:panelGrid>
+           <style>
+            .risk-table { width:100%; border-collapse:collapse; font-size:13px; }
+            .risk-table th, .risk-table td { border:1px solid #ccc; padding:6px 4px; vertical-align:middle; }
+            .risk-header { background:#eaeaea; font-weight:600; text-align:center; }
+            .risk-label { width: 26rem; white-space:normal; }
+            .risk-cols { width: calc((100% - 26rem)/7); text-align:center; }
+            .cell-input { width: 100%; }
+            .cell-textarea { width:100%; resize:vertical; }
+        </style>
 
-            <p:separator/>
+        <p:panel header="Matriz de Identificación de Riesgos Laborales" toggleable="true" toggleSpeed="150">
+            <h:panelGroup layout="block" styleClass="ui-fluid">
 
-            <!-- Matriz simple: ejemplo de filas -->
-            <h:panelGrid columns="4" styleClass="ui-fluid">
-              <h:outputText value="FÍSICO - Ruido"/>
-              <p:selectOneRadio>
-                <f:selectItem itemLabel="1" itemValue="1"/><f:selectItem itemLabel="2" itemValue="2"/>
-                <f:selectItem itemLabel="3" itemValue="3"/><f:selectItem itemLabel="4" itemValue="4"/>
-                <f:selectItem itemLabel="5" itemValue="5"/><f:selectItem itemLabel="6" itemValue="6"/>
-                <f:selectItem itemLabel="7" itemValue="7"/>
-              </p:selectOneRadio>
-              <h:outputText value="Otro:"/><p:inputText placeholder="Detalle (opcional)"/>
+                <!-- Parámetro con columnas 1..7 -->
+                <ui:param name="cols" value="#{['1','2','3','4','5','6','7']}" />
 
-              <h:outputText value="ERGONÓMICO - Posturas forzadas"/>
-              <p:selectOneRadio>
-                <f:selectItem itemLabel="1" itemValue="1"/><f:selectItem itemLabel="2" itemValue="2"/>
-                <f:selectItem itemLabel="3" itemValue="3"/><f:selectItem itemLabel="4" itemValue="4"/>
-                <f:selectItem itemLabel="5" itemValue="5"/><f:selectItem itemLabel="6" itemValue="6"/>
-                <f:selectItem itemLabel="7" itemValue="7"/>
-              </p:selectOneRadio>
-              <h:outputText value="Otro:"/><p:inputText/>
+                <!-- Encabezados -->
+                <table class="risk-table">
+                    <thead>
+                        <tr>
+                            <th colspan="8" style="text-align:left; background:#f5f5f5;">
+                                <h:outputText value="PUESTO DE TRABAJO"/>
+                                <h:inputText id="puestoTrabajo" style="width:60%; margin-left:10px"
+                                             placeholder="Ingrese nombre del puesto"/>
+                            </th>
+                        </tr>
+                        <tr class="risk-header">
+                            <th>ACTIVIDADES IMPORTANTES DENTRO DE LA JORNADA LABORAL</th>
+                            <th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th><th>7</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Fila: ACTIVIDAD LABORAL (input en cada columna) -->
+                        <tr>
+                            <td class="risk-label"><strong>ACTIVIDAD LABORAL</strong></td>
+                            <ui:repeat value="#{cols}" var="c">
+                                <td class="risk-cols">
+                                    <p:inputText id="actLab_#{c}" styleClass="cell-input"
+                                                 placeholder="Actividad #{c}"/>
+                                </td>
+                            </ui:repeat>
+                        </tr>
+                    </tbody>
+                </table>
 
-              <h:outputText value="PSICOSOCIAL - Sobrecarga laboral"/>
-              <p:selectOneRadio>
-                <f:selectItem itemLabel="1" itemValue="1"/><f:selectItem itemLabel="2" itemValue="2"/>
-                <f:selectItem itemLabel="3" itemValue="3"/><f:selectItem itemLabel="4" itemValue="4"/>
-                <f:selectItem itemLabel="5" itemValue="5"/><f:selectItem itemLabel="6" itemValue="6"/>
-                <f:selectItem itemLabel="7" itemValue="7"/>
-              </p:selectOneRadio>
-              <h:outputText value="Otro:"/><p:inputText/>
-            </h:panelGrid>
+                <!-- ============================== -->
+                <!-- BLOQUE FÍSICO -->
+                <!-- ============================== -->
+                <p:fieldset legend="FÍSICO" toggleable="true" collapsed="false" style="margin-top:10px;">
+                    <table class="risk-table">
+                        <tbody>
+                            <tr>
+                                <td class="risk-label">Temperaturas altas</td>
+                                <ui:repeat value="#{cols}" var="c"><td class="risk-cols"><p:selectBooleanCheckbox id="fis_tempAltas_#{c}"/></td></ui:repeat>
+                            </tr>
+                            <tr>
+                                <td class="risk-label">Temperaturas bajas</td>
+                                <ui:repeat value="#{cols}" var="c"><td class="risk-cols"><p:selectBooleanCheckbox id="fis_tempBajas_#{c}"/></td></ui:repeat>
+                            </tr>
+                            <tr>
+                                <td class="risk-label">Radiación ionizante</td>
+                                <ui:repeat value="#{cols}" var="c"><td class="risk-cols"><p:selectBooleanCheckbox id="fis_radIon_#{c}"/></td></ui:repeat>
+                            </tr>
+                            <tr>
+                                <td class="risk-label">Radiación no ionizante</td>
+                                <ui:repeat value="#{cols}" var="c"><td class="risk-cols"><p:selectBooleanCheckbox id="fis_radNoIon_#{c}"/></td></ui:repeat>
+                            </tr>
+                            <tr>
+                                <td class="risk-label">Ruido</td>
+                                <ui:repeat value="#{cols}" var="c"><td class="risk-cols"><p:selectBooleanCheckbox id="fis_ruido_#{c}"/></td></ui:repeat>
+                            </tr>
+                            <tr>
+                                <td class="risk-label">Vibración</td>
+                                <ui:repeat value="#{cols}" var="c"><td class="risk-cols"><p:selectBooleanCheckbox id="fis_vibracion_#{c}"/></td></ui:repeat>
+                            </tr>
+                            <tr>
+                                <td class="risk-label">Iluminación</td>
+                                <ui:repeat value="#{cols}" var="c"><td class="risk-cols"><p:selectBooleanCheckbox id="fis_iluminacion_#{c}"/></td></ui:repeat>
+                            </tr>
+                            <tr>
+                                <td class="risk-label">Ventilación</td>
+                                <ui:repeat value="#{cols}" var="c"><td class="risk-cols"><p:selectBooleanCheckbox id="fis_ventilacion_#{c}"/></td></ui:repeat>
+                            </tr>
+                            <tr>
+                                <td class="risk-label">Fluido eléctrico</td>
+                                <ui:repeat value="#{cols}" var="c"><td class="risk-cols"><p:selectBooleanCheckbox id="fis_fluido_#{c}"/></td></ui:repeat>
+                            </tr>
+                            <!-- OTROS: inputs por columna -->
+                            <tr>
+                                <td class="risk-label"><em>Otros (Físico)</em></td>
+                                <ui:repeat value="#{cols}" var="c">
+                                    <td class="risk-cols">
+                                        <p:inputText id="fis_otros_#{c}" styleClass="cell-input"
+                                                     placeholder="Otro #{c}"/>
+                                    </td>
+                                </ui:repeat>
+                            </tr>
+                        </tbody>
+                    </table>
+                </p:fieldset>
 
-            <p:separator/>
+                <!-- ============================== -->
+                <!-- BLOQUE SEGURIDAD -->
+                <!-- ============================== -->
+                <p:fieldset legend="DE SEGURIDAD" toggleable="true" collapsed="true" style="margin-top:10px;">
+                    <table class="risk-table">
+                        <tbody>
+                            <tr>
+                                <td class="risk-label"><strong>LOCATIVOS</strong> — Falta de señalización, aseo, desorden</td>
+                                <ui:repeat value="#{cols}" var="c"><td class="risk-cols"><p:selectBooleanCheckbox id="seg_locat_#{c}"/></td></ui:repeat>
+                            </tr>
+                            <tr>
+                                <td class="risk-label"><strong>MECÁNICOS</strong> — Atrapamiento entre máquinas y/o superficies</td>
+                                <ui:repeat value="#{cols}" var="c"><td class="risk-cols"><p:selectBooleanCheckbox id="seg_mec_atrapMaquina_#{c}"/></td></ui:repeat>
+                            </tr>
+                            <tr>
+                                <td class="risk-label">Atrapamiento entre objetos</td>
+                                <ui:repeat value="#{cols}" var="c"><td class="risk-cols"><p:selectBooleanCheckbox id="seg_mec_atrapObjetos_#{c}"/></td></ui:repeat>
+                            </tr>
+                            <tr>
+                                <td class="risk-label">Caída de objetos</td>
+                                <ui:repeat value="#{cols}" var="c"><td class="risk-cols"><p:selectBooleanCheckbox id="seg_mec_caidaObjetos_#{c}"/></td></ui:repeat>
+                            </tr>
+                            <tr>
+                                <td class="risk-label">Caídas al mismo nivel</td>
+                                <ui:repeat value="#{cols}" var="c"><td class="risk-cols"><p:selectBooleanCheckbox id="seg_mec_mismoNivel_#{c}"/></td></ui:repeat>
+                            </tr>
+                            <tr>
+                                <td class="risk-label">Caídas a diferente nivel</td>
+                                <ui:repeat value="#{cols}" var="c"><td class="risk-cols"><p:selectBooleanCheckbox id="seg_mec_difNivel_#{c}"/></td></ui:repeat>
+                            </tr>
+                            <tr>
+                                <td class="risk-label">Pinchazos</td>
+                                <ui:repeat value="#{cols}" var="c"><td class="risk-cols"><p:selectBooleanCheckbox id="seg_mec_pinchazos_#{c}"/></td></ui:repeat>
+                            </tr>
+                            <tr>
+                                <td class="risk-label">Cortes</td>
+                                <ui:repeat value="#{cols}" var="c"><td class="risk-cols"><p:selectBooleanCheckbox id="seg_mec_cortes_#{c}"/></td></ui:repeat>
+                            </tr>
+                            <tr>
+                                <td class="risk-label">Choques / colisión vehicular</td>
+                                <ui:repeat value="#{cols}" var="c"><td class="risk-cols"><p:selectBooleanCheckbox id="seg_mec_colision_#{c}"/></td></ui:repeat>
+                            </tr>
+                            <tr>
+                                <td class="risk-label">Atropellamientos por vehículos</td>
+                                <ui:repeat value="#{cols}" var="c"><td class="risk-cols"><p:selectBooleanCheckbox id="seg_mec_atropello_#{c}"/></td></ui:repeat>
+                            </tr>
+                            <tr>
+                                <td class="risk-label">Proyección de fluidos</td>
+                                <ui:repeat value="#{cols}" var="c"><td class="risk-cols"><p:selectBooleanCheckbox id="seg_mec_proyFluidos_#{c}"/></td></ui:repeat>
+                            </tr>
+                            <tr>
+                                <td class="risk-label">Proyección de partículas – fragmentos</td>
+                                <ui:repeat value="#{cols}" var="c"><td class="risk-cols"><p:selectBooleanCheckbox id="seg_mec_proyPart_#{c}"/></td></ui:repeat>
+                            </tr>
+                            <tr>
+                                <td class="risk-label">Contacto con superficies de trabajo</td>
+                                <ui:repeat value="#{cols}" var="c"><td class="risk-cols"><p:selectBooleanCheckbox id="seg_mec_superficies_#{c}"/></td></ui:repeat>
+                            </tr>
+                            <tr>
+                                <td class="risk-label"><strong>ELÉCTRICOS</strong> — Contacto eléctrico</td>
+                                <ui:repeat value="#{cols}" var="c"><td class="risk-cols"><p:selectBooleanCheckbox id="seg_elec_contacto_#{c}"/></td></ui:repeat>
+                            </tr>
+                            <!-- OTROS: inputs por columna -->
+                            <tr>
+                                <td class="risk-label"><em>Otros (Seguridad)</em></td>
+                                <ui:repeat value="#{cols}" var="c">
+                                    <td class="risk-cols">
+                                        <p:inputText id="seg_otros_#{c}" styleClass="cell-input" placeholder="Otro #{c}"/>
+                                    </td>
+                                </ui:repeat>
+                            </tr>
+                        </tbody>
+                    </table>
+                </p:fieldset>
 
-            <h:panelGrid columns="2" styleClass="ui-fluid">
-              <h:outputText value="Medidas preventivas"/><p:inputTextarea rows="3" autoResize="true"/>
-            </h:panelGrid>
-          </p:panel>
+                <!-- ============================== -->
+                <!-- BLOQUE QUÍMICO -->
+                <!-- ============================== -->
+                <p:fieldset legend="QUÍMICO" toggleable="true" collapsed="true" style="margin-top:10px;">
+                    <table class="risk-table">
+                        <tbody>
+                            <tr><td class="risk-label">Polvos</td><ui:repeat value="#{cols}" var="c"><td class="risk-cols"><p:selectBooleanCheckbox id="qui_polv_#{c}"/></td></ui:repeat></tr>
+                            <tr><td class="risk-label">Sólidos</td><ui:repeat value="#{cols}" var="c"><td class="risk-cols"><p:selectBooleanCheckbox id="qui_solidos_#{c}"/></td></ui:repeat></tr>
+                            <tr><td class="risk-label">Humos</td><ui:repeat value="#{cols}" var="c"><td class="risk-cols"><p:selectBooleanCheckbox id="qui_humos_#{c}"/></td></ui:repeat></tr>
+                            <tr><td class="risk-label">Líquidos</td><ui:repeat value="#{cols}" var="c"><td class="risk-cols"><p:selectBooleanCheckbox id="qui_liquidos_#{c}"/></td></ui:repeat></tr>
+                            <tr><td class="risk-label">Vapores</td><ui:repeat value="#{cols}" var="c"><td class="risk-cols"><p:selectBooleanCheckbox id="qui_vapores_#{c}"/></td></ui:repeat></tr>
+                            <tr><td class="risk-label">Aerosoles</td><ui:repeat value="#{cols}" var="c"><td class="risk-cols"><p:selectBooleanCheckbox id="qui_aerosoles_#{c}"/></td></ui:repeat></tr>
+                            <tr><td class="risk-label">Neblinas</td><ui:repeat value="#{cols}" var="c"><td class="risk-cols"><p:selectBooleanCheckbox id="qui_neblinas_#{c}"/></td></ui:repeat></tr>
+                            <tr><td class="risk-label">Gaseosos</td><ui:repeat value="#{cols}" var="c"><td class="risk-cols"><p:selectBooleanCheckbox id="qui_gases_#{c}"/></td></ui:repeat></tr>
+                            <!-- OTROS: inputs por columna -->
+                            <tr>
+                                <td class="risk-label"><em>Otros (Químico)</em></td>
+                                <ui:repeat value="#{cols}" var="c">
+                                    <td class="risk-cols"><p:inputText id="qui_otros_#{c}" styleClass="cell-input" placeholder="Otro #{c}"/></td>
+                                </ui:repeat>
+                            </tr>
+                        </tbody>
+                    </table>
+                </p:fieldset>
+
+                <!-- ============================== -->
+                <!-- BLOQUE BIOLÓGICO -->
+                <!-- ============================== -->
+                <p:fieldset legend="BIOLÓGICO" toggleable="true" collapsed="true" style="margin-top:10px;">
+                    <table class="risk-table">
+                        <tbody>
+                            <tr><td class="risk-label">Virus</td><ui:repeat value="#{cols}" var="c"><td class="risk-cols"><p:selectBooleanCheckbox id="bio_virus_#{c}"/></td></ui:repeat></tr>
+                            <tr><td class="risk-label">Hongos</td><ui:repeat value="#{cols}" var="c"><td class="risk-cols"><p:selectBooleanCheckbox id="bio_hongos_#{c}"/></td></ui:repeat></tr>
+                            <tr><td class="risk-label">Bacterias</td><ui:repeat value="#{cols}" var="c"><td class="risk-cols"><p:selectBooleanCheckbox id="bio_bacterias_#{c}"/></td></ui:repeat></tr>
+                            <tr><td class="risk-label">Parásitos</td><ui:repeat value="#{cols}" var="c"><td class="risk-cols"><p:selectBooleanCheckbox id="bio_parasitos_#{c}"/></td></ui:repeat></tr>
+                            <tr><td class="risk-label">Exposición a vectores</td><ui:repeat value="#{cols}" var="c"><td class="risk-cols"><p:selectBooleanCheckbox id="bio_vectores_#{c}"/></td></ui:repeat></tr>
+                            <tr><td class="risk-label">Exposición a animales selváticos</td><ui:repeat value="#{cols}" var="c"><td class="risk-cols"><p:selectBooleanCheckbox id="bio_selvaticos_#{c}"/></td></ui:repeat></tr>
+                            <!-- OTROS: inputs por columna -->
+                            <tr>
+                                <td class="risk-label"><em>Otros (Biológico)</em></td>
+                                <ui:repeat value="#{cols}" var="c">
+                                    <td class="risk-cols"><p:inputText id="bio_otros_#{c}" styleClass="cell-input" placeholder="Otro #{c}"/></td>
+                                </ui:repeat>
+                            </tr>
+                        </tbody>
+                    </table>
+                </p:fieldset>
+
+                <!-- ============================== -->
+                <!-- BLOQUE ERGONÓMICO -->
+                <!-- ============================== -->
+                <p:fieldset legend="ERGONÓMICO" toggleable="true" collapsed="true" style="margin-top:10px;">
+                    <table class="risk-table">
+                        <tbody>
+                            <tr><td class="risk-label">Manejo manual de cargas</td><ui:repeat value="#{cols}" var="c"><td class="risk-cols"><p:selectBooleanCheckbox id="erg_cargas_#{c}"/></td></ui:repeat></tr>
+                            <tr><td class="risk-label">Movimientos repetitivos</td><ui:repeat value="#{cols}" var="c"><td class="risk-cols"><p:selectBooleanCheckbox id="erg_repetitivos_#{c}"/></td></ui:repeat></tr>
+                            <tr><td class="risk-label">Posturas forzadas</td><ui:repeat value="#{cols}" var="c"><td class="risk-cols"><p:selectBooleanCheckbox id="erg_posturas_#{c}"/></td></ui:repeat></tr>
+                            <tr><td class="risk-label">Trabajos con PVD</td><ui:repeat value="#{cols}" var="c"><td class="risk-cols"><p:selectBooleanCheckbox id="erg_pvd_#{c}"/></td></ui:repeat></tr>
+                            <tr><td class="risk-label">Diseño inadecuado del puesto</td><ui:repeat value="#{cols}" var="c"><td class="risk-cols"><p:selectBooleanCheckbox id="erg_puesto_#{c}"/></td></ui:repeat></tr>
+                            <!-- OTROS: inputs por columna -->
+                            <tr>
+                                <td class="risk-label"><em>Otros (Ergonómico)</em></td>
+                                <ui:repeat value="#{cols}" var="c">
+                                    <td class="risk-cols"><p:inputText id="erg_otros_#{c}" styleClass="cell-input" placeholder="Otro #{c}"/></td>
+                                </ui:repeat>
+                            </tr>
+                        </tbody>
+                    </table>
+                </p:fieldset>
+
+                <!-- ============================== -->
+                <!-- BLOQUE PSICOSOCIAL -->
+                <!-- ============================== -->
+                <p:fieldset legend="PSICOSOCIAL" toggleable="true" collapsed="true" style="margin-top:10px;">
+                    <table class="risk-table">
+                        <tbody>
+                            <tr><td class="risk-label">Monotonía del trabajo</td><ui:repeat value="#{cols}" var="c"><td class="risk-cols"><p:selectBooleanCheckbox id="psi_monotonia_#{c}"/></td></ui:repeat></tr>
+                            <tr><td class="risk-label">Sobrecarga laboral</td><ui:repeat value="#{cols}" var="c"><td class="risk-cols"><p:selectBooleanCheckbox id="psi_sobrecarga_#{c}"/></td></ui:repeat></tr>
+                            <tr><td class="risk-label">Alta responsabilidad</td><ui:repeat value="#{cols}" var="c"><td class="risk-cols"><p:selectBooleanCheckbox id="psi_responsabilidad_#{c}"/></td></ui:repeat></tr>
+                            <tr><td class="risk-label">Autonomía en decisiones</td><ui:repeat value="#{cols}" var="c"><td class="risk-cols"><p:selectBooleanCheckbox id="psi_autonomia_#{c}"/></td></ui:repeat></tr>
+                            <tr><td class="risk-label">Relaciones interpersonales</td><ui:repeat value="#{cols}" var="c"><td class="risk-cols"><p:selectBooleanCheckbox id="psi_relaciones_#{c}"/></td></ui:repeat></tr>
+                            <tr><td class="risk-label">Inestabilidad laboral</td><ui:repeat value="#{cols}" var="c"><td class="risk-cols"><p:selectBooleanCheckbox id="psi_inestabilidad_#{c}"/></td></ui:repeat></tr>
+                            <tr><td class="risk-label">Amenaza delincuencial</td><ui:repeat value="#{cols}" var="c"><td class="risk-cols"><p:selectBooleanCheckbox id="psi_amenaza_#{c}"/></td></ui:repeat></tr>
+                            <!-- OTROS: inputs por columna -->
+                            <tr>
+                                <td class="risk-label"><em>Otros (Psicosocial)</em></td>
+                                <ui:repeat value="#{cols}" var="c">
+                                    <td class="risk-cols"><p:inputText id="psi_otros_#{c}" styleClass="cell-input" placeholder="Otro #{c}"/></td>
+                                </ui:repeat>
+                            </tr>
+                        </tbody>
+                    </table>
+                </p:fieldset>
+
+                <!-- ============================== -->
+                <!-- MEDIDAS PREVENTIVAS: inputs por columna -->
+                <!-- ============================== -->
+                <table class="risk-table" style="margin-top:10px;">
+                    <tbody>
+                        <tr>
+                            <td class="risk-label"><strong>MEDIDAS PREVENTIVAS</strong></td>
+                            <ui:repeat value="#{cols}" var="c">
+                                <td class="risk-cols">
+                                    <!-- Usa inputText para mantener altura compacta; cambia a inputTextarea si necesitas más texto -->
+                                    <p:inputText id="medPrev_#{c}" styleClass="cell-input"
+                                                 placeholder="Medida #{c}"/>
+                                </td>
+                            </ui:repeat>
+                        </tr>
+                    </tbody>
+                </table>
+
+            </h:panelGroup>
+        </p:panel>
+
         </p:tab>
 
         <!-- ===================================================== -->
