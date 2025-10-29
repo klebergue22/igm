@@ -645,4 +645,128 @@ input.ui-inputfield:focus, textarea.ui-inputfield:focus{
   padding: 8px;
 }
 
+/* Uniformar altura y alineado de todos los campos */
+.ui-inputfield,
+.ui-selectonemenu,
+.ui-selectonemenu-label,
+.ui-calendar input.ui-inputfield {
+  height: 36px;
+  line-height: 34px; /* alineación vertical del texto */
+  box-sizing: border-box;
+}
+
+/* Botón/trigger del calendar y flecha del select: que no estiren fila */
+.ui-datepicker-trigger,
+.ui-selectonemenu-trigger {
+  height: 36px;
+  box-sizing: border-box;
+}
+
+/* Radio + label alineados */
+.ui-radiobutton, .ui-radiobutton label, .ui-radiobutton .ui-radiobutton-box {
+  vertical-align: middle;
+}
+
+/* Evitar que los selects crezcan más que el input */
+.ui-selectonemenu, .ui-selectonemenu .ui-selectonemenu-label {
+  display: inline-block;
+  width: 100%;
+}
+
+/* Inputs “responsive” dentro de celdas */
+.form-field-100 > .ui-inputfield,
+.form-field-100 > .ui-selectonemenu,
+.form-field-100 > .ui-calendar {
+  width: 100%;
+}
+
+/* Ajusta a tu gusto (porcentajes suman 100) */
+.col-label { width: 18%; }
+.col-field { width: 32%; }
+
+/* Que las celdas no colapsen por tipografías/padding */
+.ui-panelgrid .ui-grid-responsive .ui-panelgrid-cell,
+.ui-panelgrid .ui-panelgrid-cell {
+  vertical-align: middle;
+}
+
+/* Anchos de columnas del panelGrid */
+.col-label { width: 18%; vertical-align: middle; }
+.col-field { width: 32%; }
+
+/* Contenedor de un campo + su mensaje en la misma celda */
+.field-wrap { display: block; }
+.field-wrap > .ui-message { display: block; margin-top: .25rem; }
+
+/* Alturas uniformes */
+.ui-inputfield,
+.ui-selectonemenu,
+.ui-selectonemenu-label,
+.ui-calendar input.ui-inputfield,
+.ui-selectbooleancheckbox {
+  height: 36px;
+  line-height: 34px;
+  box-sizing: border-box;
+}
+.ui-selectonemenu-trigger,
+.ui-datepicker-trigger { height: 36px; }
+
+/* Radios alineados */
+.ui-radiobutton, .ui-radiobutton .ui-radiobutton-box { vertical-align: middle; }
+
+/* Grilla de atención prioritaria compacta */
+.ap-grid .ui-panelgrid-cell { padding: .25rem .5rem; }
+
+/* 2 columnas: 20% label, 30% campo, repetido (total 100%) */
+.c-label { width: 20%; vertical-align: middle; }
+.c-field { width: 30%; }
+
+/* Campo + mensaje en la misma celda (no rompe filas) */
+.field-wrap { display: block; }
+.field-wrap > .ui-message { display: block; margin-top: .25rem; }
+
+/* Que los componentes ocupen el ancho de su celda */
+.w-100,
+.w-100 .ui-inputfield,
+.w-100 .ui-selectonemenu-label { width: 100% !important; }
+
+/* Altura uniforme de 36px */
+.ui-inputfield,
+.ui-selectonemenu,
+.ui-selectonemenu-label,
+.ui-calendar input.ui-inputfield { height: 36px; line-height: 34px; box-sizing: border-box; }
+.ui-selectonemenu-trigger,
+.ui-datepicker-trigger { height: 36px; }
+
+/* Radio buttons alineados */
+.ui-radiobutton, .ui-radiobutton .ui-radiobutton-box { vertical-align: middle; }
+
+/* Columnas estables: 20% etiqueta / 30% campo (x2) */
+.fixgrid .col-label { width: 20%; vertical-align: middle; padding-right: 8px; }
+.fixgrid .col-field { width: 30%; }
+
+/* Que el contenido del campo ocupe el 100% de su celda */
+.fixgrid .col-field > * { display: block; width: 100%; }
+
+/* Inputs/menus a 100% de ancho */
+.fixgrid .col-field .ui-inputfield,
+.fixgrid .col-field .ui-selectonemenu,
+.fixgrid .col-field .ui-selectonemenu-label,
+.fixgrid .col-field .ui-calendar input.ui-inputfield { width: 100% !important; box-sizing: border-box; }
+
+/* Altura uniforme y triggers alineados */
+.fixgrid .ui-inputfield,
+.fixgrid .ui-selectonemenu,
+.fixgrid .ui-selectonemenu-label,
+.fixgrid .ui-calendar input.ui-inputfield { height: 36px; line-height: 34px; }
+.fixgrid .ui-selectonemenu-trigger,
+.fixgrid .ui-datepicker-trigger { height: 36px; }
+
+/* Radios centrados verticalmente */
+.fixgrid .ui-radiobutton, 
+.fixgrid .ui-radiobutton .ui-radiobutton-box { vertical-align: middle; }
+
+/* Evitar que mensajes empujen la grilla (los puedes mostrar como tooltip si quieres) */
+.fixgrid .ui-message { display:none; }
+
 

@@ -15,17 +15,17 @@ import javax.ejb.EJB;
 import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
 import javax.faces.view.ViewScoped; // JSF 2.2
-import javax.inject.Named;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import javax.faces.bean.ManagedBean;
 
 import org.primefaces.PrimeFaces;
 
-@Named("contratacionController")
+@ManagedBean(name = "contratacionController")
 @ViewScoped
 @Slf4j
 @Getter @Setter

@@ -12,6 +12,7 @@ D:\PROYECTOS IGM\prueba_maven\src\main\java\ec\gob\prueba\prueba_maven\modelo\co
 D:\PROYECTOS IGM\prueba_maven\src\main\java\ec\gob\prueba\prueba_maven\modelo\converter\GrupoSangreConverter.java
 D:\PROYECTOS IGM\prueba_maven\src\main\java\ec\gob\prueba\prueba_maven\modelo\enums\GrupoSangre.java
 D:\PROYECTOS IGM\prueba_maven\src\main\java\ec\gob\prueba\prueba_maven\modelo\converter\faces\TipoContratoFacesConverter.java
+D:\PROYECTOS IGM\prueba_maven\src\main\java\ec\gob\prueba\prueba_maven\web\CentroMedicoCtrl.java
 D:\PROYECTOS IGM\prueba_maven\src\main\java\ec\gob\prueba\prueba_maven\web\EmpleadoController.java
 D:\PROYECTOS IGM\prueba_maven\src\main\java\ec\gob\prueba\prueba_maven\modelo\Mensaje.java
 D:\PROYECTOS IGM\prueba_maven\src\main\java\ec\gob\prueba\prueba_maven\servicio\ContratacionService.java

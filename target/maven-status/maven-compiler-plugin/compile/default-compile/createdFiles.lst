@@ -13,6 +13,7 @@ ec\gob\prueba\prueba_maven\servicio\ContratacionService.class
 ec\gob\prueba\prueba_maven\modelo\enums\EstadoCivil.class
 ec\gob\prueba\prueba_maven\modelo\enums\TipoContrato.class
 ec\gob\prueba\prueba_maven\web\ContratacionController.class
+ec\gob\prueba\prueba_maven\web\CentroMedicoCtrl.class
 ec\gob\prueba\prueba_maven\modelo\enums\EstadoContrato.class
 ec\gob\prueba\prueba_maven\modelo\Mensaje.class
 ec\gob\prueba\prueba_maven\modelo\enums\Flag01.class

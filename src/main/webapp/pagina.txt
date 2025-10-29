@@ -1,367 +1,891 @@
 <ui:composition template="/templates/template.xhtml"
-    xmlns="http://www.w3.org/1999/xhtml"
-    xmlns:h="http://xmlns.jcp.org/jsf/html"
-    xmlns:f="http://xmlns.jcp.org/jsf/core"
-    xmlns:p="http://primefaces.org/ui"
-    xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
 
-  <ui:define name="title">Evaluación Médica Ocupacional</ui:define>
+    <ui:define name="title">Evaluación Médica Ocupacional</ui:define>
 
-  <ui:define name="content">
-    <h:outputStylesheet library="primefaces" name="primeicons/primeicons.css"/>
+    <ui:define name="content">
+        <!-- Asegúrate de tener ya referenciado igm.css en tu template.xhtml -->
+        <h:outputStylesheet library="primefaces" name="primeicons/primeicons.css"/>
 
-    <h:form id="form" enctype="multipart/form-data" styleClass="ui-fluid">
+        <h:form id="form" enctype="multipart/form-data" styleClass="ui-fluid">
 
-      <!-- Wizard sin barra nativa; usamos barra propia para asegurar back/next -->
-      <p:wizard widgetVar="wiz" showNavBar="false" showStepStatus="true"
-                nextLabel="Siguiente" backLabel="Anterior">
+            <!-- Wizard sin barra nativa; usamos barra propia -->
+            <p:wizard widgetVar="wiz" showNavBar="false" showStepStatus="true"
+                      nextLabel="Siguiente" backLabel="Anterior">
 
-        <!-- ===================================================== -->
-        <!-- STEP 1: FORMULARIO DE EVALUACIÓN MÉDICA (A–F)         -->
-        <!-- ===================================================== -->
-        <p:tab id="step1" title="Formulario (A–F)">
+                <!-- ===================================================== -->
+                <!-- STEP 1: FORMULARIO DE EVALUACIÓN MÉDICA (A–F)         -->
+                <!-- ===================================================== -->
+                <p:tab id="step1" title="Formulario (A–F)">
 
-          <!-- A. Datos del establecimiento / usuario -->
-          <p:panel header="A. Datos del establecimiento / usuario">
-            <h:panelGrid columns="4" columnClasses="w-15rem, w-35rem, w-15rem, w-35rem" styleClass="ui-fluid">
+                    <!-- ===================================================== -->
+                    <!-- A. DATOS DEL ESTABLECIMIENTO / USUARIO               -->
+                    <!-- ===================================================== -->
+                    <p:fieldset legend="A. DATOS DEL ESTABLECIMIENTO / USUARIO" toggleable="true">
 
-              <h:outputLabel value="Institución del Sistema"/><p:inputText placeholder="Institución"/>
-              <h:outputLabel value="RUC"/>
-              <p:inputText maxlength="13" placeholder="RUC"   requiredMessage="El ruc"> <p:keyFilter mask="num"/> <f:validateRegex pattern="\d{10}"/> </p:inputText>
-              <h:outputLabel value="CIIU"/><p:inputText maxlength="10" placeholder="CIIU"/>
-              <h:outputLabel value="Centro de trabajo"/><p:inputText placeholder="Centro de trabajo"/>
-              <h:outputLabel value="N° Historia clínica"/><p:inputText placeholder="Historia clínica"/>
-              <h:outputLabel value="N° Archivo"/><p:inputText placeholder="Archivo"/>
+                        <p:panelGrid columns="4" layout="grid"
+                                     columnClasses="col-label,col-field,col-label,col-field"
+                                     styleClass="ui-fluid">
 
-              <h:outputLabel value="Primer apellido"/><p:inputText placeholder="Primer apellido"/>
-              <h:outputLabel value="Segundo apellido"/><p:inputText placeholder="Segundo apellido"/>
-              <h:outputLabel value="Primer nombre"/><p:inputText placeholder="Primer nombre"/>
-              <h:outputLabel value="Segundo nombre"/><p:inputText placeholder="Segundo nombre"/>
-              <!-- ATENCIÓN PRIORITARIA -->
-<p:panel header="ATENCIÓN PRIORITARIA" styleClass="mb-2">
-  <div class="p-formgrid p-grid">
-    <div class="p-field-checkbox p-col-12 p-md-2">
-      <p:selectBooleanCheckbox id="ap_emb"/>
-      <h:outputLabel for="ap_emb" value="Embarazada"/>
-    </div>
-    <div class="p-field-checkbox p-col-12 p-md-2">
-      <p:selectBooleanCheckbox id="ap_disc"/>
-      <h:outputLabel for="ap_disc" value="Persona con Discapacidad"/>
-    </div>
-    <div class="p-field-checkbox p-col-12 p-md-2">
-      <p:selectBooleanCheckbox id="ap_cat"/>
-      <h:outputLabel for="ap_cat" value="E. Catastrófica"/>
-    </div>
-    <div class="p-field-checkbox p-col-12 p-md-2">
-      <p:selectBooleanCheckbox id="ap_lac"/>
-      <h:outputLabel for="ap_lac" value="Lactancia"/>
-    </div>
-    <div class="p-field-checkbox p-col-12 p-md-2">
-      <p:selectBooleanCheckbox id="ap_am"/>
-      <h:outputLabel for="ap_am" value="Adulto Mayor"/>
-    </div>
-  </div>
-</p:panel>
-              
-              
+                            <h:outputLabel value="Institución del Sistema"/>
+                            <h:panelGroup styleClass="field-wrap">
+                                <p:inputText value="#{centroMedicoCtrl.institucion}"/>
+                            </h:panelGroup>
+
+                            <h:outputLabel value="RUC"/>
+                            <h:panelGroup styleClass="field-wrap">
+                                <p:inputText value="#{centroMedicoCtrl.ruc}" maxlength="13"/>
+                            </h:panelGroup>
+
+                            <h:outputLabel value="CIIU"/>
+                            <h:panelGroup styleClass="field-wrap">
+                                <p:inputText value="#{centroMedicoCtrl.ciiu}"/>
+                            </h:panelGroup>
+
+                            <h:outputLabel value="Centro de trabajo"/>
+                            <h:panelGroup styleClass="field-wrap">
+                                <p:inputText value="#{centroMedicoCtrl.centroTrabajo}"/>
+                            </h:panelGroup>
+
+                            <h:outputLabel value="N° Historia clínica"/>
+                            <h:panelGroup styleClass="field-wrap">
+                                <p:inputText value="#{centroMedicoCtrl.noHistoria}"/>
+                            </h:panelGroup>
+
+                            <h:outputLabel value="N° Archivo"/>
+                            <h:panelGroup styleClass="field-wrap">
+                                <p:inputText value="#{centroMedicoCtrl.noArchivo}"/>
+                            </h:panelGroup>
+
+                            <h:outputLabel value="Primer apellido"/>
+                            <h:panelGroup styleClass="field-wrap">
+                                <p:inputText value="#{centroMedicoCtrl.apellido1}"/>
+                            </h:panelGroup>
+
+                            <h:outputLabel value="Segundo apellido"/>
+                            <h:panelGroup styleClass="field-wrap">
+                                <p:inputText value="#{centroMedicoCtrl.apellido2}"/>
+                            </h:panelGroup>
+
+                            <h:outputLabel value="Primer nombre"/>
+                            <h:panelGroup styleClass="field-wrap">
+                                <p:inputText value="#{centroMedicoCtrl.nombre1}"/>
+                            </h:panelGroup>
+
+                            <h:outputLabel value="Segundo nombre"/>
+                            <h:panelGroup styleClass="field-wrap">
+                                <p:inputText value="#{centroMedicoCtrl.nombre2}"/>
+                            </h:panelGroup>
+
+                        </p:panelGrid>
+
+                        <!-- ATENCIÓN PRIORITARIA (alineado compacto) -->
+                        <p:fieldset legend="ATENCIÓN PRIORITARIA" style="margin-top:.5rem;">
+                            <p:panelGrid columns="5" layout="grid" styleClass="ui-fluid ap-grid">
+                                <h:panelGroup>
+                                    <p:selectBooleanCheckbox value="#{centroMedicoCtrl.apEmbarazada}" itemLabel="Embarazada"/>
+                                </h:panelGroup>
+                                <h:panelGroup>
+                                    <p:selectBooleanCheckbox value="#{centroMedicoCtrl.apDiscapacidad}" itemLabel="Discapacidad"/>
+                                </h:panelGroup>
+                                <h:panelGroup>
+                                    <p:selectBooleanCheckbox value="#{centroMedicoCtrl.apCatastrofica}" itemLabel="Enf. catastrófica"/>
+                                </h:panelGroup>
+                                <h:panelGroup>
+                                    <p:selectBooleanCheckbox value="#{centroMedicoCtrl.apLactancia}" itemLabel="Lactancia"/>
+                                </h:panelGroup>
+                                <h:panelGroup>
+                                    <p:selectBooleanCheckbox value="#{centroMedicoCtrl.apAdultoMayor}" itemLabel="Adulto mayor"/>
+                                </h:panelGroup>
+                            </p:panelGrid>
+                        </p:fieldset>
+
+                        <!-- Sexo + Fecha Nac + Edad + Grupo sanguíneo + Lateralidad -->
+                        <!-- ================== BIO/IDENTIFICACIÓN ================== -->
+                        <!-- Sexo + Fecha Nac + Edad + Grupo sanguíneo + Lateralidad -->
+                        <h:panelGrid columns="4"
+                                     columnClasses="w-15rem, w-35rem, w-15rem, w-35rem"
+                                     styleClass="ui-fluid" style="margin-top:.5rem">
+
+                            <h:outputLabel for="sexo" value="Sexo"/>
+                            <p:selectOneRadio id="sexo" value="#{centroMedicoCtrl.sexo}">
+                                <f:selectItem itemLabel="Hombre" itemValue="M"/>
+                                <f:selectItem itemLabel="Mujer"  itemValue="F"/>
+                                <p:ajax event="valueChange" process="@this" update="panelReproMas panelGineObst"/>
+                            </p:selectOneRadio>
 
 
-              <h:outputLabel value="Sexo"/>
-              <p:selectOneRadio>
-                <f:selectItem itemLabel="Hombre" itemValue="M"/>
-                <f:selectItem itemLabel="Mujer"  itemValue="F"/>
-              </p:selectOneRadio>
+                            <h:outputLabel for="fecNac" value="Fecha de nacimiento"/>
+                            <p:calendar id="fecNac"
+                                        value="#{centroMedicoCtrl.fechaNacimiento}"
+                                        pattern="dd/MM/yyyy"
+                                        navigator="true" showOn="button"
+                                        yearRange="1924:2007"
+                                        >
+                                <p:ajax event="dateSelect"
+                                        listener="#{centroMedicoCtrl.calcularEdad}"
+                                        process="@this"
+                                        update=":form:edad"/>
+                                <!-- Cambio al tipear o limpiar -->
+                                <p:ajax event="change"
+                                        listener="#{centroMedicoCtrl.calcularEdad}"
+                                        process="@this"
+                                        update=":form:edad"/>
+                            </p:calendar>
 
-              <h:outputLabel value="Fecha de nacimiento"/><p:calendar pattern="dd/MM/yyyy" navigator="true"/>
-              <h:outputLabel value="Grupo sanguíneo"/>
-              <p:selectOneMenu>
-                <f:selectItem itemLabel="--" itemValue=""/>
-                <f:selectItem itemLabel="O+" itemValue="O+"/>
-                <f:selectItem itemLabel="O-" itemValue="O-"/>
-                <f:selectItem itemLabel="A+" itemValue="A+"/>
-                <f:selectItem itemLabel="A-" itemValue="A-"/>
-                <f:selectItem itemLabel="B+" itemValue="B+"/>
-                <f:selectItem itemLabel="B-" itemValue="B-"/>
-                <f:selectItem itemLabel="AB+" itemValue="AB+"/>
-                <f:selectItem itemLabel="AB-" itemValue="AB-"/>
-              </p:selectOneMenu>
+                            <h:outputLabel for="edad" value="Edad (años)"/>
+                            <p:inputText id="edad" value="#{centroMedicoCtrl.edad}" readonly="true"/>
 
-              <h:outputLabel value="Lateralidad"/>
-              <p:selectOneMenu>
-                <f:selectItem itemLabel="--" itemValue=""/>
-                <f:selectItem itemLabel="Diestro" itemValue="DIESTRO"/>
-                <f:selectItem itemLabel="Zurdo" itemValue="ZURDO"/>
-                <f:selectItem itemLabel="Ambidiestro" itemValue="AMBIDIESTRO"/>
-              </p:selectOneMenu>
 
-            </h:panelGrid>
-          </p:panel>
 
-          <p:separator/>
+                            <h:outputLabel for="sangre" value="Grupo sanguíneo"/>
+                            <p:selectOneMenu id="sangre" value="#{centroMedicoCtrl.grupoSanguineo}">
+                                <f:selectItem itemLabel="Seleccione" itemValue=""/>
+                                <f:selectItem itemLabel="O+" itemValue="O+"/>
+                                <f:selectItem itemLabel="O-" itemValue="O-"/>
+                                <f:selectItem itemLabel="A+" itemValue="A+"/>
+                                <f:selectItem itemLabel="A-" itemValue="A-"/>
+                                <f:selectItem itemLabel="B+" itemValue="B+"/>
+                                <f:selectItem itemLabel="B-" itemValue="B-"/>
+                                <f:selectItem itemLabel="AB+" itemValue="AB+"/>
+                                <f:selectItem itemLabel="AB-" itemValue="AB-"/>
+                            </p:selectOneMenu>
 
-          <!-- B. Motivo de consulta -->
-          <p:panel header="B. Motivo de consulta">
-            <h:panelGrid columns="4" columnClasses="w-15rem, w-35rem, w-15rem, w-35rem" styleClass="ui-fluid">
-              <h:outputLabel value="Puesto de trabajo (CIUO)"/><p:inputText placeholder="CIUO"/>
-              <h:outputLabel value="Fecha de atención"/><p:calendar pattern="dd/MM/yyyy" navigator="true"/>
-              <h:outputLabel value="Fecha de ingreso"/><p:calendar pattern="dd/MM/yyyy"/>
-              <h:outputLabel value="Fecha de reintegro"/><p:calendar pattern="dd/MM/yyyy"/>
-              <h:outputLabel value="Último día laboral"/><p:calendar pattern="dd/MM/yyyy"/>
+                            <h:outputLabel for="lateralidad" value="Lateralidad"/>
+                            <p:selectOneMenu id="lateralidad" value="#{centroMedicoCtrl.lateralidad}">
+                                <f:selectItem itemLabel="Seleccione" itemValue=""/>
+                                <f:selectItem itemLabel="Diestro" itemValue="DIESTRO"/>
+                                <f:selectItem itemLabel="Zurdo" itemValue="ZURDO"/>
+                                <f:selectItem itemLabel="Ambidiestro" itemValue="AMBIDIESTRO"/>
+                            </p:selectOneMenu>
+                        </h:panelGrid>
 
-              <h:outputLabel value="Evaluación"/>
-              <p:selectOneRadio>
-                <f:selectItem itemLabel="Ingreso" itemValue="INGRESO"/>
-                <f:selectItem itemLabel="Periódico" itemValue="PERIODICO"/>
-                <f:selectItem itemLabel="Reintegro" itemValue="REINTEGRO"/>
-                <f:selectItem itemLabel="Retiro" itemValue="RETIRO"/>
-              </p:selectOneRadio>
 
-              <h:outputLabel value="Observación"/><p:inputTextarea rows="3" autoResize="true" placeholder="Observación"/>
-            </h:panelGrid>
-          </p:panel>
 
-          <p:separator/>
+                    </p:fieldset>
 
-          <!-- C. Antecedentes personales -->
-          <p:panel header="C. Antecedentes personales">
-            <h:panelGrid columns="2" columnClasses="w-20rem," styleClass="ui-fluid">
-              <h:outputLabel value="Clínicos y quirúrgicos"/><p:inputTextarea rows="3" autoResize="true"/>
-              <h:outputLabel value="Familiares"/><p:inputTextarea rows="3" autoResize="true"/>
-              <h:outputLabel value="Condición especial (urgencias/tx)"/><p:inputTextarea rows="2" autoResize="true"/>
-              <h:outputLabel value="Autoriza transfusiones"/>
-              <p:selectOneRadio>
-                <f:selectItem itemLabel="Sí" itemValue="S"/>
-                <f:selectItem itemLabel="No" itemValue="N"/>
-              </p:selectOneRadio>
 
-              <h:outputLabel value="Tratamiento hormonal"/>
-              <p:selectOneRadio>
-                <f:selectItem itemLabel="Sí" itemValue="S"/>
-                <f:selectItem itemLabel="No" itemValue="N"/>
-              </p:selectOneRadio>
-              <h:outputLabel value="¿Cuál?"/><p:inputText/>
+                    <!-- ===================================================== -->
+                    <!-- B. MOTIVO DE CONSULTA                                 -->
+                    <!-- ===================================================== -->
+                    <p:fieldset legend="B. MOTIVO DE CONSULTA" toggleable="true">
+                        <h:panelGrid columns="4"
+                                     columnClasses="w-15rem, w-35rem, w-15rem, w-35rem"
+                                     styleClass="ui-fluid">
 
-              <p:separator/>
+                            <h:outputLabel value="Puesto de trabajo (CIUO)"/>
+                            <p:inputText placeholder="CIUO"/>
 
-              <h:outputLabel value="FUM"/><p:calendar pattern="dd/MM/yyyy"/>
-              <h:outputLabel value="Gestas"/><p:inputNumber decimalPlaces="0"/>
-              <h:outputLabel value="Partos"/><p:inputNumber decimalPlaces="0"/>
-              <h:outputLabel value="Cesáreas"/><p:inputNumber decimalPlaces="0"/>
-              <h:outputLabel value="Abortos"/><p:inputNumber decimalPlaces="0"/>
+                            <h:outputLabel value="Fecha de atención"/>
+                            <p:calendar pattern="dd/MM/yyyy" navigator="true" showOn="button"/>
 
-              <h:outputLabel value="Planificación familiar"/>
-              <p:selectOneMenu>
-                <f:selectItem itemLabel="--" itemValue=""/>
-                <f:selectItem itemLabel="Sí" itemValue="SI"/>
-                <f:selectItem itemLabel="No" itemValue="NO"/>
-                <f:selectItem itemLabel="No responde" itemValue="NR"/>
-              </p:selectOneMenu>
-              <h:outputLabel value="¿Cuál?"/><p:inputText/>
+                            <h:outputLabel value="Fecha de ingreso"/>
+                            <p:calendar pattern="dd/MM/yyyy" showOn="button"/>
 
-              <p:separator/>
+                            <h:outputLabel value="Fecha de reintegro"/>
+                            <p:calendar pattern="dd/MM/yyyy" showOn="button"/>
 
-              <h:outputLabel value="Exámenes repro. masculinos (¿cuál?)"/><p:inputText/>
-              <h:outputLabel value="Tiempo (años)"/><p:inputNumber decimalPlaces="0"/>
+                            <h:outputLabel value="Último día laboral"/>
+                            <p:calendar pattern="dd/MM/yyyy" showOn="button"/>
 
-              <p:separator/>
+                            <h:outputLabel value="Evaluación"/>
+                            <p:selectOneRadio>
+                                <f:selectItem itemLabel="Ingreso" itemValue="INGRESO"/>
+                                <f:selectItem itemLabel="Periódico" itemValue="PERIODICO"/>
+                                <f:selectItem itemLabel="Reintegro" itemValue="REINTEGRO"/>
+                                <f:selectItem itemLabel="Retiro" itemValue="RETIRO"/>
+                            </p:selectOneRadio>
 
-              <h:outputLabel value="Actividad física"/><p:inputText/>
-              <h:outputLabel value="Condición preexistente"/><p:inputText/>
-              <h:outputLabel value="Medicación habitual"/><p:inputText/>
-              <h:outputLabel value="Observación"/><p:inputTextarea rows="2" autoResize="true"/>
-            </h:panelGrid>
-          </p:panel>
+                            <h:outputLabel value="Observación"/>
+                            <p:inputTextarea rows="3" autoResize="true" placeholder="Observación"/>
+                        </h:panelGrid>
+                    </p:fieldset>
 
-          <p:separator/>
+                    <!-- ===================================================== -->
+                    <!-- C. ANTECEDENTES PERSONALES                            -->
+                    <!-- ===================================================== -->
+                    <p:fieldset legend="C. ANTECEDENTES PERSONALES" toggleable="true">
 
-          <!-- D. Enfermedad o problema actual -->
-          <p:panel header="D. Enfermedad o problema actual">
-            <p:inputTextarea rows="5" style="width:100%" placeholder="Descripción del problema actual"/>
-          </p:panel>
+                        <h:panelGrid columns="2" columnClasses="w-20rem," styleClass="ui-fluid">
+                            <h:outputLabel value="Antecedentes clínicos y quirúrgicos"/>
+                            <p:inputTextarea rows="3" autoResize="true" value="#{centroMedicoCtrl.antClinicoQuirurgico}"/>
 
-          <p:separator/>
+                            <h:outputLabel value="Antecedentes familiares"/>
+                            <p:inputTextarea rows="3" autoResize="true" value="#{centroMedicoCtrl.antFamiliares}"/>
 
-          <!-- E. Constantes vitales y antropometría -->
-          <p:panel header="E. Constantes vitales y antropometría">
-            <h:panelGrid columns="8" styleClass="ui-fluid">
-              <h:outputText value="Temp (°C)"/><p:inputNumber decimalPlaces="1"/>
-              <h:outputText value="PA (mmHg)"/><p:inputText placeholder="120/80"/>
-              <h:outputText value="FC"/><p:inputNumber decimalPlaces="0"/>
-              <h:outputText value="FR"/><p:inputNumber decimalPlaces="0"/>
-              <h:outputText value="Sat O₂ (%)"/><p:inputNumber decimalPlaces="0"/>
-              <h:outputText value="Peso (kg)"/><p:inputNumber decimalPlaces="2"/>
-              <h:outputText value="Talla (cm)"/><p:inputNumber decimalPlaces="1"/>
-              <h:outputText value="IMC"/><p:inputNumber decimalPlaces="2" disabled="true"/>
-              <h:outputText value="Perímetro abd (cm)"/><p:inputNumber decimalPlaces="1"/>
-            </h:panelGrid>
-          </p:panel>
+                            <h:outputLabel value="Condición especial (urgencias / emergencia / tx)"/>
+                            <p:inputTextarea rows="2" autoResize="true" value="#{centroMedicoCtrl.condicionEspecial}"/>
 
-          <p:separator/>
+                            <h:outputLabel value="Autoriza transfusiones"/>
+                            <p:selectOneRadio value="#{centroMedicoCtrl.autorizaTransfusion}">
+                                <f:selectItem itemLabel="Sí" itemValue="S"/>
+                                <f:selectItem itemLabel="No" itemValue="N"/>
+                            </p:selectOneRadio>
 
-          <!-- F. Examen físico regional (simplificado) -->
-          <p:panel header="F. Examen físico regional">
-            <h:panelGrid columns="4" styleClass="ui-fluid">
-              <h:outputText value="Piel - Cicatrices"/><p:selectBooleanCheckbox/><h:outputText value="Numeral"/><p:inputText/>
-              <h:outputText value="Ojos - Párpados"/><p:selectBooleanCheckbox/><h:outputText value="Numeral"/><p:inputText/>
-              <h:outputText value="Oído - CAE"/><p:selectBooleanCheckbox/><h:outputText value="Numeral"/><p:inputText/>
-              <h:outputText value="Tórax - Pulmones"/><p:selectBooleanCheckbox/><h:outputText value="Numeral"/><p:inputText/>
-              <h:outputText value="Abdomen - Vísceras"/><p:selectBooleanCheckbox/><h:outputText value="Numeral"/><p:inputText/>
-              <h:outputText value="Extremidades - Vascular"/><p:selectBooleanCheckbox/><h:outputText value="Numeral"/><p:inputText/>
-              <h:outputText value="Neurológico - Reflejos"/><p:selectBooleanCheckbox/><h:outputText value="Numeral"/><p:inputText/>
-              <h:outputText value="Observación global"/><p:inputTextarea rows="2" autoResize="true" />
-            </h:panelGrid>
-          </p:panel>
-        </p:tab>
+                            <h:outputLabel value="Tratamiento hormonal"/>
+                            <p:selectOneRadio value="#{centroMedicoCtrl.tratamientoHormonal}">
+                                <f:selectItem itemLabel="Sí" itemValue="S"/>
+                                <f:selectItem itemLabel="No" itemValue="N"/>
+                            </p:selectOneRadio>
 
-        <!-- ===================================================== -->
-        <!-- STEP 2: G. FACTORES DE RIESGO DEL TRABAJO ACTUAL       -->
-        <!-- ===================================================== -->
-        <p:tab id="step2" title="Riesgos (G)">
-          <p:panel header="G. Factores de riesgo del trabajo actual">
-            <h:panelGrid columns="2" styleClass="ui-fluid" columnClasses="w-15rem,">
-              <h:outputText value="Puesto de trabajo"/><p:inputText/>
-              <h:outputText value="Actividades importantes"/><p:inputTextarea rows="3" autoResize="true"/>
-            </h:panelGrid>
+                            <h:outputLabel value="¿Cuál?"/>
+                            <p:inputText value="#{centroMedicoCtrl.tratamientoHormonalCual}"/>
+                        </h:panelGrid>
 
-            <p:separator/>
+                        <!-- ======= Condicional: REPRODUCTIVOS MASCULINOS ======= -->
+                        <h:panelGroup id="panelReproMas" rendered="#{centroMedicoCtrl.sexo eq 'M'}" layout="block" style="margin-top:8px;">
+                            <p:fieldset legend="ANTECEDENTES REPRODUCTIVOS MASCULINOS" toggleable="true" collapsed="false">
+                                <h:panelGrid columns="4" styleClass="ui-fluid"
+                                             columnClasses="w-20rem, w-30rem, w-10rem, w-30rem">
+                                    <h:outputText value="Exámenes realizados (¿cuál?)"/>
+                                    <p:inputTextarea rows="2" autoResize="true" value="#{centroMedicoCtrl.examenReproMasculino}"/>
+                                    <h:outputText value="Tiempo (años)"/>
+                                    <p:inputNumber value="#{centroMedicoCtrl.tiempoReproMasculino}" decimalPlaces="0" minValue="0"/>
+                                </h:panelGrid>
+                            </p:fieldset>
+                        </h:panelGroup>
 
-            <!-- Matriz simple: ejemplo de filas -->
-            <h:panelGrid columns="4" styleClass="ui-fluid">
-              <h:outputText value="FÍSICO - Ruido"/>
-              <p:selectOneRadio>
-                <f:selectItem itemLabel="1" itemValue="1"/><f:selectItem itemLabel="2" itemValue="2"/>
-                <f:selectItem itemLabel="3" itemValue="3"/><f:selectItem itemLabel="4" itemValue="4"/>
-                <f:selectItem itemLabel="5" itemValue="5"/><f:selectItem itemLabel="6" itemValue="6"/>
-                <f:selectItem itemLabel="7" itemValue="7"/>
-              </p:selectOneRadio>
-              <h:outputText value="Otro:"/><p:inputText placeholder="Detalle (opcional)"/>
+                        <!-- ======= Condicional: GINECO OBSTÉTRICOS (MUJER) ======= -->
+                        <h:panelGroup id="panelGineObst" rendered="#{centroMedicoCtrl.sexo eq 'F'}" layout="block" style="margin-top:8px;">
+                            <p:fieldset legend="ANTECEDENTES GINECO OBSTÉTRICOS" toggleable="true" collapsed="false">
+                                <h:panelGrid columns="8" styleClass="ui-fluid">
+                                    <h:outputText value="FUM"/>
+                                    <p:calendar value="#{centroMedicoCtrl.fum}" pattern="dd/MM/yyyy" showOn="button"/>
 
-              <h:outputText value="ERGONÓMICO - Posturas forzadas"/>
-              <p:selectOneRadio>
-                <f:selectItem itemLabel="1" itemValue="1"/><f:selectItem itemLabel="2" itemValue="2"/>
-                <f:selectItem itemLabel="3" itemValue="3"/><f:selectItem itemLabel="4" itemValue="4"/>
-                <f:selectItem itemLabel="5" itemValue="5"/><f:selectItem itemLabel="6" itemValue="6"/>
-                <f:selectItem itemLabel="7" itemValue="7"/>
-              </p:selectOneRadio>
-              <h:outputText value="Otro:"/><p:inputText/>
+                                    <h:outputText value="Gestas"/>
+                                    <p:inputNumber value="#{centroMedicoCtrl.gestas}" decimalPlaces="0" minValue="0"/>
 
-              <h:outputText value="PSICOSOCIAL - Sobrecarga laboral"/>
-              <p:selectOneRadio>
-                <f:selectItem itemLabel="1" itemValue="1"/><f:selectItem itemLabel="2" itemValue="2"/>
-                <f:selectItem itemLabel="3" itemValue="3"/><f:selectItem itemLabel="4" itemValue="4"/>
-                <f:selectItem itemLabel="5" itemValue="5"/><f:selectItem itemLabel="6" itemValue="6"/>
-                <f:selectItem itemLabel="7" itemValue="7"/>
-              </p:selectOneRadio>
-              <h:outputText value="Otro:"/><p:inputText/>
-            </h:panelGrid>
+                                    <h:outputText value="Partos"/>
+                                    <p:inputNumber value="#{centroMedicoCtrl.partos}" decimalPlaces="0" minValue="0"/>
 
-            <p:separator/>
+                                    <h:outputText value="Cesáreas"/>
+                                    <p:inputNumber value="#{centroMedicoCtrl.cesareas}" decimalPlaces="0" minValue="0"/>
 
-            <h:panelGrid columns="2" styleClass="ui-fluid">
-              <h:outputText value="Medidas preventivas"/><p:inputTextarea rows="3" autoResize="true"/>
-            </h:panelGrid>
-          </p:panel>
-        </p:tab>
+                                    <h:outputText value="Abortos"/>
+                                    <p:inputNumber value="#{centroMedicoCtrl.abortos}" decimalPlaces="0" minValue="0"/>
 
-        <!-- ===================================================== -->
-        <!-- STEP 3: H–O (Historia, resultados, aptitud, etc.)      -->
-        <!-- ===================================================== -->
-        <p:tab id="step3" title="Historia / Resultados (H–O)">
-          <p:panel header="H. Actividad laboral / Incidentes / Accidentes / EO">
-            <p:inputTextarea rows="3" style="width:100%"/>
-          </p:panel>
+                                    <h:outputText value="Planificación familiar"/>
+                                    <p:selectOneRadio value="#{centroMedicoCtrl.planificacion}">
+                                        <f:selectItem itemLabel="Sí" itemValue="S"/>
+                                        <f:selectItem itemLabel="No" itemValue="N"/>
+                                        <f:selectItem itemLabel="No responde" itemValue="X"/>
+                                    </p:selectOneRadio>
 
-          <p:separator/>
+                                    <h:outputText value="¿Cuál?"/>
+                                    <p:inputText value="#{centroMedicoCtrl.planificacionCual}"/>
+                                </h:panelGrid>
+                            </p:fieldset>
+                        </h:panelGroup>
 
-          <p:panel header="I. Actividades extralaborales">
-            <p:inputTextarea rows="3" style="width:100%"/>
-          </p:panel>
+                    </p:fieldset>
 
-          <p:separator/>
+                    <!-- D. Enfermedad o problema actual -->
+                    <p:fieldset legend="D. ENFERMEDAD O PROBLEMA ACTUAL" toggleable="true">
+                        <p:inputTextarea rows="5" style="width:100%" placeholder="Descripción del problema actual"/>
+                    </p:fieldset>
 
-          <p:panel header="J. Resultados de exámenes (imagen / laboratorio / otros)">
-            <p:inputTextarea rows="3" style="width:100%" placeholder="Listado / resumen"/>
-          </p:panel>
+                    <!-- E. Constantes vitales y antropometría -->
+                    <p:fieldset legend="E. CONSTANTES VITALES Y ANTROPOMETRÍA" toggleable="true">
+                        <h:panelGrid columns="8" styleClass="ui-fluid">
+                            <h:outputText value="Temp (°C)"/><p:inputNumber decimalPlaces="1"/>
+                            <h:outputText value="PA (mmHg)"/><p:inputText placeholder="120/80"/>
+                            <h:outputText value="FC"/><p:inputNumber decimalPlaces="0"/>
+                            <h:outputText value="FR"/><p:inputNumber decimalPlaces="0"/>
+                            <h:outputText value="Sat O₂ (%)"/><p:inputNumber decimalPlaces="0"/>
+                            <h:outputText value="Peso (kg)"/><p:inputNumber decimalPlaces="2"/>
+                            <h:outputText value="Talla (cm)"/><p:inputNumber decimalPlaces="1"/>
+                            <h:outputText value="IMC"/><p:inputNumber decimalPlaces="2" disabled="true"/>
+                            <h:outputText value="Perímetro abd (cm)"/><p:inputNumber decimalPlaces="1"/>
+                        </h:panelGrid>
+                    </p:fieldset>
 
-          <p:separator/>
+                    <!-- F. Examen físico regional -->
+                    <p:fieldset legend="F. EXAMEN FÍSICO REGIONAL" toggleable="true">
+                        <h:panelGrid columns="4" styleClass="ui-fluid">
+                            <h:outputText value="Piel - Cicatrices"/><p:selectBooleanCheckbox/><h:outputText value="Numeral"/><p:inputText/>
+                            <h:outputText value="Ojos - Párpados"/><p:selectBooleanCheckbox/><h:outputText value="Numeral"/><p:inputText/>
+                            <h:outputText value="Oído - CAE"/><p:selectBooleanCheckbox/><h:outputText value="Numeral"/><p:inputText/>
+                            <h:outputText value="Tórax - Pulmones"/><p:selectBooleanCheckbox/><h:outputText value="Numeral"/><p:inputText/>
+                            <h:outputText value="Abdomen - Vísceras"/><p:selectBooleanCheckbox/><h:outputText value="Numeral"/><p:inputText/>
+                            <h:outputText value="Extremidades - Vascular"/><p:selectBooleanCheckbox/><h:outputText value="Numeral"/><p:inputText/>
+                            <h:outputText value="Neurológico - Reflejos"/><p:selectBooleanCheckbox/><h:outputText value="Numeral"/><p:inputText/>
+                            <h:outputText value="Observación global"/><p:inputTextarea rows="2" autoResize="true" colspan="3"/>
+                        </h:panelGrid>
+                    </p:fieldset>
 
-          <p:panel header="K. Diagnóstico (PRE / DEF)">
-            <h:panelGrid columns="4" styleClass="ui-fluid">
-              <h:outputText value="Diagnóstico presuntivo"/><p:inputText/>
-              <h:outputText value="Diagnóstico definitivo"/><p:inputText/>
-              <h:outputText value="CIE-10 (opcional)"/><p:inputText/>
-            </h:panelGrid>
-          </p:panel>
+                </p:tab>
 
-          <p:separator/>
 
-          <p:panel header="L. Aptitud médica para el trabajo">
-            <p:selectOneRadio>
-              <f:selectItem itemLabel="APTO" itemValue="APTO"/>
-              <f:selectItem itemLabel="APTO EN OBSERVACIÓN" itemValue="APTO_OBS"/>
-              <f:selectItem itemLabel="APTO CON LIMITACIONES" itemValue="APTO_LIMIT"/>
-              <f:selectItem itemLabel="NO APTO" itemValue="NO_APTO"/>
-            </p:selectOneRadio>
-          </p:panel>
+                <!-- ===================================================== -->
+                <!-- STEP 2: G. FACTORES DE RIESGO DEL TRABAJO ACTUAL       -->
+                <!-- ===================================================== -->
+                <p:tab id="step2" title="Riesgos (G)">
+                    <p:panel header="Matriz de Identificación de Riesgos Laborales"
+                             toggleable="true" toggleSpeed="150" styleClass="panel-scroll">
+                        <h:panelGroup layout="block" styleClass="ui-fluid">
 
-          <p:separator/>
+                            <!-- Parámetro con columnas 1..7 -->
+                            <ui:param name="cols" value="#{['1','2','3','4','5','6','7']}" />
 
-          <p:panel header="M. Recomendaciones y/o tratamiento">
-            <p:inputTextarea rows="3" style="width:100%"/>
-          </p:panel>
+                            <!-- ================= ENCABEZADO Y FILA ACTIVIDAD ================= -->
+                            <table class="risk-grid">
+                                <colgroup>
+                                    <col class="risk-col-label"/>
+                                    <col class="risk-col"/><col class="risk-col"/><col class="risk-col"/>
+                                    <col class="risk-col"/><col class="risk-col"/><col class="risk-col"/><col class="risk-col"/>
+                                </colgroup>
+                                <thead>
+                                    <tr>
+                                        <th colspan="8" style="text-align:left; background:#f5f5f5;">
+                                            <h:outputText value="PUESTO DE TRABAJO"/>
+                                            <h:inputText id="puestoTrabajo" style="width:60%; margin-left:10px"
+                                                         placeholder="Ingrese nombre del puesto"/>
+                                        </th>
+                                    </tr>
+                                    <tr class="risk-header">
+                                        <th>ACTIVIDADES IMPORTANTES DENTRO DE LA JORNADA LABORAL</th>
+                                        <th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th><th>7</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><strong>ACTIVIDAD LABORAL</strong></td>
+                                        <ui:repeat value="#{cols}" var="c">
+                                            <td>
+                                                <p:inputTextarea id="actLab_#{c}" styleClass="cell-input" placeholder="Actividad #{c}"/>
+                                            </td>
+                                        </ui:repeat>
+                                    </tr>
+                                </tbody>
+                            </table>
 
-          <p:separator/>
+                            <!-- ================= BLOQUE: FÍSICO ================= -->
+                            <p:fieldset legend="FÍSICO" toggleable="true" collapsed="false" style="margin-top:10px;">
+                                <table class="risk-grid">
+                                    <colgroup>
+                                        <col class="risk-col-label"/>
+                                        <col class="risk-col"/><col class="risk-col"/><col class="risk-col"/>
+                                        <col class="risk-col"/><col class="risk-col"/><col class="risk-col"/><col class="risk-col"/>
+                                    </colgroup>
+                                    <tbody>
+                                        <tr><td>Temperaturas altas</td>         <ui:repeat value="#{cols}" var="c"><td><p:selectBooleanCheckbox id="fis_tempAltas_#{c}"/></td></ui:repeat></tr>
+                                        <tr><td>Temperaturas bajas</td>         <ui:repeat value="#{cols}" var="c"><td><p:selectBooleanCheckbox id="fis_tempBajas_#{c}"/></td></ui:repeat></tr>
+                                        <tr><td>Radiación ionizante</td>        <ui:repeat value="#{cols}" var="c"><td><p:selectBooleanCheckbox id="fis_radIon_#{c}"/></td></ui:repeat></tr>
+                                        <tr><td>Radiación no ionizante</td>     <ui:repeat value="#{cols}" var="c"><td><p:selectBooleanCheckbox id="fis_radNoIon_#{c}"/></td></ui:repeat></tr>
+                                        <tr><td>Ruido</td>                       <ui:repeat value="#{cols}" var="c"><td><p:selectBooleanCheckbox id="fis_ruido_#{c}"/></td></ui:repeat></tr>
+                                        <tr><td>Vibración</td>                   <ui:repeat value="#{cols}" var="c"><td><p:selectBooleanCheckbox id="fis_vibracion_#{c}"/></td></ui:repeat></tr>
+                                        <tr><td>Iluminación</td>                 <ui:repeat value="#{cols}" var="c"><td><p:selectBooleanCheckbox id="fis_iluminacion_#{c}"/></td></ui:repeat></tr>
+                                        <tr><td>Ventilación</td>                 <ui:repeat value="#{cols}" var="c"><td><p:selectBooleanCheckbox id="fis_ventilacion_#{c}"/></td></ui:repeat></tr>
+                                        <tr><td>Fluido eléctrico</td>            <ui:repeat value="#{cols}" var="c"><td><p:selectBooleanCheckbox id="fis_fluido_#{c}"/></td></ui:repeat></tr>
+                                        <tr>
+                                            <td><em>Otros (Físico)</em></td>
+                                            <ui:repeat value="#{cols}" var="c"><td><p:inputText id="fis_otros_#{c}" styleClass="cell-input" placeholder="Otro #{c}"/></td></ui:repeat>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </p:fieldset>
 
-          <p:panel header="N. Retiro (evaluación)">
-            <p:inputTextarea rows="2" style="width:100%" placeholder="Detalle de retiro (si aplica)"/>
-          </p:panel>
+                            <!-- ================= BLOQUE: DE SEGURIDAD ================= -->
+                            <p:fieldset legend="DE SEGURIDAD" toggleable="true" collapsed="true" style="margin-top:10px;">
+                                <table class="risk-grid">
+                                    <colgroup>
+                                        <col class="risk-col-label"/>
+                                        <col class="risk-col"/><col class="risk-col"/><col class="risk-col"/>
+                                        <col class="risk-col"/><col class="risk-col"/><col class="risk-col"/><col class="risk-col"/>
+                                    </colgroup>
+                                    <tbody>
+                                        <tr><td><strong>LOCATIVOS</strong> — Falta de señalización, aseo, desorden</td> <ui:repeat value="#{cols}" var="c"><td><p:selectBooleanCheckbox id="seg_locat_#{c}"/></td></ui:repeat></tr>
+                                        <tr><td><strong>MECÁNICOS</strong> — Atrapamiento entre máquinas y/o superficies</td><ui:repeat value="#{cols}" var="c"><td><p:selectBooleanCheckbox id="seg_mec_atrapMaquina_#{c}"/></td></ui:repeat></tr>
+                                        <tr><td>Atrapamiento entre objetos</td> <ui:repeat value="#{cols}" var="c"><td><p:selectBooleanCheckbox id="seg_mec_atrapObjetos_#{c}"/></td></ui:repeat></tr>
+                                        <tr><td>Caída de objetos</td>           <ui:repeat value="#{cols}" var="c"><td><p:selectBooleanCheckbox id="seg_mec_caidaObjetos_#{c}"/></td></ui:repeat></tr>
+                                        <tr><td>Caídas al mismo nivel</td>      <ui:repeat value="#{cols}" var="c"><td><p:selectBooleanCheckbox id="seg_mec_mismoNivel_#{c}"/></td></ui:repeat></tr>
+                                        <tr><td>Caídas a diferente nivel</td>   <ui:repeat value="#{cols}" var="c"><td><p:selectBooleanCheckbox id="seg_mec_difNivel_#{c}"/></td></ui:repeat></tr>
+                                        <tr><td>Pinchazos</td>                  <ui:repeat value="#{cols}" var="c"><td><p:selectBooleanCheckbox id="seg_mec_pinchazos_#{c}"/></td></ui:repeat></tr>
+                                        <tr><td>Cortes</td>                     <ui:repeat value="#{cols}" var="c"><td><p:selectBooleanCheckbox id="seg_mec_cortes_#{c}"/></td></ui:repeat></tr>
+                                        <tr><td>Choques / colisión vehicular</td><ui:repeat value="#{cols}" var="c"><td><p:selectBooleanCheckbox id="seg_mec_colision_#{c}"/></td></ui:repeat></tr>
+                                        <tr><td>Atropellamientos por vehículos</td><ui:repeat value="#{cols}" var="c"><td><p:selectBooleanCheckbox id="seg_mec_atropello_#{c}"/></td></ui:repeat></tr>
+                                        <tr><td>Proyección de fluidos</td>      <ui:repeat value="#{cols}" var="c"><td><p:selectBooleanCheckbox id="seg_mec_proyFluidos_#{c}"/></td></ui:repeat></tr>
+                                        <tr><td>Proyección de partículas – fragmentos</td><ui:repeat value="#{cols}" var="c"><td><p:selectBooleanCheckbox id="seg_mec_proyPart_#{c}"/></td></ui:repeat></tr>
+                                        <tr><td>Contacto con superficies de trabajo</td><ui:repeat value="#{cols}" var="c"><td><p:selectBooleanCheckbox id="seg_mec_superficies_#{c}"/></td></ui:repeat></tr>
+                                        <tr><td><strong>ELÉCTRICOS</strong> — Contacto eléctrico</td><ui:repeat value="#{cols}" var="c"><td><p:selectBooleanCheckbox id="seg_elec_contacto_#{c}"/></td></ui:repeat></tr>
+                                        <tr><td><em>Otros (Seguridad)</em></td> <ui:repeat value="#{cols}" var="c"><td><p:inputText id="seg_otros_#{c}" styleClass="cell-input" placeholder="Otro #{c}"/></td></ui:repeat></tr>
+                                    </tbody>
+                                </table>
+                            </p:fieldset>
 
-          <p:separator/>
+                            <!-- ================= BLOQUE: QUÍMICO ================= -->
+                            <p:fieldset legend="QUÍMICO" toggleable="true" collapsed="true" style="margin-top:10px;">
+                                <table class="risk-grid">
+                                    <colgroup>
+                                        <col class="risk-col-label"/>
+                                        <col class="risk-col"/><col class="risk-col"/><col class="risk-col"/>
+                                        <col class="risk-col"/><col class="risk-col"/><col class="risk-col"/><col class="risk-col"/>
+                                    </colgroup>
+                                    <tbody>
+                                        <tr><td>Polvos</td>      <ui:repeat value="#{cols}" var="c"><td><p:selectBooleanCheckbox id="qui_polv_#{c}"/></td></ui:repeat></tr>
+                                        <tr><td>Sólidos</td>     <ui:repeat value="#{cols}" var="c"><td><p:selectBooleanCheckbox id="qui_solidos_#{c}"/></td></ui:repeat></tr>
+                                        <tr><td>Humos</td>       <ui:repeat value="#{cols}" var="c"><td><p:selectBooleanCheckbox id="qui_humos_#{c}"/></td></ui:repeat></tr>
+                                        <tr><td>Líquidos</td>    <ui:repeat value="#{cols}" var="c"><td><p:selectBooleanCheckbox id="qui_liquidos_#{c}"/></td></ui:repeat></tr>
+                                        <tr><td>Vapores</td>     <ui:repeat value="#{cols}" var="c"><td><p:selectBooleanCheckbox id="qui_vapores_#{c}"/></td></ui:repeat></tr>
+                                        <tr><td>Aerosoles</td>   <ui:repeat value="#{cols}" var="c"><td><p:selectBooleanCheckbox id="qui_aerosoles_#{c}"/></td></ui:repeat></tr>
+                                        <tr><td>Neblinas</td>    <ui:repeat value="#{cols}" var="c"><td><p:selectBooleanCheckbox id="qui_neblinas_#{c}"/></td></ui:repeat></tr>
+                                        <tr><td>Gaseosos</td>    <ui:repeat value="#{cols}" var="c"><td><p:selectBooleanCheckbox id="qui_gases_#{c}"/></td></ui:repeat></tr>
+                                        <tr>
+                                            <td><em>Otros (Químico)</em></td>
+                                            <ui:repeat value="#{cols}" var="c"><td><p:inputText id="qui_otros_#{c}" styleClass="cell-input" placeholder="Otro #{c}"/></td></ui:repeat>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </p:fieldset>
 
-          <p:panel header="O. Datos del profesional">
-            <h:panelGrid columns="4" styleClass="ui-fluid">
-              <h:outputText value="Nombre y apellido"/><p:inputText/>
-              <h:outputText value="Código médico"/><p:inputText/>
-            </h:panelGrid>
-          </p:panel>
-        </p:tab>
+                            <!-- ================= BLOQUE: BIOLÓGICO ================= -->
+                            <p:fieldset legend="BIOLÓGICO" toggleable="true" collapsed="true" style="margin-top:10px;">
+                                <table class="risk-grid">
+                                    <colgroup>
+                                        <col class="risk-col-label"/>
+                                        <col class="risk-col"/><col class="risk-col"/><col class="risk-col"/>
+                                        <col class="risk-col"/><col class="risk-col"/><col class="risk-col"/><col class="risk-col"/>
+                                    </colgroup>
+                                    <tbody>
+                                        <tr><td>Virus</td>                        <ui:repeat value="#{cols}" var="c"><td><p:selectBooleanCheckbox id="bio_virus_#{c}"/></td></ui:repeat></tr>
+                                        <tr><td>Hongos</td>                       <ui:repeat value="#{cols}" var="c"><td><p:selectBooleanCheckbox id="bio_hongos_#{c}"/></td></ui:repeat></tr>
+                                        <tr><td>Bacterias</td>                    <ui:repeat value="#{cols}" var="c"><td><p:selectBooleanCheckbox id="bio_bacterias_#{c}"/></td></ui:repeat></tr>
+                                        <tr><td>Parásitos</td>                    <ui:repeat value="#{cols}" var="c"><td><p:selectBooleanCheckbox id="bio_parasitos_#{c}"/></td></ui:repeat></tr>
+                                        <tr><td>Exposición a vectores</td>        <ui:repeat value="#{cols}" var="c"><td><p:selectBooleanCheckbox id="bio_vectores_#{c}"/></td></ui:repeat></tr>
+                                        <tr><td>Exposición a animales selváticos</td><ui:repeat value="#{cols}" var="c"><td><p:selectBooleanCheckbox id="bio_selvaticos_#{c}"/></td></ui:repeat></tr>
+                                        <tr>
+                                            <td><em>Otros (Biológico)</em></td>
+                                            <ui:repeat value="#{cols}" var="c"><td><p:inputText id="bio_otros_#{c}" styleClass="cell-input" placeholder="Otro #{c}"/></td></ui:repeat>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </p:fieldset>
 
-        <!-- ===================================================== -->
-        <!-- STEP 4: Visor PDF – Certificado                       -->
-        <!-- ===================================================== -->
-        <p:tab id="step4" title="Certificado (PDF)">
-          <p:panel header="Certificado - Evaluación Médica Ocupacional">
-            <!-- Ajusta la ruta a un PDF real en tu app, por ejemplo resources/pdf/ejemplo.pdf -->
-            <object id="pdf_certificado" type="application/pdf"
-                    data="/resources/pdf/ejemplo.pdf?pfdrid_c=true"
-                    width="100%" height="600px">
-              Su navegador no soporta PDF.
-              <p:commandButton value="Descargar" ajax="false" icon="pi pi-download"/>
-            </object>
-          </p:panel>
-        </p:tab>
+                            <!-- ================= BLOQUE: ERGONÓMICO ================= -->
+                            <p:fieldset legend="ERGONÓMICO" toggleable="true" collapsed="true" style="margin-top:10px;">
+                                <table class="risk-grid">
+                                    <colgroup>
+                                        <col class="risk-col-label"/>
+                                        <col class="risk-col"/><col class="risk-col"/><col class="risk-col"/>
+                                        <col class="risk-col"/><col class="risk-col"/><col class="risk-col"/><col class="risk-col"/>
+                                    </colgroup>
+                                    <tbody>
+                                        <tr><td>Manejo manual de cargas</td>  <ui:repeat value="#{cols}" var="c"><td><p:selectBooleanCheckbox id="erg_cargas_#{c}"/></td></ui:repeat></tr>
+                                        <tr><td>Movimientos repetitivos</td>  <ui:repeat value="#{cols}" var="c"><td><p:selectBooleanCheckbox id="erg_repetitivos_#{c}"/></td></ui:repeat></tr>
+                                        <tr><td>Posturas forzadas</td>        <ui:repeat value="#{cols}" var="c"><td><p:selectBooleanCheckbox id="erg_posturas_#{c}"/></td></ui:repeat></tr>
+                                        <tr><td>Trabajos con PVD</td>         <ui:repeat value="#{cols}" var="c"><td><p:selectBooleanCheckbox id="erg_pvd_#{c}"/></td></ui:repeat></tr>
+                                        <tr><td>Diseño inadecuado del puesto</td><ui:repeat value="#{cols}" var="c"><td><p:selectBooleanCheckbox id="erg_puesto_#{c}"/></td></ui:repeat></tr>
+                                        <tr>
+                                            <td><em>Otros (Ergonómico)</em></td>
+                                            <ui:repeat value="#{cols}" var="c"><td><p:inputText id="erg_otros_#{c}" styleClass="cell-input" placeholder="Otro #{c}"/></td></ui:repeat>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </p:fieldset>
 
-      </p:wizard>
+                            <!-- ================= BLOQUE: PSICOSOCIAL ================= -->
+                            <p:fieldset legend="PSICOSOCIAL" toggleable="true" collapsed="true" style="margin-top:10px;">
+                                <table class="risk-grid">
+                                    <colgroup>
+                                        <col class="risk-col-label"/>
+                                        <col class="risk-col"/><col class="risk-col"/><col class="risk-col"/>
+                                        <col class="risk-col"/><col class="risk-col"/><col class="risk-col"/><col class="risk-col"/>
+                                    </colgroup>
+                                    <tbody>
+                                        <tr><td>Monotonía del trabajo</td>     <ui:repeat value="#{cols}" var="c"><td><p:selectBooleanCheckbox id="psi_monotonia_#{c}"/></td></ui:repeat></tr>
+                                        <tr><td>Sobrecarga laboral</td>        <ui:repeat value="#{cols}" var="c"><td><p:selectBooleanCheckbox id="psi_sobrecarga_#{c}"/></td></ui:repeat></tr>
+                                        <tr><td>Alta responsabilidad</td>      <ui:repeat value="#{cols}" var="c"><td><p:selectBooleanCheckbox id="psi_responsabilidad_#{c}"/></td></ui:repeat></tr>
+                                        <tr><td>Autonomía en decisiones</td>   <ui:repeat value="#{cols}" var="c"><td><p:selectBooleanCheckbox id="psi_autonomia_#{c}"/></td></ui:repeat></tr>
+                                        <tr><td>Relaciones interpersonales</td><ui:repeat value="#{cols}" var="c"><td><p:selectBooleanCheckbox id="psi_relaciones_#{c}"/></td></ui:repeat></tr>
+                                        <tr><td>Inestabilidad laboral</td>     <ui:repeat value="#{cols}" var="c"><td><p:selectBooleanCheckbox id="psi_inestabilidad_#{c}"/></td></ui:repeat></tr>
+                                        <tr><td>Amenaza delincuencial</td>     <ui:repeat value="#{cols}" var="c"><td><p:selectBooleanCheckbox id="psi_amenaza_#{c}"/></td></ui:repeat></tr>
+                                        <tr>
+                                            <td><em>Otros (Psicosocial)</em></td>
+                                            <ui:repeat value="#{cols}" var="c"><td><p:inputText id="psi_otros_#{c}" styleClass="cell-input" placeholder="Otro #{c}"/></td></ui:repeat>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </p:fieldset>
 
-      <!-- Barra de navegación propia: SIEMPRE funciona -->
-      <p:toolbar styleClass="mt-3">
-        <p:toolbarGroup>
-          <p:commandButton value="Anterior"
-                           type="button"
-                           icon="pi pi-angle-left"
-                           onclick="PF('wiz').back();"
-                           process="@this"
-                           update=":form"/>
-          <p:spacer width="8"/>
-          <p:commandButton value="Siguiente"
-                           type="button"
-                           icon="pi pi-angle-right"
-                           onclick="PF('wiz').next();"
-                           process=":form"
-                           update=":form"/>
-        </p:toolbarGroup>
-      </p:toolbar>
+                            <!-- ================= FILA: MEDIDAS PREVENTIVAS ================= -->
+                            <table class="risk-grid" style="margin-top:10px;">
+                                <colgroup>
+                                    <col class="risk-col-label"/>
+                                    <col class="risk-col"/><col class="risk-col"/><col class="risk-col"/>
+                                    <col class="risk-col"/><col class="risk-col"/><col class="risk-col"/><col class="risk-col"/>
+                                </colgroup>
+                                <tbody>
+                                    <tr>
+                                        <td><strong>MEDIDAS PREVENTIVAS</strong></td>
+                                        <ui:repeat value="#{cols}" var="c">
+                                            <td><p:inputText id="medPrev_#{c}" styleClass="cell-input" placeholder="Medida #{c}"/></td>
+                                        </ui:repeat>
+                                    </tr>
+                                </tbody>
+                            </table>
 
-    </h:form>
-  </ui:define>
+                        </h:panelGroup>
+                    </p:panel>
+                </p:tab>
+
+
+                <!-- ===================================================== -->
+                <!-- STEP 3: H–O (Historia, resultados, aptitud, etc.)      -->
+                <!-- ===================================================== -->
+
+                <!-- ===================================================== -->
+                <!-- STEP 3: H–O (Historia, resultados, aptitud, etc.) con acordeón -->
+                <!-- ===================================================== -->
+                <!-- ===================================================== -->
+                <!-- STEP 3: H–O (Historia, resultados, aptitud, etc.) con FIELDSETS -->
+                <!-- ===================================================== -->
+                <p:tab id="step3" title="Historia / Resultados (H–O)">
+
+                    <!-- ===================== H ===================== -->
+                    <p:fieldset legend="H. Actividad laboral / incidentes / accidentes / enfermedades ocupacionales" toggleable="true" collapsed="false">
+                        <h:panelGroup layout="block" styleClass="ui-fluid panel-scroll">
+
+                            <ui:param name="rows" value="#{['1','2','3','4','5','6','7','8']}" />
+
+                            <table class="fit-table">
+                                <colgroup>
+                                    <col class="h-col-ct"/><col class="h-col-acts"/>
+                                    <col class="h-col-chk"/><col class="h-col-chk"/><col class="h-col-tiempo"/>
+                                    <col class="h-col-chk"/><col class="h-col-chk"/><col class="h-col-chk"/>
+                                    <col class="h-col-chk"/><col class="h-col-chk"/><col class="h-col-fecha"/><col class="h-col-espec"/>
+                                    <col class="h-col-obsv"/>
+                                </colgroup>
+                                <thead>
+                                    <tr>
+                                        <th rowspan="2">CENTRO DE TRABAJO</th>
+                                        <th rowspan="2">ACTIVIDADES QUE DESEMPEÑABA</th>
+                                        <th colspan="3">TRABAJO</th>
+                                        <th colspan="3">De los Accidentes de Trabajo y las Enfermedades Profesionales</th>
+                                        <th colspan="4">CALIFICADO POR INSTITUTO ECUATORIANO DE SEGURIDAD SOCIAL</th>
+                                        <th rowspan="2">OBSERVACIONES</th>
+                                    </tr>
+                                    <tr>
+                                        <th>ANTERIOR</th><th>ACTUAL</th><th>TIEMPO DE TRABAJO</th>
+                                        <th>INCIDENTE</th><th>ACCIDENTE</th><th>ENFERMEDAD PROFESIONAL</th>
+                                        <th>SI</th><th>NO</th><th>FECHA<br/><span class="h-note">aaaa/mm/dd</span></th><th>ESPECIFICAR</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <ui:repeat value="#{rows}" var="r">
+                                        <tr>
+                                            <td><p:inputText id="centro_#{r}" styleClass="cell-input" placeholder="Centro #{r}"/></td>
+                                            <td><p:inputText id="act_#{r}" styleClass="cell-input" placeholder="Actividad #{r}"/></td>
+                                            <td style="text-align:center"><p:selectBooleanCheckbox id="trab_ant_#{r}"/></td>
+                                            <td style="text-align:center"><p:selectBooleanCheckbox id="trab_act_#{r}"/></td>
+                                            <td><p:inputText id="trab_tiempo_#{r}" styleClass="cell-input" placeholder="Tiempo"/></td>
+                                            <td style="text-align:center"><p:selectBooleanCheckbox id="incidente_#{r}"/></td>
+                                            <td style="text-align:center"><p:selectBooleanCheckbox id="accidente_#{r}"/></td>
+                                            <td style="text-align:center"><p:selectBooleanCheckbox id="enfermedad_#{r}"/></td>
+                                            <td style="text-align:center"><p:selectBooleanCheckbox id="iess_si_#{r}"/></td>
+                                            <td style="text-align:center"><p:selectBooleanCheckbox id="iess_no_#{r}"/></td>
+                                            <td> <p:calendar id="iess_fecha_#{r}" pattern="yyyy/MM/dd" mask="true" navigator="true" showOn="button"/> </td>
+                                            <td><p:inputTextarea id="iess_especificar_#{r}"  rows="2"  styleClass="cell-textarea" placeholder="Detalle" autoResize="true"/></td>
+                                            <td><p:inputTextarea id="obs_#{r}" rows="2" autoResize="true" styleClass="cell-textarea" placeholder="Observaciones"/></td>
+                                        </tr>
+                                    </ui:repeat>
+                                </tbody>
+                            </table>
+
+                        </h:panelGroup>
+                    </p:fieldset>
+
+                    <!-- ===================== I ===================== -->
+                    <p:fieldset legend="I. Actividades extralaborales" toggleable="true" collapsed="true">
+                        <h:panelGroup layout="block" styleClass="ui-fluid panel-scroll">
+                            <ui:param name="actividades" value="#{['1','2','3']}" />
+                            <table class="i-grid">
+                                <colgroup>
+                                    <col class="i-col-type"/><col class="i-col-date"/><col class="i-col-desc"/>
+                                </colgroup>
+                                <thead>
+                                    <tr class="i-header">
+                                        <th>TIPO DE ACTIVIDAD</th><th>FECHA (aaaa/mm/dd)</th><th>DESCRIPCIÓN</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <ui:repeat value="#{actividades}" var="a">
+                                        <tr>
+                                            <td><p:inputText id="tipoAct_#{a}" styleClass="cell-input" placeholder="Tipo #{a}"/></td>
+                                            <td class="i-date">
+                                                <p:calendar id="fechaAct_#{a}" pattern="yyyy/MM/dd" mask="true" navigator="true" showOn="button"/>
+                                            </td>
+                                            <td><p:inputTextarea id="descAct_#{a}" rows="2" autoResize="true" styleClass="cell-textarea" placeholder="Descripción #{a}"/></td>
+                                        </tr>
+                                    </ui:repeat>
+                                </tbody>
+                            </table>
+                        </h:panelGroup>
+                    </p:fieldset>
+
+                    <!-- ===================== J ===================== -->
+                    <p:fieldset legend="J. Resultados de exámenes generales y específicos de acuerdo al riesgo y puesto de trabajo (imagen, laboratorio y otros)" toggleable="true" collapsed="true">
+                        <h:panelGroup layout="block" styleClass="ui-fluid panel-scroll">
+                            <ui:param name="rows" value="#{['1','2','3','4','5']}" />
+                            <table class="j-grid">
+                                <colgroup><col class="j-col-exam"/><col class="j-col-date"/><col class="j-col-res"/></colgroup>
+                                <thead>
+                                    <tr class="j-header">
+                                        <th>NOMBRE DEL EXAMEN</th><th>FECHA (aaaa/mm/dd)</th><th>RESULTADOS</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <ui:repeat value="#{rows}" var="r">
+                                        <tr>
+                                            <td><p:inputText id="examNombre_#{r}" styleClass="cell-input" placeholder="Examen #{r}"/></td>
+                                            <td class="j-date"><p:calendar id="examFecha_#{r}" pattern="yyyy/MM/dd" mask="true" navigator="true" showOn="button"/></td>
+                                            <td><p:inputText id="examResultado_#{r}" styleClass="cell-input" placeholder="Resultado #{r}"/></td>
+                                        </tr>
+                                    </ui:repeat>
+                                </tbody>
+                            </table>
+
+                            <!-- Observaciones generales (más ancha y centrada) -->
+                            <h:panelGrid columns="1" style="margin-top:10px; width:100%;" styleClass="ui-fluid">
+                                <h:outputLabel for="obsJ" value="OBSERVACIONES:" style="font-weight:bold; display:block; margin-bottom:4px;"/>
+                                <p:inputTextarea id="obsJ"
+                                                 rows="4"
+                                                 autoResize="true"
+                                                 styleClass="cell-textarea j-observacion"
+                                                 placeholder="Observaciones generales de los exámenes"/>
+                            </h:panelGrid>
+
+                        </h:panelGroup>
+                    </p:fieldset>
+
+                    <!-- ===================== K ===================== -->
+                    <p:fieldset legend="K. Diagnóstico — PRE: Presuntivo  DEF: Definitivo" toggleable="true" collapsed="true">
+                        <h:panelGroup layout="block" styleClass="ui-fluid panel-scroll">
+
+                            <!-- 6 filas -->
+                            <ui:param name="kRows" value="#{['1','2','3','4','5','6']}" />
+
+                            <table class="k-grid">
+                                <colgroup>
+                                    <col class="k-col-cie"/>
+                                    <col class="k-col-desc"/>
+                                    <col class="k-col-pre"/>
+                                    <col class="k-col-def"/>
+                                </colgroup>
+
+                                <thead>
+                                    <tr class="k-head">
+                                        <th colspan="4">
+                                            K. DIAGNÓSTICO
+                                            <span style="font-weight:400"> PRE: PRESUNTIVO  DEF: DEFINITIVO</span>
+                                        </th>
+                                    </tr>
+                                    <tr class="k-sub">
+                                        <th>CIE-10</th>
+                                        <th>Descripción</th>
+                                        <th>PRE</th>
+                                        <th>DEF</th>
+                                    </tr>
+                                </thead>
+
+                                <tbody>
+                                    <ui:repeat value="#{kRows}" var="r">
+                                        <tr>
+                                            <!-- CIE-10 -->
+                                            <td>
+                                                <p:inputText id="k_cie_#{r}" styleClass="cell-input"
+                                                             placeholder="Código CIE-10 #{r}"/>
+                                            </td>
+
+                                            <!-- Descripción -->
+                                            <td>
+                                                <p:inputText id="k_desc_#{r}" styleClass="cell-input"
+                                                             placeholder="Descripción #{r}"/>
+                                            </td>
+
+                                            <!-- PRE (radio nativo HTML) -->
+                                            <td style="text-align:center">
+                                                <input type="radio" name="diag_tipo_#{r}" value="PRE"/>
+                                            </td>
+
+                                            <!-- DEF (radio nativo HTML) -->
+                                            <td style="text-align:center">
+                                                <input type="radio" name="diag_tipo_#{r}" value="DEF"/>
+                                            </td>
+                                        </tr>
+                                    </ui:repeat>
+                                </tbody>
+                            </table>
+
+                        </h:panelGroup>
+                    </p:fieldset>
+
+
+                    <!-- ===================== L ===================== -->
+                    <p:fieldset legend="L. APTITUD MÉDICA PARA EL TRABAJO" toggleable="true">
+                        <h:panelGroup layout="block" styleClass="ui-fluid">
+
+                            <!-- Radios de aptitud en 4 columnas -->
+                            <table class="l-grid">
+                                <colgroup>
+                                    <col class="l-col-opt"/>
+                                    <col class="l-col-opt"/>
+                                    <col class="l-col-opt"/>
+                                    <col class="l-col-opt"/>
+                                </colgroup>
+                                <thead>
+                                    <tr class="l-head">
+                                        <th>APTO</th>
+                                        <th>APTO EN OBSERVACIÓN</th>
+                                        <th>APTO CON LIMITACIONES</th>
+                                        <th>NO APTO</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <!-- Grupo de radios (mutuamente exclusivos) -->
+                                        <td class="l-cell-radio">
+                                            <p:selectOneRadio id="aptitud" layout="custom" value="#{tuBean.aptitud}">
+                                                <f:selectItem itemLabel="APTO" itemValue="APTO"/>
+                                                <f:selectItem itemLabel="APTO_EN_OBS" itemValue="APTO_EN_OBS"/>
+                                                <f:selectItem itemLabel="APTO_LIMIT" itemValue="APTO_LIMIT"/>
+                                                <f:selectItem itemLabel="NO_APTO" itemValue="NO_APTO"/>
+                                            </p:selectOneRadio>
+                                            <!-- Radio visible en esta celda -->
+                                            <p:radioButton for="aptitud" itemIndex="0"/>
+                                        </td>
+                                        <td class="l-cell-radio">
+                                            <p:radioButton for="aptitud" itemIndex="1"/>
+                                        </td>
+                                        <td class="l-cell-radio">
+                                            <p:radioButton for="aptitud" itemIndex="2"/>
+                                        </td>
+                                        <td class="l-cell-radio">
+                                            <p:radioButton for="aptitud" itemIndex="3"/>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+
+                            <!-- Observaciones -->
+                            <h:panelGrid columns="1" style="width:100%; margin-top:8px;">
+                                <h:outputLabel for="l_obs" value="OBSERVACIONES:" style="font-weight:bold; margin-bottom:4px;"/>
+                                <p:inputTextarea id="l_obs"
+                                                 value="#{tuBean.aptitudObservaciones}"
+                                                 rows="4"
+                                                 autoResize="true"
+                                                 styleClass="l-observaciones"
+                                                 placeholder="Observaciones generales sobre la aptitud"/>
+                            </h:panelGrid>
+
+                        </h:panelGroup>
+                    </p:fieldset>
+
+
+                    <!-- ===================== M ===================== -->
+                    <p:fieldset legend="M. Recomendaciones y/o tratamiento" toggleable="true" collapsed="true">
+                        <p:inputTextarea rows="3" style="width:100%"/>
+                    </p:fieldset>
+
+                    <!-- ===================== N ===================== -->
+                    <p:fieldset legend="N. RETIRO (evaluación)" toggleable="true">
+                        <h:panelGroup layout="block" styleClass="ui-fluid">
+
+                            <table class="n-grid">
+                                <colgroup>
+                                    <col class="n-col-label"/>
+                                    <col class="n-col-si"/>
+                                    <col class="n-col-no"/>
+                                </colgroup>
+
+                                <thead>
+                                    <tr class="n-sub">
+                                        <th></th>
+                                        <th>SI</th>
+                                        <th>NO</th>
+                                    </tr>
+                                </thead>
+
+                                <tbody>
+                                    <!-- Fila 1 -->
+                                    <tr>
+                                        <td>SE REALIZA LA EVALUACIÓN</td>
+                                        <td class="n-center">
+                                            <input type="radio" name="n_realiza_eval" value="SI"/>
+                                        </td>
+                                        <td class="n-center">
+                                            <input type="radio" name="n_realiza_eval" value="NO"/>
+                                        </td>
+                                    </tr>
+
+                                    <!-- Fila 2 -->
+                                    <tr>
+                                        <td>LA CONDICIÓN DE SALUD ESTÁ RELACIONADA CON EL TRABAJO</td>
+                                        <td class="n-center">
+                                            <input type="radio" name="n_relacion_trabajo" value="SI"/>
+                                        </td>
+                                        <td class="n-center">
+                                            <input type="radio" name="n_relacion_trabajo" value="NO"/>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+
+                            <!-- Observación -->
+                            <h:panelGrid columns="1" style="width:100%; margin-top:8px;">
+                                <h:outputLabel for="n_obs" value="Observación:" style="font-weight:bold; margin-bottom:4px;"/>
+                                <p:inputTextarea id="n_obs"
+                                                 rows="3"
+                                                 autoResize="true"
+                                                 styleClass="n-observacion"
+                                                 placeholder="Detalle de la evaluación de retiro"/>
+                            </h:panelGrid>
+
+                        </h:panelGroup>
+                    </p:fieldset>
+
+
+                    <!-- ===================== O ===================== -->
+                    <p:fieldset legend="O. Datos del profesional" toggleable="true" collapsed="true">
+                        <h:panelGrid columns="4" styleClass="ui-fluid">
+                            <h:outputText value="Nombre y apellido"/><p:inputText/>
+                            <h:outputText value="Código médico"/><p:inputText/>
+                        </h:panelGrid>
+                    </p:fieldset>
+
+                </p:tab>
+
+
+                <!-- ===================================================== -->
+                <!-- STEP 4: Visor PDF – Certificado                       -->
+                <!-- ===================================================== -->
+                <p:tab id="step4" title="Certificado (PDF)">
+                    <p:panel header="Certificado - Evaluación Médica Ocupacional">
+                        <object id="pdf_certificado" type="application/pdf"
+                                data="/resources/pdf/ejemplo.pdf?pfdrid_c=true"
+                                width="100%" height="600px">
+                            Su navegador no soporta PDF.
+                            <p:commandButton value="Descargar" ajax="false" icon="pi pi-download"/>
+                        </object>
+                    </p:panel>
+                </p:tab>
+
+            </p:wizard>
+
+            <!-- Barra de navegación propia -->
+            <p:toolbar styleClass="mt-3">
+                <p:toolbarGroup>
+                    <p:commandButton value="Anterior" type="button" icon="pi pi-angle-left"
+                                     onclick="PF('wiz').back();" process="@this" update=":form"/>
+                    <p:spacer width="8"/>
+                    <p:commandButton value="Siguiente" type="button" icon="pi pi-angle-right"
+                                     onclick="PF('wiz').next();" process=":form" update=":form"/>
+                </p:toolbarGroup>
+            </p:toolbar>
+
+        </h:form>
+    </ui:define>
 </ui:composition>

@@ -14,11 +14,11 @@ import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.faces.application.FacesMessage;
 import javax.faces.view.ViewScoped;
-import javax.inject.Named;
 import java.io.Serializable;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import javax.faces.bean.ManagedBean;
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.validator.ValidatorException;
@@ -27,7 +27,7 @@ import javax.faces.validator.ValidatorException;
  *
  * @author GUERRA_KLEBER
  */
-@Named("empleadoController")
+@ManagedBean(name = "empleadoController")
 @ViewScoped
  
 public class EmpleadoController implements Serializable {

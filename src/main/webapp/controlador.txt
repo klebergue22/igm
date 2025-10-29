@@ -1,327 +1,131 @@
 package ec.gob.prueba.prueba_maven.web;
-
-import ec.gob.prueba.prueba_maven.modelo.Contratacion;
-import ec.gob.prueba.prueba_maven.modelo.DatEmpleado;
-import ec.gob.prueba.prueba_maven.modelo.enums.EstadoContrato;
-import ec.gob.prueba.prueba_maven.modelo.enums.TipoContrato;
-import ec.gob.prueba.prueba_maven.servicio.ContratacionService;
-
-import lombok.extern.slf4j.Slf4j;
-
-import javax.annotation.PostConstruct;
-import javax.ejb.EJB;
-import javax.faces.application.FacesMessage;
-import javax.enterprise.context.SessionScoped;  // CAMBIADO
-import javax.inject.Named;
-import javax.faces.context.FacesContext;
 import java.io.Serializable;
-import java.math.BigDecimal;
-import java.util.Collections;
+import java.util.Calendar;
 import java.util.Date;
-import java.util.Arrays;
-import java.util.List;
+import java.util.Locale;
+import javax.annotation.PostConstruct;
+import javax.faces.application.FacesMessage;
+import javax.faces.bean.ManagedBean;   // <-- JSF ManagedBean (no CDI)
+import javax.faces.bean.ViewScoped;   // <-- ViewScoped de JSF 2.2
+import javax.faces.context.FacesContext;
+import org.primefaces.event.SelectEvent;
+import lombok.Getter; import lombok.Setter; import lombok.ToString;
 
-import org.primefaces.PrimeFaces;
+@ManagedBean(name = "centroMedicoCtrl")
+@ViewScoped
+@Getter @Setter @ToString
+public class CentroMedicoCtrl implements Serializable {
+  private static final long serialVersionUID = 1L;
+  
+  
 
-@Named("contratacionController")
-@SessionScoped  // CAMBIADO de @ViewScoped
-@Slf4j
-public class ContratacionController implements Serializable {
+    // ========= A. DATOS DEL ESTABLECIMIENTO / USUARIO =========
+    private String institucion;
+    private String ruc;
+    private String ciiu;
+    private String centroTrabajo;
 
-    private static final long serialVersionUID = 1L;
+    private String noHistoria;
+    private String noArchivo;
 
-    @EJB
-    private ContratacionService service;
+    private String apellido1;
+    private String apellido2;
+    private String nombre1;
+    private String nombre2;
 
-    // Getters y Setters EXPLÍCITOS (sin @Getter @Setter de Lombok)
-    private BigDecimal filtroNoPersona;
-    private List<Contratacion> lista;
-    private Contratacion seleccionado;
-    private int page = 0;
-    private int size = 20;
-    private String nombreEmpleado = ""; // INICIALIZAR para evitar null
-    private List<EstadoContrato> estadosEnum;
-    private List<TipoContrato> tiposContratoEnum;
+    // Atención prioritaria
+    private boolean apEmbarazada;
+    private boolean apDiscapacidad;
+    private boolean apCatastrofica;
+    private boolean apLactancia;
+    private boolean apAdultoMayor;
 
-    @PostConstruct
-    public void init() {
-        System.out.println("========================================");
-        System.out.println("INIT ContratacionController - " + System.currentTimeMillis());
-        System.out.println("Service: " + (service != null ? "OK" : "NULL"));
-        System.out.println("========================================");
+    // Sexo (M o F)
+    private String sexo;
 
-        lista = Collections.emptyList();
-        seleccionado = null;
-        estadosEnum = Arrays.asList(EstadoContrato.values());
-        tiposContratoEnum = Arrays.asList(TipoContrato.values());
-        log.info("ContratacionController inicializado");
+    // Fecha nacimiento / Edad
+    private Date fechaNacimiento;
+    private Integer edad;
+
+    // Grupo sanguíneo / Lateralidad
+    private String grupoSanguineo;
+    private String lateralidad;
+
+    // ========= C. ANTECEDENTES PERSONALES =========
+    private String antClinicoQuirurgico;
+    private String antFamiliares;
+    private String condicionEspecial;
+
+    private String autorizaTransfusion;
+    private String tratamientoHormonal;
+    private String tratamientoHormonalCual;
+
+    // ---- Solo hombres ----
+    private String examenReproMasculino;
+    private Integer tiempoReproMasculino;
+
+    // ---- Solo mujeres ----
+    private Date fum; // Fecha última menstruación
+    private Integer gestas;
+    private Integer partos;
+    private Integer cesareas;
+    private Integer abortos;
+    private String planificacion;
+    private String planificacionCual;
+ 
+
+  @PostConstruct
+  public void init() {
+    sexo = "M";
+    grupoSanguineo = ""; lateralidad = "";
+    FacesContext.getCurrentInstance().getViewRoot().setLocale(new Locale("es"));
+  }
+
+  // Listener cuando se elige desde el popup
+  public void onFechaNacimientoSelect(SelectEvent e) {
+    this.fechaNacimiento = (Date) e.getObject();
+    this.edad = calcularEdad(this.fechaNacimiento);
+  }
+
+  // Listener cuando el usuario escribe manualmente
+  public void onFechaNacimientoChange() {
+    this.edad = calcularEdad(this.fechaNacimiento);
+  }
+
+  public void setFechaNacimiento(Date f) {  // por si cambia vía binding
+    this.fechaNacimiento = f;
+    this.edad = calcularEdad(f);
+  }
+
+  // Añade esto dentro de CentroMedicoCtrl
+public void calcularEdad() {
+    // JSF ya habrá seteado fechaNacimiento; sólo recalculamos
+    this.edad = calcularEdad(this.fechaNacimiento);
+}
+
+  private Integer calcularEdad(Date f) {
+      
+    if (f == null) return null;
+    Calendar hoy = Calendar.getInstance();
+    Calendar nac = Calendar.getInstance(); nac.setTime(f);
+    int years = hoy.get(Calendar.YEAR) - nac.get(Calendar.YEAR);
+    int mh = hoy.get(Calendar.MONTH), mn = nac.get(Calendar.MONTH);
+    if (mh < mn || (mh == mn && hoy.get(Calendar.DAY_OF_MONTH) < nac.get(Calendar.DAY_OF_MONTH))) years--;
+    return Math.max(years, 0);
+  }
+
+  public Date getFechaMaximaNacimiento() {
+    Calendar cal = Calendar.getInstance();
+    cal.add(Calendar.YEAR, -18);
+    cal.set(Calendar.HOUR_OF_DAY,0); cal.set(Calendar.MINUTE,0); cal.set(Calendar.SECOND,0); cal.set(Calendar.MILLISECOND,0);
+    return cal.getTime();
+  }
+
+  public void validarEdadMinima() {
+    if (edad != null && edad < 18) {
+      FacesContext.getCurrentInstance().addMessage(null,
+        new FacesMessage(FacesMessage.SEVERITY_ERROR,"Error","La edad debe ser ≥ 18 años"));
+      fechaNacimiento = null; edad = null;
     }
-
-    public void ping() {
-        System.out.println("========================================");
-        System.out.println("PING EJECUTADO - " + new Date());
-        System.out.println("========================================");
-
-        FacesContext.getCurrentInstance()
-                .addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO,
-                        "Ping OK - " + new Date(), null));
-    }
-
-    /* ===================== BÚSQUEDA ===================== */
-    public void buscar() {
-        System.out.println("========================================");
-        System.out.println("BUSCAR EJECUTADO!!!");
-        System.out.println("filtroNoPersona = " + filtroNoPersona);
-        System.out.println("service = " + (service != null ? "OK" : "NULL"));
-        System.out.println("========================================");
-
-        if (filtroNoPersona == null) {
-            msgWarn("Ingrese No. Persona");
-            lista = Collections.emptyList();
-            return;
-        }
-
-        try {
-            // Verificar si la persona existe
-            if (!service.existePersona(filtroNoPersona)) {
-                msgWarn("El No. Persona " + filtroNoPersona + " no existe en Datos Personales.");
-                lista = Collections.emptyList();
-                return;
-            }
-
-            // Trae TODOS los contratos
-            lista = service.porPersonaTodos(filtroNoPersona);
-            System.out.println("Contratos encontrados: " + (lista == null ? 0 : lista.size()));
-            msgInfo("Contratos encontrados: " + (lista == null ? 0 : lista.size()));
-
-            // Verificar si la lista está vacía y mostrar el nombre del empleado
-            if (lista == null || lista.isEmpty()) {
-                DatEmpleado de = service.obtenerEmpleado(filtroNoPersona);
-                nombreEmpleado = (de != null && de.getNombreC() != null) ? de.getNombreC() : "(sin nombre)";
-                PrimeFaces.current().ajax().update("layoutForm:dlgCrear");
-                PrimeFaces.current().executeScript("PF('dlgCrear').show()");
-            }
-        } catch (Exception e) {
-            System.err.println("ERROR en buscar: " + e.getMessage());
-            e.printStackTrace();
-            msgError("Error al buscar: " + e.getMessage());
-        }
-    }
-
-    /* ============== CREACIÓN ============== */
-    public void crearNuevoDesdeDialogo() {
-        prepararNuevoYMostrar();
-        PrimeFaces.current().executeScript("PF('dlgCrear').hide()");
-    }
-
-    public void nuevoDesdeBoton() {
-        // 1) Validar que filtroNoPersona tenga valor
-        if (filtroNoPersona == null) {
-            msgWarn("Ingrese No. Persona");
-            return;
-        }
-
-        // 2) Validar que la persona exista
-        if (!service.existePersona(filtroNoPersona)) {
-            msgWarn("El No. Persona " + filtroNoPersona + " no existe en Datos Personales.");
-            return;
-        }
-
-        // 3) ⭐ NUEVA VALIDACIÓN: Verificar contrato vigente sin fecha de salida
-        if (service.existeContratoVigenteSinSalida(filtroNoPersona)) {
-            msgError("Contrato Vigente Activo",
-                    "Ya existe un contrato VIGENTE sin fecha de salida para el No. Persona " + filtroNoPersona
-                    + ". Complete o cierre el contrato actual antes de crear uno nuevo.");
-            return;
-        }
-
-        // 4) Todo OK → preparar y mostrar diálogo
-        prepararNuevoYMostrar();
-    }
-
-// Método auxiliar para mensajes de error (si no lo tienes)
-    private void msgError(String titulo, String detalle) {
-        FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, titulo, detalle);
-        FacesContext.getCurrentInstance().addMessage(null, msg);
-    }
-
-    public void prepararNuevoYMostrar() {
-        try {
-            BigDecimal noCont = service.siguienteNoCont(filtroNoPersona);
-
-            seleccionado = new Contratacion();
-            seleccionado.setNoPersona(filtroNoPersona);
-            seleccionado.setNoCont(noCont);
-            seleccionado.setEstado(EstadoContrato.VIGENTE);
-            seleccionado.setFeContrato(new Date());
-
-            PrimeFaces.current().ajax().update("layoutForm:dlg");
-            PrimeFaces.current().executeScript("PF('dlgCont').show()");
-        } catch (Exception e) {
-            log.error("Error preparando nuevo contrato", e);
-            msgError("Error preparando nuevo contrato: " + e.getMessage());
-        }
-    }
-
-    /* ===================== EDICIÓN ===================== */
-    public void editar(Contratacion fila) {
-        System.out.println("========================================");
-        System.out.println("EDITAR EJECUTADO - " + fila.getNoPersona() + "-" + fila.getNoCont());
-        System.out.println("========================================");
-
-        if (fila == null) {
-            msgWarn("No se encontró el registro a editar.");
-            return;
-        }
-        seleccionado = service.porId(fila.getNoPersona(), fila.getNoCont());
-        if (seleccionado == null) {
-            msgWarn("El registro ya no existe en BD.");
-            return;
-        }
-        // ⭐ DEBUG: Verificar que se cargaron los datos
-        System.out.println(">>> EDITAR cargado: RMU=" + seleccionado.getRmu()
-                + " ESTADO=" + seleccionado.getEstado()
-                + " F_CONTRATO=" + seleccionado.getFeContrato()
-                + " F_TIPOCONTRATO=" + seleccionado.getCeContrato()
-        );
-
-        // ⭐ CRÍTICO: Actualizar el diálogo con los datos cargados
-        PrimeFaces.current().ajax().update("layoutForm:dlg");
-
-        // ⭐ CRÍTICO: Mostrar el diálogo
-        PrimeFaces.current().executeScript("PF('dlgCont').show()");
-
-    }
-
-    /* ===================== GUARDAR ===================== */
-    public void guardar() {
-        System.out.println("esta ingresando a guardar o actualizar");
-        System.out.println("=== DEBUG GUARDAR ===");
-    System.out.println("Estado recibido: " + seleccionado.getEstado());
-    System.out.println("Tipo Contrato recibido: " + seleccionado.getCeContrato());
-    System.out.println("Estado es null?: " + (seleccionado.getEstado() == null));
-    System.out.println("Tipo Contrato es null?: " + (seleccionado.getCeContrato() == null));
-        try {
-            // Validación básica
-            if (seleccionado == null) {
-                msgWarn("No hay datos para guardar");
-                return;
-            }
-
-            // Asignar persona del filtro si es necesario
-            if (seleccionado.getNoPersona() == null && filtroNoPersona != null) {
-                seleccionado.setNoPersona(filtroNoPersona);
-            }
-
-            // Determinar si es nuevo o edición
-            boolean esNuevo = (seleccionado.getNoCont() == null);
-
-            // DEBUG: Log antes de guardar
-            System.out.println("========================================");
-            System.out.println(">>> ANTES DE GUARDAR:");
-            System.out.println("    NO_PERSONA: " + seleccionado.getNoPersona());
-            System.out.println("    NO_CONT: " + seleccionado.getNoCont());
-            System.out.println("    RMU: " + seleccionado.getRmu());
-            System.out.println("    ESTADO: " + seleccionado.getEstado());
-            System.out.println("    F_CONTRATO: " + seleccionado.getFeContrato());
-            System.out.println("    F_SALIDA: " + seleccionado.getFeSalida());
-            System.out.println("    ES_NUEVO: " + esNuevo);
-            System.out.println("========================================");
-
-            // Guardar en base de datos
-            seleccionado = service.guardar(seleccionado);
-
-            // DEBUG: Log después de guardar
-            System.out.println(">>> DESPUES DE GUARDAR - OK");
-            System.out.println("    NO_CONT asignado: " + seleccionado.getNoCont());
-
-            // Mensaje de éxito
-            if (esNuevo) {
-                msgInfo("Contrato creado exitosamente");
-            } else {
-                msgInfo("Contrato actualizado exitosamente");
-            }
-
-            // Refrescar el listado
-            buscar();
-
-            // Cerrar el diálogo
-            PrimeFaces.current().executeScript("PF('dlgCont').hide()");
-
-        } catch (Exception e) {
-            // Log del error
-            System.err.println("========================================");
-            System.err.println("ERROR AL GUARDAR:");
-            e.printStackTrace();
-            System.err.println("========================================");
-
-            log.error("Error al guardar contrato", e);
-            msgError("Error al guardar: " + e.getMessage());
-        }
-    }
-
-    /* ===================== GETTERS Y SETTERS ===================== */
-    public BigDecimal getFiltroNoPersona() {
-        return filtroNoPersona;
-    }
-
-    public void setFiltroNoPersona(BigDecimal filtroNoPersona) {
-        System.out.println("setFiltroNoPersona llamado con: " + filtroNoPersona);
-        this.filtroNoPersona = filtroNoPersona;
-    }
-
-    public List<Contratacion> getLista() {
-        return lista;
-    }
-
-    public void setLista(List<Contratacion> lista) {
-        this.lista = lista;
-    }
-
-    public Contratacion getSeleccionado() {
-        return seleccionado;
-    }
-
-    public void setSeleccionado(Contratacion seleccionado) {
-        this.seleccionado = seleccionado;
-    }
-
-    public String getNombreEmpleado() {
-        return nombreEmpleado;
-    }
-
-    public void setNombreEmpleado(String nombreEmpleado) {
-        this.nombreEmpleado = nombreEmpleado;
-    }
-
-    /* ===================== SOPORTE VISTA ===================== */
-    public EstadoContrato[] getEstadosEnum() {
-        return EstadoContrato.values();
-    }
-
-    public TipoContrato[] getTiposContratoEnum() {
-        return TipoContrato.values();
-    }
-
-    public boolean esVigente(Contratacion c) {
-        return c != null && c.getEstado() == EstadoContrato.VIGENTE;
-    }
-
-    /* ===================== MENSAJERÍA ===================== */
-    private void msg(FacesMessage.Severity s, String m) {
-        FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(s, m, null));
-    }
-
-    private void msgWarn(String m) {
-        msg(FacesMessage.SEVERITY_WARN, m);
-    }
-
-    private void msgInfo(String m) {
-        msg(FacesMessage.SEVERITY_INFO, m);
-    }
-
-    private void msgError(String m) {
-        msg(FacesMessage.SEVERITY_ERROR, m);
-    }
-
+  }
 }

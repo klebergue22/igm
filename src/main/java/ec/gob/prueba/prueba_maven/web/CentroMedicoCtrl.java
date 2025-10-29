@@ -1,36 +1,23 @@
 package ec.gob.prueba.prueba_maven.web;
-
 import java.io.Serializable;
-import java.time.LocalDate;
-import java.time.Period;
-import java.time.ZoneId;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.Locale;
 import javax.annotation.PostConstruct;
-import javax.faces.view.ViewScoped;
-import javax.inject.Named;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import javax.faces.application.FacesMessage;
+import javax.faces.bean.ManagedBean;   // <-- JSF ManagedBean (no CDI)
+import javax.faces.bean.ViewScoped;   // <-- ViewScoped de JSF 2.2
+import javax.faces.context.FacesContext;
 import org.primefaces.event.SelectEvent;
+import lombok.Getter; import lombok.Setter; import lombok.ToString;
 
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
-/**
- *
- * @author GUERRA_KLEBER
- */
-@Named("centroMedicoCtrl")
+@ManagedBean(name = "centroMedicoCtrl")
 @ViewScoped
-@Getter
-@Setter
-@ToString
+@Getter @Setter @ToString
 public class CentroMedicoCtrl implements Serializable {
-
-    private static final long serialVersionUID = 1L;
+  private static final long serialVersionUID = 1L;
+  
+  
 
     // ========= A. DATOS DEL ESTABLECIMIENTO / USUARIO =========
     private String institucion;
@@ -85,39 +72,72 @@ public class CentroMedicoCtrl implements Serializable {
     private Integer abortos;
     private String planificacion;
     private String planificacionCual;
+ 
 
-    @PostConstruct
-    public void init() {
-        sexo = "M"; // valor inicial por defecto
-        edad = null;
-        grupoSanguineo = "";
-        lateralidad = "";
-        planificacion = "";
+  @PostConstruct
+  public void init() {
+    sexo = "M";
+    grupoSanguineo = ""; lateralidad = "";
+    FacesContext.getCurrentInstance().getViewRoot().setLocale(new Locale("es"));
+  }
+
+
+  public void onFechaNacimientoSelect(org.primefaces.event.SelectEvent e) {
+    this.fechaNacimiento = (java.util.Date) e.getObject();
+    this.edad = calcularEdad(this.fechaNacimiento);
+    FacesContext.getCurrentInstance().addMessage(null,
+        new FacesMessage(FacesMessage.SEVERITY_INFO, "Cálculo de edad",
+            "Edad calculada: " + (edad == null ? "(sin fecha)" : edad + " años")));
+}
+
+
+
+  
+  public void onFechaNacimientoChange() {
+    this.edad = calcularEdad(this.fechaNacimiento);
+    FacesContext.getCurrentInstance().addMessage(null,
+        new FacesMessage(FacesMessage.SEVERITY_INFO, "Cálculo de edad",
+            "Edad calculada: " + (edad == null ? "(sin fecha)" : edad + " años")));
+}
+
+  public void setFechaNacimiento(Date f) {  // por si cambia vía binding
+    this.fechaNacimiento = f;
+    this.edad = calcularEdad(f);
+  }
+
+  // Añade esto dentro de CentroMedicoCtrl
+public void calcularEdad() {
+    // JSF ya habrá seteado fechaNacimiento; sólo recalculamos
+    this.edad = calcularEdad(this.fechaNacimiento);
+}
+
+  private Integer calcularEdad(Date f) {
+      
+    if (f == null) return null;
+    Calendar hoy = Calendar.getInstance();
+    Calendar nac = Calendar.getInstance(); nac.setTime(f);
+    int years = hoy.get(Calendar.YEAR) - nac.get(Calendar.YEAR);
+    int mh = hoy.get(Calendar.MONTH), mn = nac.get(Calendar.MONTH);
+    if (mh < mn || (mh == mn && hoy.get(Calendar.DAY_OF_MONTH) < nac.get(Calendar.DAY_OF_MONTH))) years--;
+    return Math.max(years, 0);
+  }
+
+  public Date getFechaMaximaNacimiento() {
+    Calendar cal = Calendar.getInstance();
+    cal.add(Calendar.YEAR, -18);
+    cal.set(Calendar.HOUR_OF_DAY,0); cal.set(Calendar.MINUTE,0); cal.set(Calendar.SECOND,0); cal.set(Calendar.MILLISECOND,0);
+    return cal.getTime();
+  }
+
+  public void validarEdadMinima() {
+    if (edad != null && edad < 18) {
+      FacesContext.getCurrentInstance().addMessage(null,
+        new FacesMessage(FacesMessage.SEVERITY_ERROR,"Error","La edad debe ser ≥ 18 años"));
+      fechaNacimiento = null; edad = null;
     }
+  }
+  
+  
 
-    // ================== MÉTODOS DE LÓGICA ==================
 
-    /** Se llama desde el <p:ajax> del calendario */
-    public void calcularEdad(SelectEvent<Date> event) {
-        if (event != null) {
-            this.fechaNacimiento = event.getObject();
-        }
-        calcularEdad();
-    }
-
-    /** Cálculo de edad independiente del evento */
-    public void calcularEdad() {
-        if (fechaNacimiento == null) {
-            edad = null;
-            return;
-        }
-
-        LocalDate nacimiento = fechaNacimiento.toInstant()
-                .atZone(ZoneId.systemDefault())
-                .toLocalDate();
-        LocalDate hoy = LocalDate.now();
-
-        edad = Period.between(nacimiento, hoy).getYears();
-        if (edad < 0) edad = null;
-    }
 }

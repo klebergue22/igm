@@ -4,105 +4,106 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <f:view locale="es">
+        <h:head>
+            <title><ui:insert name="title">RRHH</ui:insert></title>
+            <h:outputStylesheet library="css" name="igm.css"/>
 
-  <h:head>
-    <title><ui:insert name="title">RRHH</ui:insert></title>
-    <h:outputStylesheet library="css" name="igm.css"/>
+            <!-- ✅ Favicon en PNG -->
+            <link rel="icon" type="image/png"
+                  href="#{request.contextPath}/resources/images/LOGO_IGM_FULL_COLOR.png" />
 
-    <!-- ✅ Favicon en PNG -->
-    <link rel="icon" type="image/png"
-          href="#{request.contextPath}/resources/images/LOGO_IGM_FULL_COLOR.png" />
 
- 
-    
-    <style>
-      .loading-dialog .ui-dialog-content {
-        text-align: center;
-        padding: 30px !important;
-      }
-      .loading-text {
-        margin-top: 15px;
-        font-weight: bold;
-        color: #333;
-      }
-    </style>
-  </h:head>
 
-  <h:body>
+            <style>
+                .loading-dialog .ui-dialog-content {
+                    text-align: center;
+                    padding: 30px !important;
+                }
+                .loading-text {
+                    margin-top: 15px;
+                    font-weight: bold;
+                    color: #333;
+                }
+            </style>
+        </h:head>
 
-    <!-- =========================== -->
-    <!-- DIÁLOGO DE ESPERA GLOBAL   -->
-    <!-- =========================== -->
-    <p:dialog modal="true" widgetVar="statusDialog"
-              header="Por favor espere..."
-              draggable="false" closable="false" resizable="false"
-              showHeader="true" appendTo="@(body)"
-              styleClass="loading-dialog" width="350">
-      <div style="text-align:center; padding:20px;">
-        <h:graphicImage library="images" name="loading.gif"
-                        alt="Cargando..." style="display:block;margin:0 auto;"/>
-        <h:outputText value="Procesando..." style="font-weight:bold;margin-top:8px;"/>
-        <p class="loading-text">Procesando su solicitud...</p>
-      </div>
-    </p:dialog>
+        <h:body>
 
-    <!-- NOTIFICACIONES -->
-    <p:growl id="growl" showDetail="true" life="4000" sticky="false"/>
+            <!-- =========================== -->
+            <!-- DIÁLOGO DE ESPERA GLOBAL   -->
+            <!-- =========================== -->
+            <p:dialog modal="true" widgetVar="statusDialog"
+                      header="Por favor espere..."
+                      draggable="false" closable="false" resizable="false"
+                      showHeader="true" appendTo="@(body)"
+                      styleClass="loading-dialog" width="350">
+                <div style="text-align:center; padding:20px;">
+                    <h:graphicImage library="images" name="loading.gif"
+                                    alt="Cargando..." style="display:block;margin:0 auto;"/>
+                    <h:outputText value="Procesando..." style="font-weight:bold;margin-top:8px;"/>
+                    <p class="loading-text">Procesando su solicitud...</p>
+                </div>
+            </p:dialog>
 
-    <!-- FORMULARIO PRINCIPAL -->
-    <h:form id="layoutForm" prependId="false">
-      <div class="topbar">
-        <p:menubar styleClass="navbar-militar">
-          <p:menuitem value="Inicio" icon="pi pi-home" outcome="/index.xhtml"/>
-          <p:submenu label="Módulos" icon="pi pi-sitemap">
-            <p:menuitem value="Empleados" icon="pi pi-users" outcome="/empleados.xhtml"/>
-            <p:menuitem value="Contrataciones" icon="pi pi-briefcase" outcome="/contrataciones.xhtml"/>
-             <p:menuitem value="Salud" icon="pi pi-plus-circle" outcome="/centroMedico.xhtml"/>
-          </p:submenu>
-        </p:menubar>
-        <span class="brand">RRHH · Demo</span>
-      </div>
+            <!-- NOTIFICACIONES -->
+            <p:growl id="growl" showDetail="true" life="4000" sticky="false"/>
 
-      <div class="page-container">
-        <p:messages id="msgs" closable="true" showDetail="true"/>
-        <ui:insert name="content"/>
-      </div>
+            <!-- FORMULARIO PRINCIPAL -->
+            <h:form id="layoutForm" prependId="false">
+                <div class="topbar">
+                    <p:menubar styleClass="navbar-militar">
+                        <p:menuitem value="Inicio" icon="pi pi-home" outcome="/index.xhtml"/>
+                        <p:submenu label="Módulos" icon="pi pi-sitemap">
+                            <p:menuitem value="Empleados" icon="pi pi-users" outcome="/empleados.xhtml"/>
+                            <p:menuitem value="Contrataciones" icon="pi pi-briefcase" outcome="/contrataciones.xhtml"/>
+                            <p:menuitem value="Salud" icon="pi pi-plus-circle" outcome="/centroMedico.xhtml"/>
+                        </p:submenu>
+                    </p:menubar>
+                    <span class="brand">RRHH · Demo</span>
+                </div>
 
-      <p:separator/>
-      <footer class="footer-militar">© RRHH</footer>
-    </h:form>
+                <div class="page-container">
+                    <p:messages id="msgs" closable="true" showDetail="true"/>
+                    <ui:insert name="content"/>
+                </div>
 
-    <!-- =========================== -->
-    <!-- STATUS GLOBAL DE AJAX      -->
-    <!-- =========================== -->
-    <p:ajaxStatus
-      onstart="try{
-                 console.log('⏳ Enviando AJAX...');
-                 PF('statusDialog').show();
-               }catch(e){}"
-      onsuccess="try{
-                   console.log('✅ Respuesta AJAX recibida');
-                   PF('statusDialog').hide();
-                 }catch(e){}"
-      onerror="try{
-                 console.error('❌ Error AJAX', arguments[0]);
-                 PF('statusDialog').hide();
-               }catch(e){}"/>
+                <p:separator/>
+                <footer class="footer-militar">© RRHH</footer>
+            </h:form>
 
-    <!-- =========================== -->
-    <!-- SCRIPT UTILITARIO GLOBAL   -->
-    <!-- =========================== -->
-    <h:outputScript target="body">
-      //<![CDATA[
-      function handleDlgComplete(args, dlgWidgetVar) {
-        if (args && args.validationFailed) {
-          PF(dlgWidgetVar).show();
-        } else {
-          PF(dlgWidgetVar).hide();
-        }
-      }
-      //]]>
-    </h:outputScript>
+            <!-- =========================== -->
+            <!-- STATUS GLOBAL DE AJAX      -->
+            <!-- =========================== -->
+            <p:ajaxStatus
+                onstart="try{
+                console.log('⏳ Enviando AJAX...');
+                PF('statusDialog').show();
+                }catch(e){}"
+                onsuccess="try{
+                console.log('✅ Respuesta AJAX recibida');
+                PF('statusDialog').hide();
+                }catch(e){}"
+                onerror="try{
+                console.error('❌ Error AJAX', arguments[0]);
+                PF('statusDialog').hide();
+                }catch(e){}"/>
 
-  </h:body>
+            <!-- =========================== -->
+            <!-- SCRIPT UTILITARIO GLOBAL   -->
+            <!-- =========================== -->
+            <h:outputScript target="body">
+                //<![CDATA[
+                function handleDlgComplete(args, dlgWidgetVar) {
+                if (args && args.validationFailed) {
+                PF(dlgWidgetVar).show();
+                } else {
+                PF(dlgWidgetVar).hide();
+                }
+                }
+                //]]>
+            </h:outputScript>
+
+        </h:body>
+    </f:view>
 </html>
