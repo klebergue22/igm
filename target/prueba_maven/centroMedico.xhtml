@@ -113,9 +113,8 @@
                         <p:selectOneRadio id="sexo" value="#{centroMedicoCtrl.sexo}">
                             <f:selectItem itemLabel="Hombre" itemValue="M"/>
                             <f:selectItem itemLabel="Mujer"  itemValue="F"/>
-                            <!-- PF8: usar 'change' -->
-                            <p:ajax event="change" process="@this"
-                                    update=":layoutForm:panelReproMas :layoutForm:panelGineObst"/>
+                            <p:ajax event="valueChange" process="@this"
+                                    update=":layoutForm:sexoBlocks"/>
                         </p:selectOneRadio>
 
                         <h:outputLabel for="fecNac" value="Fecha de nacimiento"/>
@@ -171,27 +170,59 @@
                         <p:inputText placeholder="CIUO"/>
 
                         <h:outputLabel value="Fecha de atención"/>
-                        <p:calendar pattern="dd/MM/yyyy" navigator="true" showOn="button"/>
+                        <p:calendar value="#{centroMedicoCtrl.fechaAtencion != null ? centroMedicoCtrl.fechaAtencion: now}" pattern="dd/MM/yyyy" navigator="true" showOn="button"/>
 
-                        <h:outputLabel value="Fecha de ingreso"/>
-                        <p:calendar pattern="dd/MM/yyyy" showOn="button"/>
+                        <!-- Selector de tipo de evaluación -->
+                        <h:panelGrid  >
+                            <h:outputLabel for="tipoEval" value="Tipo Evaluación"/>
+                            <p:selectOneRadio id="tipoEval" value="#{centroMedicoCtrl.tipoEval}">
+                                <f:selectItem itemLabel="Ingreso" itemValue="INGRESO"/>
+                                <f:selectItem itemLabel="Periódico" itemValue="PERIODICO"/>
+                                <f:selectItem itemLabel="Reintegro" itemValue="REINTEGRO"/>
+                                <f:selectItem itemLabel="Retiro" itemValue="RETIRO"/>
+                                <!-- Re-renderiza el bloque de fechas al cambiar -->
+                                <p:ajax event="valueChange"
+                                        process="@this"
+                                        update="fechasPanel msgs"/>
+                            </p:selectOneRadio>
+                        </h:panelGrid>
 
-                        <h:outputLabel value="Fecha de reintegro"/>
-                        <p:calendar pattern="dd/MM/yyyy" showOn="button"/>
+                        <!-- Bloque que se re-renderiza con las fechas -->
+                        <h:panelGroup id="fechasPanel" layout="block">
+                            <h:panelGrid >
 
-                        <h:outputLabel value="Último día laboral"/>
-                        <p:calendar pattern="dd/MM/yyyy" showOn="button"/>
+                                <!-- Fecha de ingreso -->
+                                <ui:fragment rendered="#{centroMedicoCtrl.tipoEval eq 'INGRESO' or centroMedicoCtrl.tipoEval eq 'PERIODICO'}">
+                                    <h:outputLabel for="fecIngreso" value="Fecha de ingreso"/>
+                                    <p:calendar id="fecIngreso"
+                                                value="#{centroMedicoCtrl.fecIngreso}"
+                                                pattern="dd/MM/yyyy"
+                                                showOn="button"/>
+                                </ui:fragment>
 
-                        <h:outputLabel value="Evaluación"/>
-                        <p:selectOneRadio>
-                            <f:selectItem itemLabel="Ingreso" itemValue="INGRESO"/>
-                            <f:selectItem itemLabel="Periódico" itemValue="PERIODICO"/>
-                            <f:selectItem itemLabel="Reintegro" itemValue="REINTEGRO"/>
-                            <f:selectItem itemLabel="Retiro" itemValue="RETIRO"/>
-                        </p:selectOneRadio>
+                                <!-- Fecha de reintegro -->
+                                <ui:fragment rendered="#{centroMedicoCtrl.tipoEval eq 'REINTEGRO' or centroMedicoCtrl.tipoEval eq 'PERIODICO'}">
+                                    <h:outputLabel for="fecReintegro" value="Fecha de reintegro"/>
+                                    <p:calendar id="fecReintegro"
+                                                value="#{centroMedicoCtrl.fecReintegro}"
+                                                pattern="dd/MM/yyyy"
+                                                showOn="button"/>
+                                </ui:fragment>
 
-                        <h:outputLabel value="Observación"/>
-                        <p:inputTextarea rows="3" autoResize="true" placeholder="Observación"/>
+                                <!-- Último día laboral (retiro) -->
+                                <ui:fragment rendered="#{centroMedicoCtrl.tipoEval eq 'RETIRO' or centroMedicoCtrl.tipoEval eq 'PERIODICO'}">
+                                    <h:outputLabel for="fecRetiro" value="Último día laboral"/>
+                                    <p:calendar id="fecRetiro"
+                                                value="#{centroMedicoCtrl.fecRetiro}"
+                                                pattern="dd/MM/yyyy"
+                                                showOn="button"/>
+                                </ui:fragment>
+
+                            </h:panelGrid>
+                        </h:panelGroup>
+
+                        <h:outputLabel value="Observación" />
+                        <p:inputTextarea style="width:190%; min-width:400px;" rows="2" autoResize="true" placeholder="Observación"/>
                     </h:panelGrid>
                 </p:fieldset>
 
@@ -199,7 +230,7 @@
                 <p:fieldset legend="C. ANTECEDENTES PERSONALES" toggleable="true">
                     <h:panelGrid columns="2" columnClasses="w-20rem," styleClass="ui-fluid">
                         <h:outputLabel value="Antecedentes clínicos y quirúrgicos"/>
-                        <p:inputTextarea rows="3" autoResize="true" value="#{centroMedicoCtrl.antClinicoQuirurgico}"/>
+                        <p:inputTextarea style="width:140%; min-width:500px;" rows="3" autoResize="true" value="#{centroMedicoCtrl.antClinicoQuirurgico}"/>
 
                         <h:outputLabel value="Antecedentes familiares"/>
                         <p:inputTextarea rows="3" autoResize="true" value="#{centroMedicoCtrl.antFamiliares}"/>
@@ -222,51 +253,115 @@
                         <h:outputLabel value="¿Cuál?"/>
                         <p:inputText value="#{centroMedicoCtrl.tratamientoHormonalCual}"/>
                     </h:panelGrid>
+                    <p:outputPanel id="sexoBlocks" layout="block"  style="margin-top:8px">
 
-                    <!-- Condicional: REPRODUCTIVOS MASCULINOS -->
-                    <h:panelGroup id="panelReproMas" rendered="#{centroMedicoCtrl.sexo eq 'M'}" layout="block" style="margin-top:8px;">
-                        <p:fieldset legend="ANTECEDENTES REPRODUCTIVOS MASCULINOS" toggleable="true" collapsed="false">
-                            <h:panelGrid columns="4" styleClass="ui-fluid"
-                                         columnClasses="w-20rem, w-30rem, w-10rem, w-30rem">
-                                <h:outputText value="Exámenes realizados (¿cuál?)"/>
-                                <p:inputTextarea rows="2" autoResize="true" value="#{centroMedicoCtrl.examenReproMasculino}"/>
-                                <h:outputText value="Tiempo (años)"/>
-                                <p:inputNumber value="#{centroMedicoCtrl.tiempoReproMasculino}" decimalPlaces="0" minValue="0"/>
-                            </h:panelGrid>
-                        </p:fieldset>
-                    </h:panelGroup>
+                        <!-- Condicional: REPRODUCTIVOS MASCULINOS -->
+                        <h:panelGroup id="panelReproMas" rendered="#{centroMedicoCtrl.sexo eq 'M'}" layout="block" style="margin-top:8px;">
+                            <p:fieldset legend="ANTECEDENTES REPRODUCTIVOS MASCULINOS" toggleable="true" collapsed="false">
+                                <h:panelGrid columns="4" styleClass="ui-fluid"
+                                             columnClasses="w-20rem, w-30rem, w-10rem, w-30rem">
+                                    <h:outputText value="Exámenes realizados (¿cuál?)"/>
+                                    <p:inputTextarea rows="2" autoResize="true" value="#{centroMedicoCtrl.examenReproMasculino}"/>
+                                    <h:outputText value="Tiempo (años)"/>
+                                    <p:inputNumber value="#{centroMedicoCtrl.tiempoReproMasculino}" decimalPlaces="0" minValue="0"/>
+                                </h:panelGrid>
+                            </p:fieldset>
+                        </h:panelGroup>
 
-                    <!-- Condicional: GINECO OBSTÉTRICOS (MUJER) -->
-                    <h:panelGroup id="panelGineObst" rendered="#{centroMedicoCtrl.sexo eq 'F'}" layout="block" style="margin-top:8px;">
-                        <p:fieldset legend="ANTECEDENTES GINECO OBSTÉTRICOS" toggleable="true" collapsed="false">
-                            <h:panelGrid columns="8" styleClass="ui-fluid">
-                                <h:outputText value="FUM"/>
-                                <p:calendar value="#{centroMedicoCtrl.fum}" pattern="dd/MM/yyyy" showOn="button"/>
+                        <!-- Condicional: GINECO OBSTÉTRICOS (MUJER) -->
+                        <h:panelGroup id="panelGineObst" rendered="#{centroMedicoCtrl.sexo eq 'F'}" layout="block" style="margin-top:8px;">
+                            <!-- C. ANTECEDENTES GINECO OBSTÉTRICOS -->
+                            <p:fieldset legend="ANTECEDENTES GINECO OBSTÉTRICOS" toggleable="true">
+                                <h:panelGroup id="obstetricos">
+                                    <table class="obst-grid">
+                                        <thead>
+                                            <tr>
+                                                <th colspan="2" class="w-20">FECHA DE LA ÚLTIMA MENSTRUACIÓN</th>
+                                                <th class="w-8">GESTAS</th>
+                                                <th class="w-8">CESÁREAS</th>
+                                                <th class="w-8">PARTOS</th>
+                                                <th class="w-8">ABORTOS</th>
+                                                <th colspan="4" class="w-24">MÉTODO DE PLANIFICACIÓN FAMILIAR</th>
+                                            </tr>
+                                            <tr>
+                                                <th colspan="2" class="txt-c">aaaa / mm / dd</th>
+                                                <th class="txt-c"></th><th class="txt-c"></th><th class="txt-c"></th><th class="txt-c"></th>
+                                                <th class="txt-c w-6">sí</th>
+                                                <th class="txt-c w-14">¿cuál?</th>
+                                                <th class="txt-c w-6">no</th>
+                                                <th class="txt-c w-8">no responde</th>
+                                            </tr>
+                                        </thead>
 
-                                <h:outputText value="Gestas"/>
-                                <p:inputNumber value="#{centroMedicoCtrl.gestas}" decimalPlaces="0" minValue="0"/>
+                                        <!-- Fila de captura -->
+                                        <tr>
+                                            <!-- FUM -->
+                                            <td colspan="2">
+                                                <p:calendar pattern="dd/MM/yyyy" showOn="button" styleClass="obst-cal obst-fit"/>
+                                            </td>
 
-                                <h:outputText value="Partos"/>
-                                <p:inputNumber value="#{centroMedicoCtrl.partos}" decimalPlaces="0" minValue="0"/>
+                                            <!-- Números: TODOS con obst-fit -->
+                                            <td class="txt-c"><p:inputNumber decimalPlaces="0" minValue="0" styleClass="obst-fit"/></td>
+                                            <td class="txt-c"><p:inputNumber decimalPlaces="0" minValue="0" styleClass="obst-fit"/></td>
+                                            <td class="txt-c"><p:inputNumber decimalPlaces="0" minValue="0" styleClass="obst-fit"/></td>
+                                            <td class="txt-c"><p:inputNumber decimalPlaces="0" minValue="0" styleClass="obst-fit"/></td>
 
-                                <h:outputText value="Cesáreas"/>
-                                <p:inputNumber value="#{centroMedicoCtrl.cesareas}" decimalPlaces="0" minValue="0"/>
+                                            <!-- MPF: checks centrados + campo “¿cuál?” a 100% -->
+                                            <td><div class="obst-chk"><p:selectBooleanCheckbox widgetVar="wMpfSi" onchange="mpfToggle('si')"/></div></td>
+                                            <td><p:inputText id="mpfCual" placeholder="Nombre del método" styleClass="obst-fit"/></td>
+                                            <td><div class="obst-chk"><p:selectBooleanCheckbox widgetVar="wMpfNo" onchange="mpfToggle('no')"/></div></td>
+                                            <td><div class="obst-chk"><p:selectBooleanCheckbox widgetVar="wMpfNr" onchange="mpfToggle('nr')"/></div></td>
+                                        </tr>
 
-                                <h:outputText value="Abortos"/>
-                                <p:inputNumber value="#{centroMedicoCtrl.abortos}" decimalPlaces="0" minValue="0"/>
+                                        <!-- Cabecera Exámenes -->
+                                        <tr>
+                                            <th colspan="2">EXÁMENES REALIZADOS ¿CUÁL?</th>
+                                            <th>TIEMPO<br/><span style="font-weight:400">(años)</span></th>
+                                            <th colspan="7" class="txt-c">RESULTADO</th>
+                                        </tr>
+                                        <tr>
+                                            <td colspan="3"></td>
+                                            <td colspan="7" style="color:#2b4a4a;font-size:.86rem">
+                                                Registrar resultado únicamente si interfiere con la actividad laboral y previa autorización del titular
+                                            </td>
+                                        </tr>
 
-                                <h:outputText value="Planificación familiar"/>
-                                <p:selectOneRadio value="#{centroMedicoCtrl.planificacion}">
-                                    <f:selectItem itemLabel="Sí" itemValue="S"/>
-                                    <f:selectItem itemLabel="No" itemValue="N"/>
-                                    <f:selectItem itemLabel="No responde" itemValue="X"/>
-                                </p:selectOneRadio>
+                                        <!-- Fila 1 -->
+                                        <tr>
+                                            <td colspan="2"><p:inputText styleClass="obst-fit"/></td>
+                                            <td><p:inputNumber decimalPlaces="0" minValue="0" styleClass="obst-fit"/></td>
+                                            <td colspan="7"><p:inputTextarea rows="2" autoResize="true" styleClass="obst-fit"/></td>
+                                        </tr>
+                                        <!-- Fila 2 -->
+                                        <tr>
+                                            <td colspan="2"><p:inputText styleClass="obst-fit"/></td>
+                                            <td><p:inputNumber decimalPlaces="0" minValue="0" styleClass="obst-fit"/></td>
+                                            <td colspan="7"><p:inputTextarea rows="2" autoResize="true" styleClass="obst-fit"/></td>
+                                        </tr>
 
-                                <h:outputText value="¿Cuál?"/>
-                                <p:inputText value="#{centroMedicoCtrl.planificacionCual}"/>
-                            </h:panelGrid>
-                        </p:fieldset>
-                    </h:panelGroup>
+                                        <!-- Observación -->
+                                        <tr>
+                                            <th colspan="3">Observación</th>
+                                            <td colspan="7"><p:inputTextarea rows="3" autoResize="true" styleClass="obst-fit"/></td>
+                                        </tr>
+                                    </table>
+
+                                    <h:outputScript target="body">
+                                        function byId(id){var el=document.getElementById(id);return el||document.getElementById(id+'_input');}
+                                        function mpfToggle(sel){
+                                        var si=PF('wMpfSi'), no=PF('wMpfNo'), nr=PF('wMpfNr');
+                                        if(sel==='si'){no.uncheck();nr.uncheck();}
+                                        if(sel==='no'){si.uncheck();nr.uncheck();}
+                                        if(sel==='nr'){si.uncheck();no.uncheck();}
+                                        var cual=byId('layoutForm:mpfCual'); if(cual){cual.disabled=!si.isChecked();}
+                                        }
+                                        document.addEventListener('DOMContentLoaded',function(){ mpfToggle('nr'); });
+                                    </h:outputScript>
+                                </h:panelGroup>
+
+                            </p:fieldset>
+                        </h:panelGroup>
+                    </p:outputPanel>
 
                 </p:fieldset>
 
@@ -328,8 +423,7 @@
                                 <tr>
                                     <th colspan="8" style="text-align:left; background:#f5f5f5;">
                                         <h:outputText value="PUESTO DE TRABAJO"/>
-                                        <h:inputText id="puestoTrabajo" style="width:60%; margin-left:10px"
-                                                     placeholder="Ingrese nombre del puesto"/>
+                                        <h:inputText id="puestoTrabajo" style="width:60%; margin-left:10px"  />
                                     </th>
                                 </tr>
                                 <tr class="risk-header">
@@ -720,7 +814,7 @@
                         <h:panelGrid columns="1" style="width:100%; margin-top:8px;">
                             <h:outputLabel for="l_obs" value="OBSERVACIONES:" style="font-weight:bold; margin-bottom:4px;"/>
                             <p:inputTextarea id="l_obs"
-                                              
+
                                              rows="4"
                                              autoResize="true"
                                              styleClass="l-observaciones"

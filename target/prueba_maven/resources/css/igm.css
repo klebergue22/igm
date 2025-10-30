@@ -769,4 +769,166 @@ input.ui-inputfield:focus, textarea.ui-inputfield:focus{
 /* Evitar que mensajes empujen la grilla (los puedes mostrar como tooltip si quieres) */
 .fixgrid .ui-message { display:none; }
 
+/* Anchos y alineación consistentes en todas las filas */
+.label-col { width: 15rem; vertical-align: middle; }
+.field-col { width: auto;  }
 
+/* Opcional: que los radios no “salten” de línea */
+#layoutForm\\:tipoEval td { padding-right: 1rem; }
+
+/* Anchos consistentes */
+.lbl  { width: 14rem; vertical-align: middle; }
+.fld  { width: auto; }
+
+/* Radio en una sola línea y con respiración */
+#layoutForm\\:tipoEval td { padding-right: .75rem; }
+
+ /* Contenedor y respiración */
+.mc-fieldset .mc-row { margin-top: .5rem; }
+
+/* Etiquetas alineadas a la derecha en pantallas medianas+ */
+@media (min-width: 768px) {
+  .mc-label { text-align: right; padding-right: 1rem; }
+}
+
+/* Subpanel de fechas con borde discreto */
+.mc-subpanel .ui-panel-content { padding-top: .75rem !important; }
+.mc-subpanel .ui-panel-titlebar { padding: .4rem .8rem; }
+
+/* Radios en una línea con espacio */
+#layoutForm\\:tipoEval td { padding-right: .9rem; }
+
+/* Calendarios: que el input ocupe todo el ancho del contenedor */
+.ui-calendar, .ui-calendar input { width: 100%; }
+
+/* Hace más ancha solo el textarea de Observación */
+#layoutForm\\:obs, 
+#layoutForm\\:obs_input, 
+#layoutForm\\:obs textarea {
+    width: 100% !important;  /* ocupa todo el ancho disponible */
+    min-width: 400px;        /* puedes ajustar el valor mínimo */
+}
+
+/* Ancho completo utilitario */
+.w-full { width: 100%; }
+
+/* Encabezados celeste tipo planilla */
+.gx-header > td,
+.gx-header > .ui-panelgrid-cell {
+  background: #DFF7FB;        /* celeste suave */
+  color: #1b3a2d;              /* verde oscuro corporativo */
+  font-weight: 600;
+  border: 1px solid #cfe9ec;
+  padding: .6rem .8rem !important;
+}
+
+/* Celdas normales con borde sutil para efecto “tabla” */
+.ui-panelgrid-blank td.ui-panelgrid-cell {
+  border: 1px solid #e0e6df;
+  padding: .5rem .6rem;
+}
+
+/* Nota intermedia */
+.gx-note {
+  background: #eef9ee;
+  border: 1px dashed #b9d7b9;
+  color: #355e35;
+  font-size: .85rem;
+  padding: .5rem .8rem;
+  margin: .5rem 0 1rem 0;
+}
+
+/* ======= GINECO-OBSTÉTRICOS ======= *//* ===== Obstétricos (tabla tipo planilla) ===== */
+/* === Tabla Gineco: que NADA se salga de su celda === */
+.obst-grid{ width:100%; border-collapse:collapse; table-layout:fixed; font-size:13px }
+.obst-grid th,.obst-grid td{ border:1px solid #cfe8e8; padding:.35rem .5rem; vertical-align:middle }
+.obst-grid thead th{ background:#dff7f7!important; text-align:center; font-weight:600; color:#1b3a2d }
+.obst-grid .txt-c{ text-align:center }
+
+/* Que todos los campos ocupen su celda y no la rompan */
+.obst-fit,
+.obst-fit .ui-inputfield,
+.obst-fit .ui-selectonemenu,
+.obst-fit .ui-selectonemenu-label,
+.obst-fit textarea.ui-inputtextarea{
+  width:100% !important;
+  box-sizing:border-box !important;
+}
+
+/* Calendario: input + botón en la MISMA fila dentro de la celda */
+.ui-calendar.obst-cal{
+  display:flex; align-items:center; width:100%;
+}
+.ui-calendar.obst-cal input.ui-inputfield{
+  flex:1 1 auto; min-width:0; box-sizing:border-box;
+}
+.ui-calendar.obst-cal .ui-datepicker-trigger,
+.ui-calendar.obst-cal .ui-button{
+  flex:0 0 auto; margin-left:6px; height:34px;
+}
+
+/* Altura uniforme para inputs/combos */
+.obst-grid .ui-inputfield,
+.obst-grid .ui-selectonemenu,
+.obst-grid .ui-selectonemenu-label{ height:34px; line-height:32px; }
+
+/* Centrar checkboxes de MPF dentro de su celda */
+.obst-chk{ display:flex; justify-content:center; }
+
+//* ===== Reproductivos Masculinos - alineación uniforme ===== */
+.rep-grid {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.rep-grid th, .rep-grid td {
+  border: 1px solid #cfe8e8;
+  padding: .45rem .6rem;
+  vertical-align: middle;
+}
+
+.rep-grid thead th {
+  background: #dff7f7;
+  text-align: center;
+  font-weight: 600;
+}
+
+.rep-note {
+  color: #2b4a4a;
+  font-weight: 500;
+  text-align: center;
+}
+
+.rep-fit {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.txt-c {
+  text-align: center;
+}
+
+.rep-sub {
+  font-weight: 400;
+}
+
+/* 🔧 CORRECCIÓN DE DESCUADRE en InputNumber */
+.ui-inputnumber,
+.ui-inputnumber .ui-inputfield {
+  width: 100% !important;
+  box-sizing: border-box !important;
+  display: block;
+}
+
+/* Mantener misma altura que los inputText */
+.ui-inputnumber .ui-inputfield {
+  height: 2.3em;
+  line-height: 2.3em;
+}
+
+/* Quitar márgenes residuales */
+.ui-inputnumber {
+  margin: 0;
+  padding: 0;
+}

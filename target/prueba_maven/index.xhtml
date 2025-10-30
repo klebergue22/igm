@@ -7,26 +7,129 @@
 
                 template="/templates/template.xhtml">
 
-  <ui:define name="title">Inicio</ui:define>
+    <ui:define name="title">Inicio</ui:define>
 
-  <ui:define name="content">
-    <p:panel header="Bienvenido" style="margin-top:10px">
-      <h:outputText value="Selecciona un módulo en el menú superior."/>
-    </p:panel>
-      
- 
+    <ui:define name="content">
+        <p:panel header="Bienvenido" style="margin-top:10px">
+            <h:outputText value="Selecciona un módulo en el menú superior."/>
+        </p:panel>
 
+        <p:outputPanel id="sexoBlocks" layout="block" style="margin-top:8px">
+            <!-- ====== BLOQUE MASCULINO ====== -->
+            <ui:fragment rendered="#{centroMedicoCtrl.sexo eq 'M'}">
+                <p:fieldset legend="ANTECEDENTES REPRODUCTIVOS MASCULINOS" toggleable="true">
+                    <table class="rep-grid">
+                        <thead>
+                            <tr>
+                                <th colspan="2">EXÁMENES REALIZADOS ¿CUÁL?</th>
+                                <th>TIEMPO<br/><span class="rep-sub">(años)</span></th>
+                                <th colspan="4">MÉTODO DE PLANIFICACIÓN FAMILIAR</th>
+                            </tr>
+                            <tr>
+                                <th colspan="2"></th>
+                                <th></th>
+                                <th class="txt-c">sí</th>
+                                <th class="txt-c">¿cuál?</th>
+                                <th class="txt-c">no</th>
+                                <th class="txt-c">no responde</th>
+                            </tr>
+                            <tr>
+                                <th colspan="7" class="rep-note">
+                                    Registrar resultado únicamente si interfiere con la actividad laboral y previa autorización del titular
+                                </th>
+                            </tr>
+                        </thead>
 
+                        <tbody>
+                            <!-- ===== Fila 1 ===== -->
+                            <tr>
+                                <td colspan="2">
+                                    <p:inputText id="rep_exam_1" value="#{centroMedicoCtrl.examenReproMasculino}" styleClass="rep-fit"/>
+                                </td>
+                                <td>
+                                    <p:inputNumber id="rep_time_1" value="#{centroMedicoCtrl.tiempoReproMasculino}"
+                                                   decimalPlaces="0" minValue="0" styleClass="rep-fit"/>
+                                </td>
+                                <td class="txt-c">
+                                    <p:selectBooleanCheckbox id="rep_mpf_si_1" widgetVar="wMpfMSi_1"
+                                                             onchange="mpfMRowToggle(1, 'si')"/>
+                                </td>
+                                <td>
+                                    <p:inputText id="rep_mpf_cual_1" value="#{centroMedicoCtrl.planificacionCual}"
+                                                 placeholder="Nombre del método" styleClass="rep-fit"/>
+                                </td>
+                                <td class="txt-c">
+                                    <p:selectBooleanCheckbox id="rep_mpf_no_1" widgetVar="wMpfMNo_1"
+                                                             onchange="mpfMRowToggle(1, 'no')"/>
+                                </td>
+                                <td class="txt-c">
+                                    <p:selectBooleanCheckbox id="rep_mpf_nr_1" widgetVar="wMpfMNr_1"
+                                                             onchange="mpfMRowToggle(1, 'nr')"/>
+                                </td>
+                            </tr>
 
-       
- 
+                            <!-- ===== Fila 2 ===== -->
+                            <tr>
+                                <td colspan="2">
+                                    <p:inputText id="rep_exam_2" styleClass="rep-fit"/>
+                                </td>
+                                <td>
+                                    <p:inputNumber id="rep_time_2" decimalPlaces="0" minValue="0" styleClass="rep-fit"/>
+                                </td>
+                                <td class="txt-c">
+                                    <p:selectBooleanCheckbox id="rep_mpf_si_2" widgetVar="wMpfMSi_2"
+                                                             onchange="mpfMRowToggle(2, 'si')"/>
+                                </td>
+                                <td>
+                                    <p:inputText id="rep_mpf_cual_2" placeholder="Nombre del método" styleClass="rep-fit"/>
+                                </td>
+                                <td class="txt-c">
+                                    <p:selectBooleanCheckbox id="rep_mpf_no_2" widgetVar="wMpfMNo_2"
+                                                             onchange="mpfMRowToggle(2, 'no')"/>
+                                </td>
+                                <td class="txt-c">
+                                    <p:selectBooleanCheckbox id="rep_mpf_nr_2" widgetVar="wMpfMNr_2"
+                                                             onchange="mpfMRowToggle(2, 'nr')"/>
+                                </td>
+                            </tr>
 
- 
- 
+                            <!-- Observación -->
+                            <tr>
+                                <th colspan="7">Observación</th>
+                            </tr>
+                            <tr>
+                                <td colspan="7">
+                                    <p:inputTextarea id="rep_obs" rows="3" autoResize="true" styleClass="rep-fit"/>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
 
+                    <!-- ✅ Script envuelto en CDATA para evitar errores -->
+                    <h:outputScript target="body">
+                        //<![CDATA[
+                        function byId(id){return document.getElementById(id)||document.getElementById(id+"_input");}
+                        function mpfMRowToggle(row, sel){
+                        var si = PF("wMpfMSi_"+row);
+                        var no = PF("wMpfMNo_"+row);
+                        var nr = PF("wMpfMNr_"+row);
+                        var cual = byId("layoutForm:rep_mpf_cual_"+row);
 
-      
-      
-  </ui:define>
+                        if(sel==="si"){ if(no) no.uncheck(); if(nr) nr.uncheck(); }
+                        if(sel==="no"){ if(si) si.uncheck(); if(nr) nr.uncheck(); }
+                        if(sel==="nr"){ if(si) si.uncheck(); if(no) no.uncheck(); }
+
+                        if(cual){ cual.disabled = !(si && si.isChecked()); }
+                        }
+                        document.addEventListener("DOMContentLoaded",function(){
+                        mpfMRowToggle(1,"nr"); mpfMRowToggle(2,"nr");
+                        });
+                        //]]>
+                    </h:outputScript>
+                </p:fieldset>
+            </ui:fragment>
+        </p:outputPanel>
+
+    </ui:define>
 
 </ui:composition>
