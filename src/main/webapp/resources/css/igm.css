@@ -714,8 +714,7 @@ input.ui-inputfield:focus, textarea.ui-inputfield:focus{
 /* Radios alineados */
 .ui-radiobutton, .ui-radiobutton .ui-radiobutton-box { vertical-align: middle; }
 
-/* Grilla de atención prioritaria compacta */
-.ap-grid .ui-panelgrid-cell { padding: .25rem .5rem; }
+
 
 /* 2 columnas: 20% label, 30% campo, repetido (total 100%) */
 .c-label { width: 20%; vertical-align: middle; }
@@ -932,3 +931,549 @@ input.ui-inputfield:focus, textarea.ui-inputfield:focus{
   margin: 0;
   padding: 0;
 }
+
+/* ======= Consumo / Estilo de vida / Condición ======= */
+.cons-grid{
+  width:100%;
+  border-collapse:collapse;
+  table-layout:fixed;
+  margin-top:.25rem;
+}
+.cons-grid th,.cons-grid td{
+  border:1px solid #cfe8e8;
+  padding:.45rem .6rem;
+  vertical-align:middle;
+}
+.cons-grid thead th{
+  background:#dff7f7;
+  font-weight:600;
+  text-align:center;
+}
+.c-subhead th{background:#e8f7f7;}
+.c-sub{font-weight:400;color:#2b4a4a;}
+
+.txt-c{text-align:center;}
+.cons-fit{width:100%;box-sizing:border-box;}
+
+/* Cabeceras: evitar superposición y forzar salto */
+.th-wrap{
+  display:block;
+  white-space:normal;
+  word-wrap:break-word;
+  line-height:1.15;
+}
+
+/* Column widths para un encuadre limpio */
+.c-col-item{width:16%;}
+.c-col-tiempo{width:11%;}
+.c-col-chk{width:8%;}
+.c-col-vida-title{width:10%;}
+.c-col-vida-cual{width:16%;}
+.c-col-vida-tiempo{width:12%;}
+.c-col-cond-title{width:12%;}
+.c-col-cond-cual{width:16%;}
+.c-col-cond-cant{width:10%;}
+
+/* Uniformar p:inputNumber con p:inputText */
+.ui-inputnumber{width:100%!important;box-sizing:border-box!important;}
+.ui-inputnumber .ui-inputfield{
+  width:100%!important;
+  height:2.6em!important;
+  line-height:2.6em!important;
+  padding:0 .6em!important;
+  box-sizing:border-box!important;
+  font-size:1rem;
+}
+
+.vit-grid {
+  width: 100%;
+  border-collapse: collapse;
+}
+.vit-grid .ui-inputfield,
+.vit-grid .ui-inputtext,
+.vit-grid .ui-inputnumber {
+  width: 95%;
+  box-sizing: border-box;
+}
+.vit-grid td, .vit-grid th {
+  vertical-align: middle;
+  padding: 0.2rem 0.4rem;
+}
+ 
+/* ==================== F. EXAMEN FÍSICO REGIONAL – BEAUTY PACK ==================== */
+/* Contenedor de la sección */
+.fxr { --fxr-border:#cfe9ec; --fxr-head:#dff7fb; --fxr-ink:#163b2c; }
+
+/* Encabezados tipo planilla, más compactos */
+.fxr .fit-table{ width:100%; border:1px solid var(--fxr-border); border-radius:10px;
+  border-collapse:separate; border-spacing:0; background:#fff; overflow:hidden }
+.fxr .fit-header th{
+  background:var(--fxr-head); color:var(--fxr-ink); font-weight:700; letter-spacing:.2px;
+  padding:.55rem .6rem; text-align:center; border-right:1px solid var(--fxr-border)
+}
+.fxr .fit-header th:last-child{ border-right:0 }
+
+/* Tabla interna de cada columna: look minimalista y filas respirando */
+.fxr .vit-grid{ width:100%; border-collapse:separate; border-spacing:0; table-layout:fixed; }
+.fxr .vit-grid tr{ height:38px; }                         /* altura uniforme */
+.fxr .vit-grid td{
+  padding:.25rem .55rem; vertical-align:middle; background:#fff;
+  border-top:1px solid #eef6f7;                           /* línea suave entre filas */
+}
+.fxr .vit-grid tr:first-child td{ border-top:0; }
+
+/* Primera celda (texto del ítem) más legible y sin cortes raros */
+.fxr .vit-grid td:first-child{
+  color:#2a483a; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+
+/* Celda de controles: checkbox centrado + numeral a la derecha */
+.fxr .chk-num{ display:flex; align-items:center; justify-content:space-between; gap:.5rem; }
+.fxr .chk-num .ui-chkbox{ transform:scale(1.05); }
+
+/* “Numeral” bonito, pill y centrado (3–4 caracteres) */
+.fxr .num{
+  width:6.5ch !important; min-width:6.5ch !important; text-align:center;
+  border-radius:999px; background:#f5fbf8 !important; border:1px solid #bfe0cf !important;
+  height:30px !important; line-height:28px !important; padding:0 .4rem !important;
+  font-weight:600; color:#244d3d;
+}
+
+/* Micro-zebra muy ligera para mejorar lectura */
+.fxr .vit-grid tr:nth-child(odd) td{ background:#fcfefe; }
+
+/* Bordes verticales entre grandes columnas (suaves) */
+.fxr .col{ border-right:1px solid var(--fxr-border); }
+.fxr .col:last-child{ border-right:0; }
+
+/* Nota y observación con look institucional */
+.fxr .gx-note{
+  background:#eef9ee; border:1px dashed #b9d7b9; color:#355e35;
+  font-size:.86rem; padding:.55rem .8rem; border-radius:8px; margin:.65rem 0 .8rem;
+}
+.fxr .obs{
+  width:100% !important; min-height:90px !important; background:#f6f8f2;
+  border:1px solid #98b38d; border-radius:8px; padding:.6rem .7rem; box-sizing:border-box;
+}
+
+/* Ajustes PrimeFaces para que nada se “salga” ni se estire raro */
+.fxr .ui-inputfield, .fxr .ui-selectonemenu, .fxr .ui-selectonemenu-label{
+  height:34px; line-height:32px;
+}
+.fxr .ui-chkbox .ui-chkbox-box{ border:2px solid #406343 !important; }
+.fxr .ui-chkbox .ui-chkbox-box.ui-state-active{ background:#0f3d0f !important; border-color:#0f3d0f !important; }
+.fxr .ui-chkbox .ui-chkbox-icon{ color:#fff !important; }
+
+/* ====== F. EXAMEN FÍSICO REGIONAL – que se lean los rótulos ====== */
+.fxr .panel-scroll{
+  overflow-x:auto;             /* barras de desplazamiento */
+  overflow-y:auto;
+  max-height:520px;            /* ajusta si necesitas más alto */
+  border:1px solid #cfe9ec; border-radius:10px;
+}
+
+/* NADA de ellipsis: que el texto se parta en varias líneas */
+.fxr .fit-table th,
+.fxr .fit-table td{
+  white-space: normal !important;     /* permite saltos */
+  word-break: normal !important;
+  overflow: visible !important;
+  text-overflow: clip !important;     /* sin “…” */
+  line-height: 1.2;
+}
+
+/* Encabezado fijo al hacer scroll (opcional y útil) */
+.fxr .fit-table thead th{
+  position: sticky; top: 0; z-index: 2;
+  background: #dff7fb;
+  box-shadow: 0 2px 3px rgba(0,0,0,.05);
+}
+
+/* Primera columna fija (REGIONES: Piel, Ojos, etc.) */
+.fxr .fit-table th:first-child,
+.fxr .fit-table td:first-child{
+  position: sticky; left: 0; z-index: 1;
+  background: #ffffff;
+  box-shadow: 2px 0 3px rgba(0,0,0,.05);
+}
+
+/* Anchos base para que el rótulo respire y los campos no tapen texto */
+.fxr .col-label { min-width: 12rem; }  /* rótulo (ej. “a. Conjuntivas”) */
+.fxr .col-chk   { width: 3.2rem;  text-align: center; }  /* checkbox */
+.fxr .col-num   { width: 6.5rem; }  /* “Numeral” */
+
+/* Que los inputs no “crezcan” más de su celda */
+.fxr .fit-table .ui-inputfield,
+.fxr .fit-table .ui-inputnumber,
+.fxr .fit-table .ui-selectonemenu{
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/* Alinear checkbox + input dentro de la celda cuando los uses juntos */
+.fxr .cell{
+  display: flex; align-items: center; gap: .5rem;
+}
+
+
+  .panel-scroll{
+    max-width:100%;
+    overflow-x:auto;
+    margin-top:10px;
+  }
+  .fit-table{
+    border-collapse:collapse;
+    width:100%;
+    table-layout:fixed;
+  }
+  .fit-table th{
+    background:#f4f6f7;
+    border:1px solid #ccc;
+    text-align:center;
+    font-weight:700;
+    padding:8px;
+    white-space:nowrap;
+  }
+  .fit-table td{
+    border:1px solid #ccc;
+    vertical-align:top;
+    padding:2px 4px;
+    min-width:150px; /* 🔹 más ancho base */
+  }
+
+  /* columnas más amplias en general */
+  .fit-table td:nth-child(1){min-width:130px}
+  .fit-table td:nth-child(2){min-width:160px}
+  .fit-table td:nth-child(3){min-width:160px}
+  .fit-table td:nth-child(4){min-width:170px}
+  .fit-table td:nth-child(5){min-width:160px}
+  .fit-table td:nth-child(6){min-width:160px}
+  .fit-table td:nth-child(7){min-width:140px}
+  .fit-table td:nth-child(8){min-width:160px}
+  .fit-table td:nth-child(9){min-width:160px}
+  .fit-table td:nth-child(10){min-width:150px}
+  .fit-table td:nth-child(11){min-width:160px}
+  .fit-table td:nth-child(12){min-width:190px}
+  .fit-table td:nth-child(13){min-width:170px}
+
+  /* 🔹 Fila limpia: texto izquierda, checkbox derecha */
+  .row-line{
+    display:grid;
+    grid-template-columns: 1fr 30px;
+    align-items:center;
+    padding:6px 8px;
+    column-gap:10px;
+    box-sizing:border-box;
+  }
+
+  /* 🔹 checkbox siempre alineado a la derecha y con margen */
+  .chk{
+    justify-self:end;
+    margin-right:4px;
+  }
+
+  /* 🔹 mismo tamaño para todos los checks */
+  .ui-chkbox, .ui-chkbox-box{
+    width:18px;
+    height:18px;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+  }
+
+  /* 🔹 Bloque vertical uniforme */
+  .col-block{
+    display:flex;
+    flex-direction:column;
+    gap:2px;
+  }
+
+  /* 🔹 Cabeceras y bordes suaves estilo institucional */
+  .fit-table th{
+    background:#e8f7e8;
+    color:#203020;
+    border-color:#bcd2bc;
+  }
+  .fit-table td{
+    border-color:#d0e0d0;
+  }
+  /* === EXAMEN FÍSICO REGIONAL === */
+
+/* Fieldset con scroll horizontal interno */
+.fieldset-scroll {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-bottom: 10px;
+}
+
+/* Tabla general */
+.f-grid {
+  border-collapse: collapse;
+  width: 100%;
+  table-layout: fixed;
+  min-width: 2400px; /* asegura scroll horizontal sin desbordarse del template */
+}
+
+/* Encabezados */
+.f-grid th {
+  background: #e8f7e8;
+  color: #203020;
+  border: 1px solid #bcd2bc;
+  text-align: center;
+  font-weight: 700;
+  padding: 8px 10px;
+  white-space: nowrap; /* evita cortes de línea */
+}
+
+/* Celdas */
+.f-grid td {
+  border: 1px solid #d0e0d0;
+  vertical-align: top;
+  padding: 4px 6px;
+}
+
+/* Anchos personalizados por columna */
+.f-grid td:nth-child(1) { min-width: 160px; }
+.f-grid td:nth-child(2) { min-width: 200px; }
+.f-grid td:nth-child(3) { min-width: 200px; }
+.f-grid td:nth-child(4) { min-width: 200px; }
+.f-grid td:nth-child(5) { min-width: 200px; }
+.f-grid td:nth-child(6) { min-width: 180px; }
+.f-grid td:nth-child(7) { min-width: 160px; }
+.f-grid td:nth-child(8) { min-width: 180px; }
+.f-grid td:nth-child(9) { min-width: 180px; }
+.f-grid td:nth-child(10) { min-width: 180px; }
+.f-grid td:nth-child(11) { min-width: 180px; }
+.f-grid td:nth-child(12) { min-width: 210px; } /* Extremidades */
+.f-grid td:nth-child(13) { min-width: 210px; } /* Neurológico */
+
+/* Filas: etiqueta izquierda, checkbox derecha */
+.f-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 4px;
+  min-height: 28px;
+}
+
+.f-lbl {
+  text-align: left;
+  flex: 1;
+  line-height: 1.2;
+  word-break: keep-all;
+  white-space: normal;
+  hyphens: auto;
+}
+
+/* Checkbox PrimeFaces: centrado y compacto */
+.f-row .ui-chkbox {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  margin-left: 8px;
+}
+.f-row .ui-chkbox-box {
+  width: 18px;
+  height: 18px;
+  margin: 0 !important;
+}
+
+/* Scrollbar personalizado (para IGM, tono oliva) */
+.fieldset-scroll::-webkit-scrollbar {
+  height: 8px;
+}
+.fieldset-scroll::-webkit-scrollbar-thumb {
+  background-color: #8a9a7b;
+  border-radius: 4px;
+}
+.fieldset-scroll::-webkit-scrollbar-track {
+  background-color: #e8f0e8;
+}
+
+/* --- Fieldset: evita que se salga del template --- */
+.ui-fieldset.fieldset-encaps {
+  display: block;
+  max-width: 100%;
+  overflow: hidden;          /* importante: el fieldset no crece con el contenido */
+  box-sizing: border-box;
+}
+
+/* Contenedor con scroll horizontal interno */
+.fs-scroll {
+  width: 100%;
+  overflow-x: auto;          /* aquí aparece la barra horizontal */
+  overflow-y: hidden;
+  padding-bottom: 6px;       /* respiración para la barra */
+  box-sizing: border-box;
+}
+
+/* Tabla interna: ancho mínimo para obligar al scroll, pero sin romper layout */
+.f-grid {
+  border-collapse: collapse;
+  table-layout: fixed;
+  width: auto;               /* no 100% para que no fuerce crecimiento del padre */
+  min-width: 1600px;         /* ajusta a gusto (1200–2200) */
+}
+
+/* Encabezados */
+.f-grid th {
+  background: #e8f7e8;
+  color: #203020;
+  border: 1px solid #bcd2bc;
+  text-align: center;
+  font-weight: 700;
+  padding: 8px 10px;
+  white-space: nowrap;       /* títulos en una línea */
+}
+
+/* Celdas */
+.f-grid td {
+  border: 1px solid #d0e0d0;
+  vertical-align: top;
+  padding: 4px 6px;
+}
+
+/* Anchos por columna (ajusta si quieres más aire) */
+.f-grid td:nth-child(1)  { min-width: 160px; }  /* Piel            */
+.f-grid td:nth-child(2)  { min-width: 200px; }  /* Ojos            */
+.f-grid td:nth-child(3)  { min-width: 200px; }  /* Oído            */
+.f-grid td:nth-child(4)  { min-width: 200px; }  /* Oro faringe     */
+.f-grid td:nth-child(5)  { min-width: 180px; }  /* Nariz           */
+.f-grid td:nth-child(6)  { min-width: 170px; }  /* Cuello          */
+.f-grid td:nth-child(7)  { min-width: 160px; }  /* Tórax (mamas)   */
+.f-grid td:nth-child(8)  { min-width: 180px; }  /* Tórax           */
+.f-grid td:nth-child(9)  { min-width: 180px; }  /* Abdomen         */
+.f-grid td:nth-child(10) { min-width: 180px; }  /* Columna         */
+.f-grid td:nth-child(11) { min-width: 170px; }  /* Pelvis          */
+.f-grid td:nth-child(12) { min-width: 210px; }  /* Extremidades    */
+.f-grid td:nth-child(13) { min-width: 210px; }  /* Neurológico     */
+
+/* Fila: etiqueta a la izquierda, checkbox a la derecha */
+.f-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 2px;
+  min-height: 28px;
+}
+
+.f-lbl {
+  flex: 1 1 auto;
+  text-align: left;
+  line-height: 1.2;
+  white-space: normal;
+}
+
+/* Ajustes visuales del checkbox de PrimeFaces */
+.f-row .ui-chkbox { display:inline-flex; align-items:center; justify-content:center; }
+.f-row .ui-chkbox-box { width:18px; height:18px; margin:0 !important; }
+
+/* Scrollbar (opcional) */
+.fs-scroll::-webkit-scrollbar { height: 8px; }
+.fs-scroll::-webkit-scrollbar-thumb { background:#8a9a7b; border-radius:4px; }
+.fs-scroll::-webkit-scrollbar-track { background:#e8f0e8; }
+
+/* ===== ATENCIÓN PRIORITARIA UNA SOLA LÍNEA ===== */
+.ap-grid {
+  display: flex !important;
+  align-items: center !important;
+  flex-wrap: nowrap !important; /* no se parte */
+  gap: 1.5rem !important;       /* espacio entre cada par */
+  overflow-x: auto !important;  /* scroll si no cabe */
+  padding: 0.5rem 0.8rem !important;
+}
+
+.ap-item {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: .5rem !important;
+  flex: 0 0 auto !important; /* no se ajustan ni se rompen */
+}
+
+.ap-item .ui-chkbox-box {
+  width: 18px !important;
+  height: 18px !important;
+  border-radius: 4px !important;
+  border: 2px solid #2f4325 !important; /* verde IGM */
+  background: #fff !important;
+  box-shadow: none !important;
+}
+
+.ap-item .ui-chkbox-box.ui-state-active {
+  background: #2f4325 !important;
+  border-color: #2f4325 !important;
+}
+
+.ap-item .ui-chkbox-icon {
+  color: #fff !important;
+  font-size: 12px !important;
+}
+
+.ap-item .ap-label {
+  font-size: .95rem !important;
+  color: #1b3524 !important;
+  font-weight: 500;
+  white-space: nowrap !important;
+}
+
+
+/* ================== H · Actividad laboral – GRID ENCAPSULADO ================== */
+.hx-fieldset.ui-fieldset {        /* el fieldset nunca se desborda */
+  display:block; max-width:100%; overflow:hidden; box-sizing:border-box;
+}
+
+.hx-scroll {                      /* scrollbar horizontal interno del fieldset */
+  width:100%; overflow-x:auto; overflow-y:hidden; padding-bottom:8px;
+  box-sizing:border-box;
+}
+
+/* Tabla principal (solo H) */
+.hx-grid{
+  border-collapse:collapse; table-layout:fixed; width:auto;   /* no fuerza 100% */
+  min-width: 1600px;                 /* obliga scroll si hace falta */
+  font-size:13px;
+}
+.hx-grid th{
+  background:#e8f7e8; color:#203020; border:1px solid #bcd2bc;
+  text-align:center; font-weight:700; padding:8px 10px;
+  white-space:normal;               /* permite salto de línea (no se montan) */
+  line-height:1.2;
+}
+.hx-grid td{
+  border:1px solid #d0e0d0; vertical-align:middle; padding:6px 8px;
+  background:#fff;
+}
+
+/* Anchos por columna — ajusta a gusto, ya no se colapsan los rótulos */
+.hx-col-ct     { min-width: 200px; }  /* Centro de trabajo                    */
+.hx-col-acts   { min-width: 260px; }  /* Actividades                          */
+.hx-col-chk    { width:  60px;  text-align:center; } /* checks (anterior/actual/si/no) */
+.hx-col-tiempo { min-width: 120px; }  /* tiempo de trabajo                    */
+.hx-col-fecha  { min-width: 140px; }  /* fecha                                */
+.hx-col-espec  { min-width: 220px; }  /* especificar                          */
+.hx-col-obsv   { min-width: 260px; }  /* observaciones                        */
+
+/* Nota bajo “FECHA” (aaaa/mm/dd) más legible */
+.hx-note{ display:block; color:#666; font-size:11px; margin-top:2px }
+
+/* Calendario: input + botón en línea y sin romper celdas */
+.hx-date .ui-calendar{ display:flex; align-items:center; width:100%; }
+.hx-date .ui-calendar input.ui-inputfield{ flex:1 1 auto; min-width:0; }
+.hx-date .ui-calendar .ui-button,
+.hx-date .ui-datepicker-trigger{ flex:0 0 auto; margin-left:6px; height:34px; }
+
+/* Textareas e inputs ocupan la celda completa (sin empujar nada) */
+.hx-cell-input    { width:100% !important; box-sizing:border-box !important; }
+.hx-cell-textarea { width:100% !important; resize:vertical; box-sizing:border-box; }
+
+/* Encabezado superior “grande” con colspan: respiración extra */
+.hx-grid thead tr:first-child th{ padding:10px 10px; }
+
+/* (Opcional) encabezado pegajoso al hacer scroll */
+.hx-grid thead th{ position:sticky; top:0; z-index:1; box-shadow:0 2px 3px rgba(0,0,0,.05); }

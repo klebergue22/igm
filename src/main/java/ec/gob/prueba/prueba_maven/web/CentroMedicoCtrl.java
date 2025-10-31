@@ -81,6 +81,11 @@ public class CentroMedicoCtrl implements Serializable {
     private Integer abortos;
     private String planificacion;
     private String planificacionCual;
+    
+    // ---- Constantes vitales
+private Double peso;   // kg
+private Double talla;  // cm
+private Double imc;    // kg/m2
 
     @PostConstruct
     public void init() {
@@ -152,5 +157,13 @@ public class CentroMedicoCtrl implements Serializable {
             edad = null;
         }
     }
+    public void recalcularIMC() {
+    if (peso != null && talla != null && talla > 0) {
+        double m = talla / 100.0;
+        this.imc = Math.round((peso / (m*m)) * 100.0) / 100.0;
+    } else {
+        this.imc = null;
+    }
+}
 
 }

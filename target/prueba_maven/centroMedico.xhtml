@@ -83,26 +83,32 @@
 
                     </p:panelGrid>
 
-                    <!-- ATENCIÓN PRIORITARIA -->
-                    <p:fieldset legend="ATENCIÓN PRIORITARIA" style="margin-top:.5rem;">
-                        <p:panelGrid columns="5" layout="grid" styleClass="ui-fluid ap-grid">
-                            <h:panelGroup>
-                                <p:selectBooleanCheckbox value="#{centroMedicoCtrl.apEmbarazada}" itemLabel="Embarazada"/>
-                            </h:panelGroup>
-                            <h:panelGroup>
-                                <p:selectBooleanCheckbox value="#{centroMedicoCtrl.apDiscapacidad}" itemLabel="Discapacidad"/>
-                            </h:panelGroup>
-                            <h:panelGroup>
-                                <p:selectBooleanCheckbox value="#{centroMedicoCtrl.apCatastrofica}" itemLabel="Enf. catastrófica"/>
-                            </h:panelGroup>
-                            <h:panelGroup>
-                                <p:selectBooleanCheckbox value="#{centroMedicoCtrl.apLactancia}" itemLabel="Lactancia"/>
-                            </h:panelGroup>
-                            <h:panelGroup>
-                                <p:selectBooleanCheckbox value="#{centroMedicoCtrl.apAdultoMayor}" itemLabel="Adulto mayor"/>
-                            </h:panelGroup>
-                        </p:panelGrid>
-                    </p:fieldset>
+<!-- ATENCIÓN PRIORITARIA -->
+<p:fieldset legend="ATENCIÓN PRIORITARIA" styleClass="ap-fieldset" style="margin-top:.5rem;">
+    <div class="ap-grid">
+        <div class="ap-item">
+            <p:selectBooleanCheckbox value="#{centroMedicoCtrl.apEmbarazada}" />
+            <h:outputText value="Embarazada" styleClass="ap-label"/>
+        </div>
+        <div class="ap-item">
+            <p:selectBooleanCheckbox value="#{centroMedicoCtrl.apDiscapacidad}" />
+            <h:outputText value="Discapacidad" styleClass="ap-label"/>
+        </div>
+        <div class="ap-item">
+            <p:selectBooleanCheckbox value="#{centroMedicoCtrl.apCatastrofica}" />
+            <h:outputText value="Enf. catastrófica" styleClass="ap-label"/>
+        </div>
+        <div class="ap-item">
+            <p:selectBooleanCheckbox value="#{centroMedicoCtrl.apLactancia}" />
+            <h:outputText value="Lactancia" styleClass="ap-label"/>
+        </div>
+        <div class="ap-item">
+            <p:selectBooleanCheckbox value="#{centroMedicoCtrl.apAdultoMayor}" />
+            <h:outputText value="Adulto mayor" styleClass="ap-label"/>
+        </div>
+    </div>
+</p:fieldset>
+
 
                     <!-- BIO/IDENTIFICACIÓN -->
                     <h:panelGrid columns="4"
@@ -360,44 +366,316 @@
                                 </h:panelGroup>
 
                             </p:fieldset>
+
                         </h:panelGroup>
                     </p:outputPanel>
 
+
+
+                    <p:fieldset legend="CONSUMO DE SUSTANCIAS" toggleable="true" collapsed="false">
+                        <h:panelGroup id="consumoVidaCond" layout="block" styleClass="ui-fluid">
+
+                            <table class="cons-grid">
+                                <colgroup>
+                                    <!-- CONSUMO -->
+                                    <col class="c-col-item"/>
+                                    <col class="c-col-tiempo"/>
+                                    <col class="c-col-chk"/>
+                                    <col class="c-col-tiempo"/>
+                                    <col class="c-col-chk"/>
+                                    <!-- ESTILO DE VIDA -->
+                                    <col class="c-col-vida-title"/>
+                                    <col class="c-col-vida-cual"/>
+                                    <col class="c-col-vida-tiempo"/>
+                                    <!-- CONDICIÓN -->
+                                    <col class="c-col-cond-title"/>
+                                    <col class="c-col-cond-cual"/>
+                                    <col class="c-col-cond-cant"/>
+                                </colgroup>
+
+                                <thead>
+                                    <tr>
+                                        <th colspan="5" class="txt-c"><div class="th-wrap">CONSUMO DE SUSTANCIAS</div></th>
+                                        <th colspan="3" class="txt-c"><div class="th-wrap">ESTILO DE VIDA</div></th>
+                                        <th colspan="3" class="txt-c"><div class="th-wrap">CONDICIÓN PREEXISTENTE</div></th>
+                                    </tr>
+                                    <tr class="c-subhead">
+                                        <!-- Consumo -->
+                                        <th></th>
+                                        <th><div class="th-wrap">TIEMPO DE CONSUMO<br/><span class="c-sub">(meses)</span></div></th>
+                                        <th><div class="th-wrap">EX CONSUMIDOR</div></th>
+                                        <th><div class="th-wrap">TIEMPO DE ABSTINENCIA<br/><span class="c-sub">(meses)</span></div></th>
+                                        <th><div class="th-wrap">NO CONSUME</div></th>
+                                        <!-- Estilo de vida -->
+                                        <th class="txt-c"><div class="th-wrap">ACTIVIDAD FÍSICA</div></th>
+                                        <th><div class="th-wrap">¿CUÁL?</div></th>
+                                        <th><div class="th-wrap">TIEMPO</div></th>
+                                        <!-- Condición -->
+                                        <th class="txt-c"><div class="th-wrap">MEDICACIÓN HABITUAL</div></th>
+                                        <th><div class="th-wrap">¿CUÁL?</div></th>
+                                        <th><div class="th-wrap">CANTIDAD</div></th>
+                                    </tr>
+                                </thead>
+
+                                <tbody>
+                                    <!-- Fila 1 -->
+                                    <tr>
+                                        <!-- CONSUMO -->
+                                        <td>TABACO</td>
+                                        <td><p:inputNumber decimalPlaces="0" minValue="0" styleClass="cons-fit"/></td>
+                                        <td class="txt-c"><p:selectBooleanCheckbox/></td>
+                                        <td><p:inputNumber decimalPlaces="0" minValue="0" styleClass="cons-fit"/></td>
+                                        <td class="txt-c"><p:selectBooleanCheckbox/></td>
+
+                                        <!-- ESTILO DE VIDA -->
+                                        <td rowspan="3" class="txt-c">ACTIVIDAD FÍSICA</td>
+                                        <td><p:inputText id="af_cual_1" styleClass="cons-fit" placeholder="Ej.: gimnasio, trote, yoga"/></td>
+                                        <td><p:inputText id="af_tiempo_1" styleClass="cons-fit" placeholder="Ej.: 1 h por día / 3 veces"/></td>
+
+                                        <!-- CONDICIÓN PREEXISTENTE -->
+                                        <td rowspan="3" class="txt-c">MEDICACIÓN HABITUAL</td>
+                                        <td><p:inputText id="med_cual_1" styleClass="cons-fit" placeholder="Nombre del fármaco"/></td>
+                                        <td><p:inputNumber id="med_cant_1" decimalPlaces="0" minValue="0" styleClass="cons-fit" placeholder="Unidades"/></td>
+                                    </tr>
+
+                                    <!-- Fila 2 -->
+                                    <tr>
+                                        <!-- CONSUMO -->
+                                        <td>ALCOHOL</td>
+                                        <td><p:inputNumber decimalPlaces="0" minValue="0" styleClass="cons-fit"/></td>
+                                        <td class="txt-c"><p:selectBooleanCheckbox/></td>
+                                        <td><p:inputNumber decimalPlaces="0" minValue="0" styleClass="cons-fit"/></td>
+                                        <td class="txt-c"><p:selectBooleanCheckbox/></td>
+
+                                        <!-- ESTILO DE VIDA (títulos ya vienen por rowspan de la fila 1) -->
+                                        <td><p:inputText id="af_cual_2" styleClass="cons-fit" placeholder="Actividad"/></td>
+                                        <td><p:inputText id="af_tiempo_2" styleClass="cons-fit" placeholder="Tiempo"/></td>
+
+                                        <!-- CONDICIÓN (título por rowspan de la fila 1) -->
+                                        <td><p:inputText id="med_cual_2" styleClass="cons-fit" placeholder="Fármaco"/></td>
+                                        <td><p:inputNumber id="med_cant_2" decimalPlaces="0" minValue="0" styleClass="cons-fit" placeholder="Unidades"/></td>
+                                    </tr>
+
+                                    <!-- Fila 3 -->
+                                    <tr>
+                                        <!-- CONSUMO -->
+                                        <td>OTRAS: <span class="c-sub">¿cuál?</span></td>
+                                        <td><p:inputNumber decimalPlaces="0" minValue="0" styleClass="cons-fit"/></td>
+                                        <td class="txt-c"><p:selectBooleanCheckbox/></td>
+                                        <td><p:inputNumber decimalPlaces="0" minValue="0" styleClass="cons-fit"/></td>
+                                        <td class="txt-c"><p:selectBooleanCheckbox/></td>
+
+                                        <!-- ESTILO DE VIDA -->
+                                        <td><p:inputText id="af_cual_3" styleClass="cons-fit" placeholder="Actividad"/></td>
+                                        <td><p:inputText id="af_tiempo_3" styleClass="cons-fit" placeholder="Tiempo"/></td>
+
+                                        <!-- CONDICIÓN -->
+                                        <td><p:inputText id="med_cual_3" styleClass="cons-fit" placeholder="Fármaco"/></td>
+                                        <td><p:inputNumber id="med_cant_3" decimalPlaces="0" minValue="0" styleClass="cons-fit" placeholder="Unidades"/></td>
+                                    </tr>
+
+                                    <!-- Observación -->
+                                    <tr>
+                                        <th colspan="2">Observación</th>
+                                        <td colspan="9">
+                                            <p:inputTextarea rows="3" autoResize="true" styleClass="cons-fit" placeholder="Observaciones adicionales"/>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+
+                        </h:panelGroup>
+                    </p:fieldset>
                 </p:fieldset>
 
                 <!-- D. ENFERMEDAD O PROBLEMA ACTUAL -->
                 <p:fieldset legend="D. ENFERMEDAD O PROBLEMA ACTUAL" toggleable="true">
-                    <p:inputTextarea rows="5" style="width:100%" placeholder="Descripción del problema actual"/>
+                    <p:inputTextarea rows="5" style="width:100%" placeholder="Ficha médica actual"/>
                 </p:fieldset>
 
                 <!-- E. CONSTANTES VITALES Y ANTROPOMETRÍA -->
                 <p:fieldset legend="E. CONSTANTES VITALES Y ANTROPOMETRÍA" toggleable="true">
-                    <h:panelGrid columns="8" styleClass="ui-fluid">
-                        <h:outputText value="Temp (°C)"/><p:inputNumber decimalPlaces="1"/>
-                        <h:outputText value="PA (mmHg)"/><p:inputText placeholder="120/80"/>
-                        <h:outputText value="FC"/><p:inputNumber decimalPlaces="0"/>
-                        <h:outputText value="FR"/><p:inputNumber decimalPlaces="0"/>
-                        <h:outputText value="Sat O₂ (%)"/><p:inputNumber decimalPlaces="0"/>
-                        <h:outputText value="Peso (kg)"/><p:inputNumber decimalPlaces="2"/>
-                        <h:outputText value="Talla (cm)"/><p:inputNumber decimalPlaces="1"/>
-                        <h:outputText value="IMC"/><p:inputNumber decimalPlaces="2" disabled="true"/>
-                        <h:outputText value="Perímetro abd (cm)"/><p:inputNumber decimalPlaces="1"/>
+                    <h:panelGrid columns="10" styleClass="ui-fluid vit-grid">
+
+                        <h:outputText value="Temp (°C)"/>
+                        <p:inputNumber id="temp" decimalPlaces="1"/>
+
+                        <h:outputText value="PA (mmHg)"/>
+                        <p:inputText id="pa" placeholder="120&#47;80"/>
+
+                        <h:outputText value="FC"/>
+                        <p:inputNumber id="fc" decimalPlaces="0"/>
+
+                        <h:outputText value="FR"/>
+                        <p:inputNumber id="fr" decimalPlaces="0"/>
+
+                        <h:outputText value="Sat O&#8322; (&#37;)"/>
+                        <p:inputNumber id="satO2" decimalPlaces="0"/>
+
+                        <h:outputText value="Peso (kg)"/>
+                        <p:inputNumber id="peso" decimalPlaces="2"
+                                       oninput="calcIMC()" onkeyup="calcIMC()" onchange="calcIMC()"/>
+
+                        <h:outputText value="Talla (cm)"/>
+                        <p:inputNumber id="talla" decimalPlaces="2"
+                                       oninput="calcIMC()" onkeyup="calcIMC()" onchange="calcIMC()"/>
+
+                        <h:outputText value="IMC"/>
+                        <p:inputNumber id="imc" decimalPlaces="2" disabled="true"/>
+
+                        <h:outputText value="Perímetro abd (cm)"/>
+                        <p:inputNumber id="perimetroAbd" decimalPlaces="1"/>
                     </h:panelGrid>
+
+                    <h:outputScript target="body">
+                        //<![CDATA[
+                        function q(s){return document.querySelector("input[id$='"+s+"']");}
+                        function n(v){return parseFloat(String(v).replace(',','.'));}
+
+                        function calcIMC(){
+                        var peso=q("peso_input"), talla=q("talla_input"), imc=q("imc_input");
+                        if(!peso||!talla||!imc)return;
+                        var p=n(peso.value), t=n(talla.value);
+                        if(!isNaN(p)&&!isNaN(t)&&t>0){
+                        imc.value=(p/Math.pow(t/100,2)).toFixed(2);
+                        }else imc.value="";
+                        }
+                        document.addEventListener('DOMContentLoaded',calcIMC);
+                        //]]>
+                    </h:outputScript>
                 </p:fieldset>
 
-                <!-- F. EXAMEN FÍSICO REGIONAL -->
-                <p:fieldset legend="F. EXAMEN FÍSICO REGIONAL" toggleable="true">
-                    <h:panelGrid columns="4" styleClass="ui-fluid">
-                        <h:outputText value="Piel - Cicatrices"/><p:selectBooleanCheckbox/><h:outputText value="Numeral"/><p:inputText/>
-                        <h:outputText value="Ojos - Párpados"/><p:selectBooleanCheckbox/><h:outputText value="Numeral"/><p:inputText/>
-                        <h:outputText value="Oído - CAE"/><p:selectBooleanCheckbox/><h:outputText value="Numeral"/><p:inputText/>
-                        <h:outputText value="Tórax - Pulmones"/><p:selectBooleanCheckbox/><h:outputText value="Numeral"/><p:inputText/>
-                        <h:outputText value="Abdomen - Vísceras"/><p:selectBooleanCheckbox/><h:outputText value="Numeral"/><p:inputText/>
-                        <h:outputText value="Extremidades - Vascular"/><p:selectBooleanCheckbox/><h:outputText value="Numeral"/><p:inputText/>
-                        <h:outputText value="Neurológico - Reflejos"/><p:selectBooleanCheckbox/><h:outputText value="Numeral"/><p:inputText/>
-                        <h:outputText value="Observación global"/><p:inputTextarea rows="2" autoResize="true" />
-                    </h:panelGrid>
-                </p:fieldset>
+
+
+
+                <!-- "F. EXAMEN FÍSICO REGIONAL-->
+                <p:fieldset legend="F. EXAMEN FÍSICO REGIONAL"
+                            toggleable="true"
+                            styleClass="fieldset-encaps">
+
+                    <!-- Wrapper con scroll horizontal interno -->
+                    <div class="fs-scroll">
+                        <table class="f-grid">
+                            <thead>
+                                <tr>
+                                    <th>1. Piel</th>
+                                    <th>2. Ojos</th>
+                                    <th>3. Oído</th>
+                                    <th>4. Oro faringe</th>
+                                    <th>5. Nariz</th>
+                                    <th>6. Cuello</th>
+                                    <th>7. Tórax</th>
+                                    <th>8. Tórax</th>
+                                    <th>9. Abdomen</th>
+                                    <th>10. Columna</th>
+                                    <th>11. Pelvis</th>
+                                    <th>12. Extremidades</th>
+                                    <th>13. Neurológico</th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+                                <tr>
+                                    <!-- 1. Piel -->
+                                    <td>
+                                        <div class="f-row"><span class="f-lbl">a. Cicatrices</span><p:selectBooleanCheckbox/></div>
+                                    </td>
+
+                                    <!-- 2. Ojos -->
+                                    <td>
+                                        <div class="f-row"><span class="f-lbl">a. Párpados</span><p:selectBooleanCheckbox/></div>
+                                        <div class="f-row"><span class="f-lbl">b. Conjuntivas</span><p:selectBooleanCheckbox/></div>
+                                        <div class="f-row"><span class="f-lbl">c. Pupilas</span><p:selectBooleanCheckbox/></div>
+                                        <div class="f-row"><span class="f-lbl">d. Córnea</span><p:selectBooleanCheckbox/></div>
+                                        <div class="f-row"><span class="f-lbl">e. Motilidad</span><p:selectBooleanCheckbox/></div>
+                                    </td>
+
+                                    <!-- 3. Oído -->
+                                    <td>
+                                        <div class="f-row"><span class="f-lbl">a. Conducto auditivo ext.</span><p:selectBooleanCheckbox/></div>
+                                        <div class="f-row"><span class="f-lbl">b. Pabellón</span><p:selectBooleanCheckbox/></div>
+                                        <div class="f-row"><span class="f-lbl">c. Tímpanos</span><p:selectBooleanCheckbox/></div>
+                                    </td>
+
+                                    <!-- 4. Oro faringe -->
+                                    <td>
+                                        <div class="f-row"><span class="f-lbl">a. Labios</span><p:selectBooleanCheckbox/></div>
+                                        <div class="f-row"><span class="f-lbl">b. Lengua</span><p:selectBooleanCheckbox/></div>
+                                        <div class="f-row"><span class="f-lbl">c. Faringe</span><p:selectBooleanCheckbox/></div>
+                                        <div class="f-row"><span class="f-lbl">d. Amígdalas</span><p:selectBooleanCheckbox/></div>
+                                        <div class="f-row"><span class="f-lbl">e. Dentadura</span><p:selectBooleanCheckbox/></div>
+                                    </td>
+
+                                    <!-- 5. Nariz -->
+                                    <td>
+                                        <div class="f-row"><span class="f-lbl">a. Tabique</span><p:selectBooleanCheckbox/></div>
+                                        <div class="f-row"><span class="f-lbl">b. Cornetes</span><p:selectBooleanCheckbox/></div>
+                                        <div class="f-row"><span class="f-lbl">c. Mucosas</span><p:selectBooleanCheckbox/></div>
+                                        <div class="f-row"><span class="f-lbl">d. Senos paranasales</span><p:selectBooleanCheckbox/></div>
+                                    </td>
+
+                                    <!-- 6. Cuello -->
+                                    <td>
+                                        <div class="f-row"><span class="f-lbl">a. Tiroides / masas</span><p:selectBooleanCheckbox/></div>
+                                        <div class="f-row"><span class="f-lbl">b. Movilidad</span><p:selectBooleanCheckbox/></div>
+                                    </td>
+
+                                    <!-- 7. Tórax (mamas) -->
+                                    <td>
+                                        <div class="f-row"><span class="f-lbl">a. Mamas</span><p:selectBooleanCheckbox/></div>
+                                    </td>
+
+                                    <!-- 8. Tórax -->
+                                    <td>
+                                        <div class="f-row"><span class="f-lbl">a. Pulmones</span><p:selectBooleanCheckbox/></div>
+                                        <div class="f-row"><span class="f-lbl">b. Corazón</span><p:selectBooleanCheckbox/></div>
+                                        <div class="f-row"><span class="f-lbl">c. Parrilla costal</span><p:selectBooleanCheckbox/></div>
+                                    </td>
+
+                                    <!-- 9. Abdomen -->
+                                    <td>
+                                        <div class="f-row"><span class="f-lbl">a. Vísceras</span><p:selectBooleanCheckbox/></div>
+                                        <div class="f-row"><span class="f-lbl">b. Pared abdominal</span><p:selectBooleanCheckbox/></div>
+                                    </td>
+
+                                    <!-- 10. Columna -->
+                                    <td>
+                                        <div class="f-row"><span class="f-lbl">a. Flexibilidad</span><p:selectBooleanCheckbox/></div>
+                                        <div class="f-row"><span class="f-lbl">b. Desviación</span><p:selectBooleanCheckbox/></div>
+                                        <div class="f-row"><span class="f-lbl">c. Dolor</span><p:selectBooleanCheckbox/></div>
+                                    </td>
+
+                                    <!-- 11. Pelvis -->
+                                    <td>
+                                        <div class="f-row"><span class="f-lbl">a. Pelvis</span><p:selectBooleanCheckbox/></div>
+                                        <div class="f-row"><span class="f-lbl">b. Genitales</span><p:selectBooleanCheckbox/></div>
+                                    </td>
+
+                                    <!-- 12. Extremidades -->
+                                    <td>
+                                        <div class="f-row"><span class="f-lbl">a. Vascular</span><p:selectBooleanCheckbox/></div>
+                                        <div class="f-row"><span class="f-lbl">b. Miembros superiores</span><p:selectBooleanCheckbox/></div>
+                                        <div class="f-row"><span class="f-lbl">c. Miembros inferiores</span><p:selectBooleanCheckbox/></div>
+                                    </td>
+
+                                    <!-- 13. Neurológico -->
+                                    <td>
+                                        <div class="f-row"><span class="f-lbl">a. Fuerza</span><p:selectBooleanCheckbox/></div>
+                                        <div class="f-row"><span class="f-lbl">b. Sensibilidad</span><p:selectBooleanCheckbox/></div>
+                                        <div class="f-row"><span class="f-lbl">c. Marcha</span><p:selectBooleanCheckbox/></div>
+                                        <div class="f-row"><span class="f-lbl">d. Reflejos</span><p:selectBooleanCheckbox/></div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Observación -->
+                    <div style="margin-top:10px">
+                        <h:outputText value="Observación:"/><br/>
+                        <p:inputTextarea rows="3" autoResize="true" style="width:100%"/>
+                    </div>
+                    </p:fieldset>
 
             </p:tab>
 
@@ -617,58 +895,90 @@
             <!-- ===================================================== -->
             <p:tab id="step3" title="Historia / Resultados (H–O)">
 
-                <!-- H -->
-                <p:fieldset legend="H. Actividad laboral / incidentes / accidentes / enfermedades ocupacionales" toggleable="true" collapsed="false">
-                    <h:panelGroup layout="block" styleClass="ui-fluid panel-scroll">
+             <!-- H -->
+<p:fieldset legend="H. Actividad laboral / incidentes / accidentes / enfermedades ocupacionales"
+            toggleable="true" collapsed="false"
+            styleClass="hx-fieldset">
+  <div class="hx-scroll">
 
-                        <ui:param name="rows" value="#{['1','2','3','4','5','6','7','8']}" />
+    <ui:param name="rows" value="#{['1','2','3','4','5','6','7','8']}" />
 
-                        <table class="fit-table">
-                            <colgroup>
-                                <col class="h-col-ct"/><col class="h-col-acts"/>
-                                <col class="h-col-chk"/><col class="h-col-chk"/><col class="h-col-tiempo"/>
-                                <col class="h-col-chk"/><col class="h-col-chk"/><col class="h-col-chk"/>
-                                <col class="h-col-chk"/><col class="h-col-chk"/><col class="h-col-fecha"/><col class="h-col-espec"/>
-                                <col class="h-col-obsv"/>
-                            </colgroup>
-                            <thead>
-                                <tr>
-                                    <th rowspan="2">CENTRO DE TRABAJO</th>
-                                    <th rowspan="2">ACTIVIDADES QUE DESEMPEÑABA</th>
-                                    <th colspan="3">TRABAJO</th>
-                                    <th colspan="3">De los Accidentes de Trabajo y las Enfermedades Profesionales</th>
-                                    <th colspan="4">CALIFICADO POR INSTITUTO ECUATORIANO DE SEGURIDAD SOCIAL</th>
-                                    <th rowspan="2">OBSERVACIONES</th>
-                                </tr>
-                                <tr>
-                                    <th>ANTERIOR</th><th>ACTUAL</th><th>TIEMPO DE TRABAJO</th>
-                                    <th>INCIDENTE</th><th>ACCIDENTE</th><th>ENFERMEDAD PROFESIONAL</th>
-                                    <th>SI</th><th>NO</th><th>FECHA<br/><span class="h-note">aaaa/mm/dd</span></th><th>ESPECIFICAR</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <ui:repeat value="#{rows}" var="r">
-                                    <tr>
-                                        <td><p:inputText id="centro_#{r}" styleClass="cell-input" placeholder="Centro #{r}"/></td>
-                                        <td><p:inputText id="act_#{r}" styleClass="cell-input" placeholder="Actividad #{r}"/></td>
-                                        <td style="text-align:center"><p:selectBooleanCheckbox id="trab_ant_#{r}"/></td>
-                                        <td style="text-align:center"><p:selectBooleanCheckbox id="trab_act_#{r}"/></td>
-                                        <td><p:inputText id="trab_tiempo_#{r}" styleClass="cell-input" placeholder="Tiempo"/></td>
-                                        <td style="text-align:center"><p:selectBooleanCheckbox id="incidente_#{r}"/></td>
-                                        <td style="text-align:center"><p:selectBooleanCheckbox id="accidente_#{r}"/></td>
-                                        <td style="text-align:center"><p:selectBooleanCheckbox id="enfermedad_#{r}"/></td>
-                                        <td style="text-align:center"><p:selectBooleanCheckbox id="iess_si_#{r}"/></td>
-                                        <td style="text-align:center"><p:selectBooleanCheckbox id="iess_no_#{r}"/></td>
-                                        <td> <p:calendar id="iess_fecha_#{r}" pattern="yyyy/MM/dd" mask="true" navigator="true" showOn="button"/> </td>
-                                        <td><p:inputTextarea id="iess_especificar_#{r}"  rows="2"  styleClass="cell-textarea" placeholder="Detalle" autoResize="true"/></td>
-                                        <td><p:inputTextarea id="obs_#{r}" rows="2" autoResize="true" styleClass="cell-textarea" placeholder="Observaciones"/></td>
-                                    </tr>
-                                </ui:repeat>
-                            </tbody>
-                        </table>
+    <table class="hx-grid">
+      <colgroup>
+        <col class="hx-col-ct"/>
+        <col class="hx-col-acts"/>
+        <col class="hx-col-chk"/><col class="hx-col-chk"/><col class="hx-col-tiempo"/>
+        <col class="hx-col-chk"/><col class="hx-col-chk"/><col class="hx-col-chk"/>
+        <col class="hx-col-chk"/><col class="hx-col-chk"/><col class="hx-col-fecha"/>
+        <col class="hx-col-espec"/>
+        <col class="hx-col-obsv"/>
+      </colgroup>
 
-                    </h:panelGroup>
-                </p:fieldset>
+      <thead>
+        <tr>
+          <th rowspan="2">CENTRO DE TRABAJO</th>
+          <th rowspan="2">ACTIVIDADES QUE DESEMPEÑABA</th>
+          <th colspan="3">TRABAJO</th>
+          <th colspan="3">De los Accidentes de Trabajo y las Enfermedades Profesionales</th>
+          <th colspan="4">CALIFICADO POR INSTITUTO ECUATORIANO DE SEGURIDAD SOCIAL</th>
+          <th rowspan="2">OBSERVACIONES</th>
+        </tr>
+        <tr>
+          <th>ANTERIOR</th>
+          <th>ACTUAL</th>
+          <th>TIEMPO DE TRABAJO</th>
+
+          <th>INCIDENTE</th>
+          <th>ACCIDENTE</th>
+          <th>ENFERMEDAD<br/>PROFESIONAL</th>
+
+          <th>SI</th>
+          <th>NO</th>
+          <th>FECHA <span class="hx-note">aaaa/mm/dd</span></th>
+          <th>ESPECIFICAR</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        <ui:repeat value="#{rows}" var="r">
+          <tr>
+            <!-- Centro / Actividad -->
+            <td><p:inputText id="centro_#{r}" styleClass="hx-cell-input" placeholder="Centro #{r}"/></td>
+            <td><p:inputText id="act_#{r}"    styleClass="hx-cell-input" placeholder="Actividad #{r}"/></td>
+
+            <!-- Trabajo: anterior / actual / tiempo -->
+            <td style="text-align:center"><p:selectBooleanCheckbox id="trab_ant_#{r}"/></td>
+            <td style="text-align:center"><p:selectBooleanCheckbox id="trab_act_#{r}"/></td>
+            <td><p:inputText id="trab_tiempo_#{r}" styleClass="hx-cell-input" placeholder="Tiempo"/></td>
+
+            <!-- Incidente / Accidente / Enfermedad profesional -->
+            <td style="text-align:center"><p:selectBooleanCheckbox id="incidente_#{r}"/></td>
+            <td style="text-align:center"><p:selectBooleanCheckbox id="accidente_#{r}"/></td>
+            <td style="text-align:center"><p:selectBooleanCheckbox id="enfermedad_#{r}"/></td>
+
+            <!-- IESS: Sí / No / Fecha / Especificar -->
+            <td style="text-align:center"><p:selectBooleanCheckbox id="iess_si_#{r}"/></td>
+            <td style="text-align:center"><p:selectBooleanCheckbox id="iess_no_#{r}"/></td>
+
+            <td class="hx-date">
+              <p:calendar id="iess_fecha_#{r}" pattern="yyyy/MM/dd"
+                          mask="true" navigator="true" showOn="button"/>
+            </td>
+
+            <td><p:inputTextarea id="iess_especificar_#{r}" rows="2"
+                                 autoResize="true" styleClass="hx-cell-textarea"
+                                 placeholder="Detalle"/></td>
+
+            <td><p:inputTextarea id="obs_#{r}" rows="2"
+                                 autoResize="true" styleClass="hx-cell-textarea"
+                                 placeholder="Observaciones"/></td>
+          </tr>
+        </ui:repeat>
+      </tbody>
+    </table>
+
+  </div>
+</p:fieldset>
 
                 <!-- I -->
                 <p:fieldset legend="I. Actividades extralaborales" toggleable="true" collapsed="true">
