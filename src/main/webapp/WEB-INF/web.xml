@@ -57,6 +57,18 @@
     <servlet-name>Faces Servlet</servlet-name>
     <url-pattern>*.jsf</url-pattern>
   </servlet-mapping>
+  
+  <servlet>
+    <servlet-name>PdfServlet</servlet-name>
+    <servlet-class>ec.gob.prueba.prueba_maven.web.PdfServlet</servlet-class>
+    <!-- Carga bajo demanda; no hace falta load-on-startup -->
+</servlet>
+
+<servlet-mapping>
+    <servlet-name>PdfServlet</servlet-name>
+    <url-pattern>/pdf</url-pattern>
+</servlet-mapping>
+
 
   <!-- Tipos MIME útiles para fuentes -->
   <mime-mapping>

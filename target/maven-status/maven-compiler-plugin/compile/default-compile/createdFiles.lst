@@ -22,6 +22,7 @@ ec\gob\prueba\prueba_maven\modelo\converter\EstadoContratoConverter$1.class
 ec\gob\prueba\prueba_maven\modelo\converter\faces\SexoFacesConverter.class
 ec\gob\prueba\prueba_maven\modelo\DatEmpleado.class
 ec\gob\prueba\prueba_maven\modelo\enums\GrupoSangre.class
+ec\gob\prueba\prueba_maven\web\PdfServlet.class
 ec\gob\prueba\prueba_maven\modelo\converter\faces\GrupoSangreFacesConverter.class
 ec\gob\prueba\prueba_maven\servicio\MensajeService.class
 ec\gob\prueba\prueba_maven\modelo\converter\TipoContratoConverter.class
