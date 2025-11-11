@@ -1,14 +1,19 @@
 package ec.gob.prueba.prueba_maven.web;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.LinkedHashMap;
 import java.util.Locale;
+import java.util.Map;
 import javax.annotation.PostConstruct;
 import javax.faces.application.FacesMessage;
 import javax.faces.bean.ManagedBean;
@@ -19,7 +24,10 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
+import org.primefaces.event.SelectEvent;
 import org.primefaces.model.StreamedContent;
+import org.xhtmlrenderer.pdf.ITextRenderer;
+import com.lowagie.text.pdf.BaseFont;
 
 @ManagedBean(name = "centroMedicoCtrl")
 @ViewScoped
@@ -54,10 +62,10 @@ public class CentroMedicoCtrl implements Serializable {
     // Sexo (M o F)
     private String sexo;
 
-    // Fecha nacimiento / Edad
+    // Fechas / Edad
     private Date fechaNacimiento;
     private Date fechaAtencion;
-    private String tipoEval;
+    private String tipoEval;       // Selección en UI
     private Date fecIngreso;
     private Date fecReintegro;
     private Date fecRetiro;
@@ -94,40 +102,34 @@ public class CentroMedicoCtrl implements Serializable {
     private Double talla;  // cm
     private Double imc;    // kg/m2
 
-    private Date fechaEmision;           // Step 3
-    private String tipoEvaluacion;         // Step 3: INGRESO / PERIODICO / REINTEGRO / RETIRO
+    // ====== STEP 3: Datos para el certificado ======
+    private Date fechaEmision;
+    private String tipoEvaluacion; // INGRESO / PERIODICO / REINTEGRO / RETIRO
 
-    // Aptitud (Step 3)
+    // Aptitud
     private boolean apto;
     private boolean aptoObservacion;
     private boolean aptoLimitaciones;
     private boolean noApto;
-    private String aptitudSel;  // Getter y Setter
+    private String aptitudSel;  // "APTO", "APTO_EN_OBS", "APTO_LIMIT", "NO_APTO"
 
+    private String detalleObservaciones;
+    private String recomendaciones;
 
-    private String detalleObservaciones;   // Step 3
-    private String recomendaciones;        // Step 3
-
-    private String medicoNombre;           // Step 3
-    private String medicoCodigo;           // Step 3
+    private String medicoNombre;
+    private String medicoCodigo;
 
     // ====== Vista previa / descarga ======
-    private StreamedContent pdfPreview;
-    private StreamedContent pdfDescarga;
+    private StreamedContent pdfPreview;  // (no se usa con el servlet, se deja por compatibilidad)
+    private StreamedContent pdfDescarga; // (no se usa con el servlet, se deja por compatibilidad)
     private boolean certificadoListo;
 
-    // === PREVIEW POR <object> ===
-    private String pdfObjectUrl;        // URL pública para el <object>
+    // === PREVIEW POR <object>/<iframe> via Servlet ===
+    private String pdfObjectUrl; // opcional
+    private String pdfToken;     // clave en sesión para el servlet
 
-    public String getPdfObjectUrl() {   // getter requerido por la vista
-        return pdfObjectUrl;
-
-    }
-    private String pdfToken; // getter/setter ya los genera lombok
-
-    public String getPdfToken() {
-        return pdfToken;
-    }
+    public String getPdfObjectUrl() { return pdfObjectUrl; }
+    public String getPdfToken()     { return pdfToken; }
 
     @PostConstruct
     public void init() {
@@ -136,17 +138,18 @@ public class CentroMedicoCtrl implements Serializable {
         sexo = "M";
         grupoSanguineo = "";
         lateralidad = "";
+
         FacesContext.getCurrentInstance().getViewRoot().setLocale(new Locale("es"));
+
         institucion = "Instituto Geográfico Militar";
         institucion = institucion.toUpperCase();
         ruc = "1768007200001";
-       
     }
 
     // ===========================================================
     // MÉTODOS DE FECHAS Y EDAD
     // ===========================================================
-    public void onFechaNacimientoSelect(org.primefaces.event.SelectEvent e) {
+    public void onFechaNacimientoSelect(SelectEvent e) {
         this.fechaNacimiento = (java.util.Date) e.getObject();
         this.edad = calcularEdad(this.fechaNacimiento);
         FacesContext.getCurrentInstance().addMessage(null,
@@ -161,22 +164,15 @@ public class CentroMedicoCtrl implements Serializable {
                         "Edad calculada: " + (edad == null ? "(sin fecha)" : edad + " años")));
     }
 
-    public void setFechaNacimiento(Date f) {  // por si cambia vía binding
+    public void setFechaNacimiento(Date f) {
         this.fechaNacimiento = f;
         this.edad = calcularEdad(f);
     }
 
-    // Añade esto dentro de CentroMedicoCtrl
-    public void calcularEdad() {
-        // JSF ya habrá seteado fechaNacimiento; sólo recalculamos
-        this.edad = calcularEdad(this.fechaNacimiento);
-    }
+    public void calcularEdad() { this.edad = calcularEdad(this.fechaNacimiento); }
 
     private Integer calcularEdad(Date f) {
-
-        if (f == null) {
-            return null;
-        }
+        if (f == null) return null;
         Calendar hoy = Calendar.getInstance();
         Calendar nac = Calendar.getInstance();
         nac.setTime(f);
@@ -218,16 +214,16 @@ public class CentroMedicoCtrl implements Serializable {
             this.imc = null;
         }
     }
+
     // ===========================================================
     // PDF PREVIEW Y DESCARGA (STEP 4)
     // ===========================================================
-
     public void prepararVistaPrevia() {
         try {
             String html = construirHtmlDesdePlantilla();
             byte[] bytes = renderizarPdf(html);
 
-            // 1) Generar token único por vista/ejecución
+            // 1) Generar token único por ejecución
             this.pdfToken = "CERT_" + System.currentTimeMillis();
 
             // 2) Guardar bytes en sesión
@@ -236,8 +232,8 @@ public class CentroMedicoCtrl implements Serializable {
                     .getSessionMap()
                     .put(pdfToken, bytes);
 
-            // (opcional) si además quieres escribir archivo físico, puedes seguir usando tu bloque pdfObjectUrl
-            this.pdfObjectUrl = null; // lo desactivamos y usamos el servlet como fuente principal
+            // Si usas servlet para previsualizar, desactiva objectUrl
+            this.pdfObjectUrl = null;
 
             certificadoListo = true;
 
@@ -246,11 +242,16 @@ public class CentroMedicoCtrl implements Serializable {
                             "Se generó el certificado para vista previa y descarga."));
         } catch (Exception e) {
             certificadoListo = false;
+
+            if (pdfToken != null) {
+                FacesContext.getCurrentInstance()
+                        .getExternalContext()
+                        .getSessionMap()
+                        .remove(pdfToken);
+            }
             pdfToken = null;
-            FacesContext.getCurrentInstance()
-                    .getExternalContext()
-                    .getSessionMap()
-                    .remove(pdfToken);
+            pdfObjectUrl = null;
+
             FacesContext.getCurrentInstance().addMessage(null,
                     new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "No se pudo generar el PDF"));
             e.printStackTrace();
@@ -270,141 +271,151 @@ public class CentroMedicoCtrl implements Serializable {
     }
 
     /**
-     * Renderizado PDF con baseURL apuntando a /resources/ (para CSS/IMG)
+     * Render PDF con baseURL apuntando a /resources/ (para CSS/IMG)
+     * En la PLANTILLA.html referencia imágenes externas como: <img src="images/LOGO_IGM_FULL_COLOR.png" />
+     * (Los logos principales se inyectan por Data URI).
      */
-    private byte[] renderizarPdf(String xhtml) throws Exception {
-        java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
-        org.xhtmlrenderer.pdf.ITextRenderer renderer = new org.xhtmlrenderer.pdf.ITextRenderer();
+private byte[] renderizarPdf(String xhtml) throws Exception {
+    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    ITextRenderer renderer = new ITextRenderer();
 
-        // baseURL = /resources/ del WAR (resuelve href="pdf.css" y src="img/logo.png")
-        String basePath = javax.faces.context.FacesContext.getCurrentInstance()
-                .getExternalContext().getRealPath("/resources/");
-        String baseURL = new java.io.File(basePath).toURI().toURL().toString();
+    // baseURL = raíz del WAR (no /resources/)
+    String baseURL = FacesContext.getCurrentInstance()
+            .getExternalContext()
+            .getResource("/")
+            .toExternalForm(); // p.ej. file:/.../webapp/
 
-        // (Opcional) registrar fuente para tildes/Unicode
-        try {
+    // Fuente Unicode (opcional)
+    try {
+        String fontsBase = FacesContext.getCurrentInstance()
+                .getExternalContext().getRealPath("/resources/fonts/");
+        if (fontsBase != null) {
             renderer.getFontResolver().addFont(
-                    basePath + "fonts/DejaVuSans.ttf",
-                    com.lowagie.text.pdf.BaseFont.IDENTITY_H,
-                    true
+                    fontsBase + File.separator + "DejaVuSans.ttf",
+                    BaseFont.IDENTITY_H, true
             );
-        } catch (Throwable ignore) {
-            // si no pones la fuente, no se cae
         }
+    } catch (Throwable ignore) {}
 
-        renderer.setDocumentFromString(xhtml, baseURL);
-        renderer.layout();
-        renderer.createPDF(baos);
-        renderer.finishPDF();
-        return baos.toByteArray();
-    }
+    renderer.setDocumentFromString(xhtml, baseURL);
+    renderer.layout();
+    renderer.createPDF(baos);
+    renderer.finishPDF();
+    return baos.toByteArray();
+}
+
 
     /**
-     * Carga plantilla /resources/pdf/PLANTILLA.html y reemplaza
-     * {{placeholders}}*/
-    
-private String construirHtmlDesdePlantilla() throws Exception {
+     * Lee /resources/pdf/PLANTILLA.html y reemplaza {{placeholders}}
+     * Inyecta además los logos MIDENA/IGM como Data URI.
+     */
+   private String construirHtmlDesdePlantilla() throws Exception {
+    // 1) Cargar plantilla y normalizar a XHTML
     String template = cargarRecursoComoString("PLANTILLA.html");
     template = normalizarXhtml(template);
 
-    java.util.Date f = (fechaEmision != null) ? fechaEmision : new java.util.Date();
-    java.text.SimpleDateFormat yy = new java.text.SimpleDateFormat("yyyy");
-    java.text.SimpleDateFormat MM = new java.text.SimpleDateFormat("MM");
-    java.text.SimpleDateFormat dd = new java.text.SimpleDateFormat("dd");
+    // 2) Fechas
+    Date f = (fechaEmision != null) ? fechaEmision : new Date();
+    SimpleDateFormat yy = new SimpleDateFormat("yyyy");
+    SimpleDateFormat MM = new SimpleDateFormat("MM");
+    SimpleDateFormat dd = new SimpleDateFormat("dd");
 
-    String checkApto = apto ? "X" : "&nbsp;";
-    String checkObs  = aptoObservacion ? "X" : "&nbsp;";
-    String checkLim  = aptoLimitaciones ? "X" : "&nbsp;";
-    String checkNo   = noApto ? "X" : "&nbsp;";
+    // 3) Checks de aptitud (según aptitudSel)
+    String aApto = "&nbsp;", aObs = "&nbsp;", aLim = "&nbsp;", aNo = "&nbsp;";
+    if (aptitudSel != null) {
+        switch (aptitudSel) {
+            case "APTO":         aApto = "X"; break;
+            case "APTO_EN_OBS":  aObs  = "X"; break;
+            case "APTO_LIMIT":   aLim  = "X"; break;
+            case "NO_APTO":      aNo   = "X"; break;
+        }
+    }
 
-    // 🔹 sincronizar tipoEval -> tipoEvaluacion si aún no está copiado
+    // 4) Sincronizar tipoEval -> tipoEvaluacion si está vacío
     if (tipoEval != null && (tipoEvaluacion == null || tipoEvaluacion.isEmpty())) {
         tipoEvaluacion = tipoEval;
     }
 
-    // 🔹 Checks del tipo de evaluación
-    String chkIngreso   = "&nbsp;";
-    String chkPeriodico = "&nbsp;";
-    String chkReintegro = "&nbsp;";
-    String chkRetiro    = "&nbsp;";
-
+    // 5) Checks del tipo de evaluación
+    String chkIngreso = "&nbsp;", chkPeriodico = "&nbsp;", chkReintegro = "&nbsp;", chkRetiro = "&nbsp;";
     if (tipoEvaluacion != null) {
         switch (tipoEvaluacion.toUpperCase()) {
-            case "INGRESO":   chkIngreso = "X"; break;
+            case "INGRESO":   chkIngreso   = "X"; break;
             case "PERIODICO":
             case "PERIÓDICO": chkPeriodico = "X"; break;
             case "REINTEGRO": chkReintegro = "X"; break;
-            case "RETIRO":    chkRetiro = "X"; break;
+            case "RETIRO":    chkRetiro    = "X"; break;
         }
     }
-    
-    String aApto = "&nbsp;";
-String aObs  = "&nbsp;";
-String aLim  = "&nbsp;";
-String aNo   = "&nbsp;";
 
-if (aptitudSel != null) {
-    switch (aptitudSel) {
-        case "APTO":         aApto = "X"; break;
-        case "APTO_EN_OBS":  aObs  = "X"; break;
-        case "APTO_LIMIT":   aLim  = "X"; break;
-        case "NO_APTO":      aNo   = "X"; break;
+    // 6) Resolver URLs absolutas de logos (más robusto que data:)
+    String logoIgmUrl = "";
+    String logoMidenaUrl = "";
+    try {
+        logoIgmUrl = FacesContext.getCurrentInstance()
+                .getExternalContext()
+                .getResource("/resources/images/LOGO_IGM_FULL_COLOR.png")
+                .toExternalForm();
+    } catch (Exception ex) {
+        System.err.println("[PDF] No se pudo resolver LOGO_IGM_FULL_COLOR.png: " + ex.getMessage());
     }
-}
+    try {
+        logoMidenaUrl = FacesContext.getCurrentInstance()
+                .getExternalContext()
+                .getResource("/resources/images/logomidena.PNG")
+                .toExternalForm();
+    } catch (Exception ex) {
+        System.err.println("[PDF] No se pudo resolver LOGO_MIDENA_FULL_COLO.png: " + ex.getMessage());
+    }
 
+    // 7) Mapa de reemplazos {{clave}} -> valor
+    Map<String, String> rep = new LinkedHashMap<>();
 
-
-
-    java.util.Map replacements = new java.util.LinkedHashMap();
+    // Logos (tu plantilla usa estos placeholders)
+    rep.put("LOGO_IGM_DATAURI", logoIgmUrl);
+    rep.put("LOGO_MIDENA_DATAURI", logoMidenaUrl);
 
     // A. Identificación
-    replacements.put("institucion", safe(institucion));
-    replacements.put("ruc", safe(ruc));
-    replacements.put("num_formulario", safe(noHistoria));
-    replacements.put("num_archivo", safe(noArchivo));
-
-    // 🔹 Centro de trabajo y CIUO
-    replacements.put("centroTrabajo", safe(centroTrabajo));
-    replacements.put("ciiu", safe(ciiu));
+    rep.put("institucion",       safe(institucion));
+    rep.put("ruc",               safe(ruc));
+    rep.put("num_formulario",    safe(noHistoria));
+    rep.put("num_archivo",       safe(noArchivo));
+    rep.put("centroTrabajo",     safe(centroTrabajo));
+    rep.put("ciiu",              safe(ciiu));
 
     // Paciente
-    replacements.put("apellido1", safe(apellido1));
-    replacements.put("apellido2", safe(apellido2));
-    replacements.put("nombre1", safe(nombre1));
-    replacements.put("nombre2", safe(nombre2));
-    replacements.put("sexo", safe(sexo));
+    rep.put("apellido1",         safe(apellido1));
+    rep.put("apellido2",         safe(apellido2));
+    rep.put("nombre1",           safe(nombre1));
+    rep.put("nombre2",           safe(nombre2));
+    rep.put("sexo",              safe(sexo));
 
-    // Tipo evaluación / fecha
-    replacements.put("tipo_eval", safe(tipoEvaluacion));
-    replacements.put("fecha_yyyy", yy.format(f));
-    replacements.put("fecha_MM", MM.format(f));
-    replacements.put("fecha_dd", dd.format(f));
-
-    // Checks de evaluación
-    replacements.put("chk_ingreso", chkIngreso);
-    replacements.put("chk_periodico", chkPeriodico);
-    replacements.put("chk_reintegro", chkReintegro);
-    replacements.put("chk_retiro", chkRetiro);
+    // Fecha y evaluación
+    rep.put("fecha_yyyy",        yy.format(f));
+    rep.put("fecha_MM",          MM.format(f));
+    rep.put("fecha_dd",          dd.format(f));
+    rep.put("chk_ingreso",       chkIngreso);
+    rep.put("chk_periodico",     chkPeriodico);
+    rep.put("chk_reintegro",     chkReintegro);
+    rep.put("chk_retiro",        chkRetiro);
 
     // Aptitud
-replacements.put("chk_apto", aApto);
-replacements.put("chk_obs", aObs);
-replacements.put("chk_lim", aLim);
-replacements.put("chk_noapto", aNo);
+    rep.put("chk_apto",          aApto);
+    rep.put("chk_obs",           aObs);
+    rep.put("chk_lim",           aLim);
+    rep.put("chk_noapto",        aNo);
 
-    // Observaciones / recomendaciones / médico
-    replacements.put("detalleObservaciones", safe(detalleObservaciones));
-    replacements.put("recomendaciones", safe(recomendaciones));
-    replacements.put("medicoNombre", safe(medicoNombre));
-    replacements.put("medicoCodigo", safe(medicoCodigo));
+    // Textos libres
+    rep.put("detalleObservaciones", safe(detalleObservaciones));
+    rep.put("recomendaciones",      safe(recomendaciones));
+    rep.put("medicoNombre",         safe(medicoNombre));
+    rep.put("medicoCodigo",         safe(medicoCodigo));
 
-    // Reemplazo {{clave}} -> valor
-    java.util.Iterator it = replacements.entrySet().iterator();
-    while (it.hasNext()) {
-        java.util.Map.Entry e = (java.util.Map.Entry) it.next();
-        String key = (String) e.getKey();
-        String val = (String) e.getValue();
-        template = template.replace("{{" + key + "}}", (val == null ? "" : val));
+    // 8) Aplicar reemplazos
+    for (Map.Entry<String, String> e : rep.entrySet()) {
+        String key = e.getKey();
+        String val = (e.getValue() == null) ? "" : e.getValue();
+        template = template.replace("{{" + key + "}}", val);
     }
 
     return template;
@@ -412,17 +423,15 @@ replacements.put("chk_noapto", aNo);
 
 
     /**
-     * Lee un recurso del classpath a String (JSF/GlassFish friendly)
+     * Lee un recurso del WAR a String: /resources/pdf/{pathRelativo}
      */
     private String cargarRecursoComoString(String pathRelativo) throws IOException {
         InputStream in = FacesContext.getCurrentInstance()
                 .getExternalContext()
                 .getResourceAsStream("/resources/pdf/" + pathRelativo);
-
         if (in == null) {
             throw new IllegalArgumentException("No se encontró la plantilla: /resources/pdf/" + pathRelativo);
         }
-
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8))) {
             StringBuilder sb = new StringBuilder();
             String line;
@@ -437,40 +446,50 @@ replacements.put("chk_noapto", aNo);
      * Normaliza a XHTML por si el archivo trae meta/br sin cierre.
      */
     private static String normalizarXhtml(String s) {
-        if (s == null) {
-            return "";
-        }
-        // meta charset -> meta http-equiv XHTML
+        if (s == null) return "";
         s = s.replaceAll("(?i)<meta\\s+charset\\s*=\\s*\"?utf-8\"?\\s*>",
                 "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\" />");
-        // <br> -> <br />
         s = s.replaceAll("(?i)<br(\\s*)>", "<br />");
-        // <hr> -> <hr />
         s = s.replaceAll("(?i)<hr(\\s*)>", "<hr />");
-        // <img ...> -> <img ... />
         s = s.replaceAll("(?i)<img([^>]*?)(?<!/)>", "<img$1 />");
         return s;
     }
 
     /**
-     * Escape básico para evitar romper XHTML al inyectar texto
+     * Escape básico para evitar romper XHTML al inyectar texto.
      */
     private String safe(String s) {
-        if (s == null) {
-            return "";
+        if (s == null) return "";
+        return s.replace("&","&amp;")
+                .replace("<","&lt;")
+                .replace(">","&gt;")
+                .replace("\"","&quot;")
+                .replace("'","&#39;");
+    }
+
+    public void syncTipoEvaluacion() { this.tipoEvaluacion = this.tipoEval; }
+
+    // --- Utilitario: convierte /resources/... a Data URI (Base64) ---
+    private String dataUriFromResource(String pathFromResources) throws IOException {
+        InputStream in = FacesContext.getCurrentInstance()
+                .getExternalContext()
+                .getResourceAsStream("/resources/" + pathFromResources);
+        if (in == null) {
+            System.err.println("[PDF] No se encontró recurso: /resources/" + pathFromResources);
+            return ""; // no romper el render
         }
-        // escape mínimo para HTML (evitar romper plantilla)
-        String r = s;
-        r = r.replace("&", "&amp;");
-        r = r.replace("<", "&lt;");
-        r = r.replace(">", "&gt;");
-        r = r.replace("\"", "&quot;");
-        r = r.replace("'", "&#39;");
-        return r;
+        byte[] bytes;
+        try (ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
+            byte[] buf = new byte[8192];
+            int r;
+            while ((r = in.read(buf)) != -1) bos.write(buf, 0, r);
+            bytes = bos.toByteArray();
+        }
+        String base64 = java.util.Base64.getEncoder().encodeToString(bytes);
+        String mime = "image/png";
+        String lower = pathFromResources.toLowerCase(Locale.ROOT);
+        if (lower.endsWith(".jpg") || lower.endsWith(".jpeg")) mime = "image/jpeg";
+        else if (lower.endsWith(".gif")) mime = "image/gif";
+        return "data:" + mime + ";base64," + base64;
     }
-
-    public void syncTipoEvaluacion() { // llamado por p:ajax
-        this.tipoEvaluacion = this.tipoEval;
-    }
-
 }
