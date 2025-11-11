@@ -102,6 +102,8 @@ public class CentroMedicoCtrl implements Serializable {
     private boolean aptoObservacion;
     private boolean aptoLimitaciones;
     private boolean noApto;
+    private String aptitudSel;  // Getter y Setter
+
 
     private String detalleObservaciones;   // Step 3
     private String recomendaciones;        // Step 3
@@ -113,18 +115,19 @@ public class CentroMedicoCtrl implements Serializable {
     private StreamedContent pdfPreview;
     private StreamedContent pdfDescarga;
     private boolean certificadoListo;
-    
-    // === PREVIEW POR <object> ===
-private String pdfObjectUrl;        // URL pública para el <object>
-public String getPdfObjectUrl() {   // getter requerido por la vista
-    return pdfObjectUrl;
-    
-}
-private String pdfToken; // getter/setter ya los genera lombok
 
-public String getPdfToken() {
-    return pdfToken;
-}
+    // === PREVIEW POR <object> ===
+    private String pdfObjectUrl;        // URL pública para el <object>
+
+    public String getPdfObjectUrl() {   // getter requerido por la vista
+        return pdfObjectUrl;
+
+    }
+    private String pdfToken; // getter/setter ya los genera lombok
+
+    public String getPdfToken() {
+        return pdfToken;
+    }
 
     @PostConstruct
     public void init() {
@@ -134,6 +137,10 @@ public String getPdfToken() {
         grupoSanguineo = "";
         lateralidad = "";
         FacesContext.getCurrentInstance().getViewRoot().setLocale(new Locale("es"));
+        institucion = "Instituto Geográfico Militar";
+        institucion = institucion.toUpperCase();
+        ruc = "1768007200001";
+       
     }
 
     // ===========================================================
@@ -214,53 +221,53 @@ public String getPdfToken() {
     // ===========================================================
     // PDF PREVIEW Y DESCARGA (STEP 4)
     // ===========================================================
-public void prepararVistaPrevia() {
-    try {
-        String html = construirHtmlDesdePlantilla();
-        byte[] bytes = renderizarPdf(html);
 
-        // 1) Generar token único por vista/ejecución
-        this.pdfToken = "CERT_" + System.currentTimeMillis();
+    public void prepararVistaPrevia() {
+        try {
+            String html = construirHtmlDesdePlantilla();
+            byte[] bytes = renderizarPdf(html);
 
-        // 2) Guardar bytes en sesión
-        FacesContext.getCurrentInstance()
-                .getExternalContext()
-                .getSessionMap()
-                .put(pdfToken, bytes);
+            // 1) Generar token único por vista/ejecución
+            this.pdfToken = "CERT_" + System.currentTimeMillis();
 
-        // (opcional) si además quieres escribir archivo físico, puedes seguir usando tu bloque pdfObjectUrl
-        this.pdfObjectUrl = null; // lo desactivamos y usamos el servlet como fuente principal
+            // 2) Guardar bytes en sesión
+            FacesContext.getCurrentInstance()
+                    .getExternalContext()
+                    .getSessionMap()
+                    .put(pdfToken, bytes);
 
-        certificadoListo = true;
+            // (opcional) si además quieres escribir archivo físico, puedes seguir usando tu bloque pdfObjectUrl
+            this.pdfObjectUrl = null; // lo desactivamos y usamos el servlet como fuente principal
 
-        FacesContext.getCurrentInstance().addMessage(null,
-            new FacesMessage(FacesMessage.SEVERITY_INFO, "PDF listo",
-                    "Se generó el certificado para vista previa y descarga."));
-    } catch (Exception e) {
+            certificadoListo = true;
+
+            FacesContext.getCurrentInstance().addMessage(null,
+                    new FacesMessage(FacesMessage.SEVERITY_INFO, "PDF listo",
+                            "Se generó el certificado para vista previa y descarga."));
+        } catch (Exception e) {
+            certificadoListo = false;
+            pdfToken = null;
+            FacesContext.getCurrentInstance()
+                    .getExternalContext()
+                    .getSessionMap()
+                    .remove(pdfToken);
+            FacesContext.getCurrentInstance().addMessage(null,
+                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "No se pudo generar el PDF"));
+            e.printStackTrace();
+        }
+    }
+
+    public void limpiarVistaPrevia() {
+        if (pdfToken != null) {
+            FacesContext.getCurrentInstance()
+                    .getExternalContext()
+                    .getSessionMap()
+                    .remove(pdfToken);
+        }
         certificadoListo = false;
         pdfToken = null;
-        FacesContext.getCurrentInstance()
-                .getExternalContext()
-                .getSessionMap()
-                .remove(pdfToken);
-        FacesContext.getCurrentInstance().addMessage(null,
-            new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "No se pudo generar el PDF"));
-        e.printStackTrace();
+        pdfObjectUrl = null;
     }
-}
-
-
-public void limpiarVistaPrevia() {
-    if (pdfToken != null) {
-        FacesContext.getCurrentInstance()
-                .getExternalContext()
-                .getSessionMap()
-                .remove(pdfToken);
-    }
-    certificadoListo = false;
-    pdfToken = null;
-    pdfObjectUrl = null;
-}
 
     /**
      * Renderizado PDF con baseURL apuntando a /resources/ (para CSS/IMG)
@@ -294,63 +301,115 @@ public void limpiarVistaPrevia() {
 
     /**
      * Carga plantilla /resources/pdf/PLANTILLA.html y reemplaza
-     * {{placeholders}}
-     */
-    private String construirHtmlDesdePlantilla() throws Exception {
-        String template = cargarRecursoComoString("PLANTILLA.html");
-        template = normalizarXhtml(template);
-        java.util.Date f = (fechaEmision != null) ? fechaEmision : new java.util.Date();
-        java.text.SimpleDateFormat yy = new java.text.SimpleDateFormat("yyyy");
-        java.text.SimpleDateFormat MM = new java.text.SimpleDateFormat("MM");
-        java.text.SimpleDateFormat dd = new java.text.SimpleDateFormat("dd");
+     * {{placeholders}}*/
+    
+private String construirHtmlDesdePlantilla() throws Exception {
+    String template = cargarRecursoComoString("PLANTILLA.html");
+    template = normalizarXhtml(template);
 
-        String checkApto = apto ? "X" : "&nbsp;";
-        String checkObs = aptoObservacion ? "X" : "&nbsp;";
-        String checkLim = aptoLimitaciones ? "X" : "&nbsp;";
-        String checkNo = noApto ? "X" : "&nbsp;";
+    java.util.Date f = (fechaEmision != null) ? fechaEmision : new java.util.Date();
+    java.text.SimpleDateFormat yy = new java.text.SimpleDateFormat("yyyy");
+    java.text.SimpleDateFormat MM = new java.text.SimpleDateFormat("MM");
+    java.text.SimpleDateFormat dd = new java.text.SimpleDateFormat("dd");
 
-        java.util.Map replacements = new java.util.LinkedHashMap();
-        // A. Identificación
-        replacements.put("institucion", safe(institucion));
-        replacements.put("ruc", safe(ruc));
-        replacements.put("num_formulario", safe(noHistoria));
-        replacements.put("num_archivo", safe(noArchivo));
+    String checkApto = apto ? "X" : "&nbsp;";
+    String checkObs  = aptoObservacion ? "X" : "&nbsp;";
+    String checkLim  = aptoLimitaciones ? "X" : "&nbsp;";
+    String checkNo   = noApto ? "X" : "&nbsp;";
 
-        // Paciente
-        replacements.put("apellido1", safe(apellido1));
-        replacements.put("apellido2", safe(apellido2));
-        replacements.put("nombre1", safe(nombre1));
-        replacements.put("nombre2", safe(nombre2));
-        replacements.put("sexo", safe(sexo));
-
-        // Tipo evaluación / fecha
-        replacements.put("tipo_eval", safe(tipoEvaluacion));
-        replacements.put("fecha_yyyy", yy.format(f));
-        replacements.put("fecha_MM", MM.format(f));
-        replacements.put("fecha_dd", dd.format(f));
-
-        // Aptitud
-        replacements.put("chk_apto", checkApto);
-        replacements.put("chk_obs", checkObs);
-        replacements.put("chk_lim", checkLim);
-        replacements.put("chk_noapto", checkNo);
-
-        // Observaciones / recomendaciones / médico
-        replacements.put("obs_detalle", safe(detalleObservaciones));
-        replacements.put("recomendaciones", safe(recomendaciones));
-        replacements.put("medico_nombre", safe(medicoNombre));
-        replacements.put("medico_codigo", safe(medicoCodigo));
-
-        // Reemplazo simple {{clave}} -> valor
-        java.util.Iterator it = replacements.entrySet().iterator();
-        while (it.hasNext()) {
-            java.util.Map.Entry e = (java.util.Map.Entry) it.next();
-            String key = (String) e.getKey();
-            String val = (String) e.getValue();
-            template = template.replace("{{" + key + "}}", (val == null ? "" : val));
-        }
-        return template;
+    // 🔹 sincronizar tipoEval -> tipoEvaluacion si aún no está copiado
+    if (tipoEval != null && (tipoEvaluacion == null || tipoEvaluacion.isEmpty())) {
+        tipoEvaluacion = tipoEval;
     }
+
+    // 🔹 Checks del tipo de evaluación
+    String chkIngreso   = "&nbsp;";
+    String chkPeriodico = "&nbsp;";
+    String chkReintegro = "&nbsp;";
+    String chkRetiro    = "&nbsp;";
+
+    if (tipoEvaluacion != null) {
+        switch (tipoEvaluacion.toUpperCase()) {
+            case "INGRESO":   chkIngreso = "X"; break;
+            case "PERIODICO":
+            case "PERIÓDICO": chkPeriodico = "X"; break;
+            case "REINTEGRO": chkReintegro = "X"; break;
+            case "RETIRO":    chkRetiro = "X"; break;
+        }
+    }
+    
+    String aApto = "&nbsp;";
+String aObs  = "&nbsp;";
+String aLim  = "&nbsp;";
+String aNo   = "&nbsp;";
+
+if (aptitudSel != null) {
+    switch (aptitudSel) {
+        case "APTO":         aApto = "X"; break;
+        case "APTO_EN_OBS":  aObs  = "X"; break;
+        case "APTO_LIMIT":   aLim  = "X"; break;
+        case "NO_APTO":      aNo   = "X"; break;
+    }
+}
+
+
+
+
+    java.util.Map replacements = new java.util.LinkedHashMap();
+
+    // A. Identificación
+    replacements.put("institucion", safe(institucion));
+    replacements.put("ruc", safe(ruc));
+    replacements.put("num_formulario", safe(noHistoria));
+    replacements.put("num_archivo", safe(noArchivo));
+
+    // 🔹 Centro de trabajo y CIUO
+    replacements.put("centroTrabajo", safe(centroTrabajo));
+    replacements.put("ciiu", safe(ciiu));
+
+    // Paciente
+    replacements.put("apellido1", safe(apellido1));
+    replacements.put("apellido2", safe(apellido2));
+    replacements.put("nombre1", safe(nombre1));
+    replacements.put("nombre2", safe(nombre2));
+    replacements.put("sexo", safe(sexo));
+
+    // Tipo evaluación / fecha
+    replacements.put("tipo_eval", safe(tipoEvaluacion));
+    replacements.put("fecha_yyyy", yy.format(f));
+    replacements.put("fecha_MM", MM.format(f));
+    replacements.put("fecha_dd", dd.format(f));
+
+    // Checks de evaluación
+    replacements.put("chk_ingreso", chkIngreso);
+    replacements.put("chk_periodico", chkPeriodico);
+    replacements.put("chk_reintegro", chkReintegro);
+    replacements.put("chk_retiro", chkRetiro);
+
+    // Aptitud
+replacements.put("chk_apto", aApto);
+replacements.put("chk_obs", aObs);
+replacements.put("chk_lim", aLim);
+replacements.put("chk_noapto", aNo);
+
+    // Observaciones / recomendaciones / médico
+    replacements.put("detalleObservaciones", safe(detalleObservaciones));
+    replacements.put("recomendaciones", safe(recomendaciones));
+    replacements.put("medicoNombre", safe(medicoNombre));
+    replacements.put("medicoCodigo", safe(medicoCodigo));
+
+    // Reemplazo {{clave}} -> valor
+    java.util.Iterator it = replacements.entrySet().iterator();
+    while (it.hasNext()) {
+        java.util.Map.Entry e = (java.util.Map.Entry) it.next();
+        String key = (String) e.getKey();
+        String val = (String) e.getValue();
+        template = template.replace("{{" + key + "}}", (val == null ? "" : val));
+    }
+
+    return template;
+}
+
 
     /**
      * Lee un recurso del classpath a String (JSF/GlassFish friendly)
@@ -396,10 +455,22 @@ public void limpiarVistaPrevia() {
     /**
      * Escape básico para evitar romper XHTML al inyectar texto
      */
-    private static String safe(String s) {
+    private String safe(String s) {
         if (s == null) {
             return "";
         }
-        return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
+        // escape mínimo para HTML (evitar romper plantilla)
+        String r = s;
+        r = r.replace("&", "&amp;");
+        r = r.replace("<", "&lt;");
+        r = r.replace(">", "&gt;");
+        r = r.replace("\"", "&quot;");
+        r = r.replace("'", "&#39;");
+        return r;
     }
+
+    public void syncTipoEvaluacion() { // llamado por p:ajax
+        this.tipoEvaluacion = this.tipoEval;
+    }
+
 }

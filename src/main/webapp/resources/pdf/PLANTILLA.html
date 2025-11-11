@@ -1,64 +1,245 @@
- <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
   <style type="text/css">
-    table{width:100%;border-collapse:collapse;font-family:Arial,sans-serif;font-size:12px}
-    th,td{border:1px solid #7fa87e;padding:6px}
-    th{background:#d9f2d9;text-align:left}
-    .sec{background:#cfd8ff;font-weight:bold}
-    .titulo{font-weight:bold;font-size:16px;text-align:center;margin:8px 0}
-    .caja{height:20px} .center{text-align:center}
+    * {
+      margin: 0;
+      padding: 0;
+    }
+    
+    body {
+      font-family: Arial, sans-serif;
+      font-size: 12px;
+      line-height: 1.4;
+      color: #333;
+    }
+    
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 8px;
+    }
+    
+    th, td {
+      border: 1px solid #7fa87e;
+      padding: 6px;
+      text-align: left;
+    }
+    
+    th {
+      background: #d9f2d9;
+      font-weight: bold;
+      color: #333;
+    }
+    
+    .sec {
+      background: #cfd8ff;
+      font-weight: bold;
+      color: #1a1a4d;
+      font-size: 13px;
+    }
+    
+    .titulo {
+      font-weight: bold;
+      font-size: 16px;
+      text-align: center;
+      margin: 15px 0;
+      color: #1a1a4d;
+      border-bottom: 2px solid #7fa87e;
+      padding-bottom: 10px;
+    }
+    
+    .caja {
+      height: 20px;
+      width: 30px;
+      text-align: center;
+      vertical-align: middle;
+      border: 1px solid #333;
+    }
+    
+    .center {
+      text-align: center;
+    }
+    
+    .observaciones {
+      min-height: 60px;
+      vertical-align: top;
+    }
+    
+    .firma-area {
+      min-height: 50px;
+      text-align: center;
+      vertical-align: bottom;
+    }
+    
+    .footer {
+      margin-top: 20px;
+      text-align: center;
+      font-size: 10px;
+      color: #666;
+      border-top: 1px solid #999;
+      padding-top: 10px;
+    }
   </style>
 </head>
 <body>
   <div class="titulo">CERTIFICADO - EVALUACIÓN MÉDICA OCUPACIONAL</div>
-
+  
+  <!-- SECCIÓN A: DATOS DEL ESTABLECIMIENTO -->
   <table>
-    <tr><th colspan="8" class="sec">A. DATOS DEL ESTABLECIMIENTO - DATOS DEL USUARIO</th></tr>
-    <tr><td>INSTITUCIÓN DEL SISTEMA</td><td colspan="3">{{institucion}}</td>
-        <td>RUC</td><td colspan="3">{{ruc}}</td></tr>
-    <tr><td>ESTABLECIMIENTO / CENTRO DE TRABAJO</td><td colspan="3">{{establecimiento}}</td>
-        <td>NÚMERO DE FORMULARIO</td><td colspan="3">{{num_formulario}}</td></tr>
-    <tr><td>PRIMER APELLIDO</td><td>{{apellido1}}</td>
-        <td>SEGUNDO APELLIDO</td><td>{{apellido2}}</td>
-        <td>PRIMER NOMBRE</td><td>{{nombre1}}</td>
-        <td>SEGUNDO NOMBRE</td><td>{{nombre2}}</td></tr>
-    <tr><td>SEXO</td><td>{{sexo}}</td>
-        <td colspan="2">PUESTO DE TRABAJO (CIUO)</td><td colspan="4">{{puesto}}</td></tr>
+    <tr>
+      <th colspan="8" class="sec">A. DATOS DEL ESTABLECIMIENTO - DATOS DEL USUARIO</th>
+    </tr>
+    <tr>
+      <td>INSTITUCIÓN DEL SISTEMA</td>
+      <td colspan="3">{{institucion}}</td>
+      <td>RUC</td>
+      <td colspan="3">{{ruc}}</td>
+    </tr>
+    <tr>
+      <td>ESTABLECIMIENTO / CENTRO DE TRABAJO</td>
+      <td colspan="3">{{centroTrabajo}}</td>
+      <td>NÚMERO DE FORMULARIO</td>
+      <td colspan="3">{{num_formulario}}</td>
+    </tr>
+    <tr>
+      <td>PRIMER APELLIDO</td>
+      <td>{{apellido1}}</td>
+      <td>SEGUNDO APELLIDO</td>
+      <td>{{apellido2}}</td>
+      <td>PRIMER NOMBRE</td>
+      <td>{{nombre1}}</td>
+      <td>SEGUNDO NOMBRE</td>
+      <td>{{nombre2}}</td>
+    </tr>
+    <tr>
+      <td>SEXO</td>
+      <td>{{sexo}}</td>
+      <td colspan="2">PUESTO DE TRABAJO (CIUO)</td>
+      <td colspan="4">{{ciiu}}</td>
+    </tr>
   </table>
-  <br />
-
+  
+<!-- SECCIÓN B: DATOS GENERALES -->
+<table>
+  <tr>
+    <th colspan="12" class="sec">B. DATOS GENERALES</th>
+  </tr>
+  <tr>
+    <td>FECHA DE EMISIÓN:</td>
+    <td class="center caja">{{fecha_yyyy}}</td>
+    <td class="center caja">{{fecha_MM}}</td>
+    <td class="center caja">{{fecha_dd}}</td>
+    <td colspan="8"></td>
+  </tr>
+  <tr>
+    <td></td>
+    <td style="font-size:9px; text-align:center; border:1px solid #7fa87e; padding:3px;">yyyy</td>
+    <td style="font-size:9px; text-align:center; border:1px solid #7fa87e; padding:3px;">mm</td>
+    <td style="font-size:9px; text-align:center; border:1px solid #7fa87e; padding:3px;">dd</td>
+    <td colspan="8"></td>
+  </tr>
+  <tr>
+    <td>EVALUACIÓN:</td>
+    <td class="center">INGRESO</td>
+    <td class="center caja">{{chk_ingreso}}</td>
+    <td class="center">PERIÓDICO</td>
+    <td class="center caja">{{chk_periodico}}</td>
+    <td class="center">REINTEGRO</td>
+    <td class="center caja">{{chk_reintegro}}</td>
+    <td class="center">RETIRO</td>
+    <td class="center caja">{{chk_retiro}}</td>
+    <td colspan="3"></td>
+  </tr>
+</table>
+  <!-- SECCIÓN C: APTITUD MÉDICA -->
   <table>
-    <tr><th colspan="8" class="sec">B. DATOS GENERALES</th></tr>
-    <tr><td>FECHA DE EMISIÓN</td><td class="center">{{fecha_yyyy}}-{{fecha_MM}}-{{fecha_dd}}</td>
-        <td>EVALUACIÓN</td><td>{{tipo_eval}}</td>
-        <td colspan="4"></td></tr>
+    <tr>
+      <th colspan="8" class="sec">C. APTITUD MÉDICA PARA EL TRABAJO</th>
+    </tr>
+    <tr>
+      <td class="center">APTO</td>
+      <td class="center caja">{{chk_apto}}</td>
+      <td class="center">APTO EN OBSERVACIÓN</td>
+      <td class="center caja">{{chk_obs}}</td>
+      <td class="center">APTO CON LIMITACIONES</td>
+      <td class="center caja">{{chk_lim}}</td>
+      <td class="center">NO APTO</td>
+      <td class="center caja">{{chk_noapto}}</td>
+    </tr>
+    <tr>
+      <td colspan="8" class="observaciones">
+        <strong>DETALLE DE OBSERVACIONES:</strong><br />
+        {{detalleObservaciones}}
+      </td>
+    </tr>
   </table>
-  <br />
+  
+<!-- SECCIÓN D: RECOMENDACIONES/OBSERVACIONES -->
+<table>
+  <tr>
+    <th colspan="10" class="sec">D. RECOMENDACIONES/OBSERVACIONES</th>
+  </tr>
+  <tr>
+    <td colspan="10">
+      <strong>Descripción:</strong><br>
+      <strong>Observación:</strong>
+    </td>
+  </tr>
+  <tr>
+    <td colspan="10" style="text-align: center; font-weight: bold;">{{recomendaciones}}</td>
+  </tr>
+  <tr>
+    <td colspan="10" style="height: 50px; border: 1px solid #333; vertical-align: top; padding: 5px;"></td>
+  </tr>
+  <tr>
+    <td colspan="10" style="font-size: 11px; padding: 10px; background-color: #f9f9f9;">
+      <p><strong>Con este documento certifico que el trabajador se ha sometido a la evaluación médica requerida para (el ingreso /la ejecución/ el reingreso y retiro) al puesto laboral y se le ha informado sobre los riesgos relacionados con el trabajo emitiendo recomendaciones relacionadas con su estado de salud.</strong></p>
+      <p><strong>La presente certificación se expide con base en el formulario de Evaluación Ocupacional, el cual tiene carácter de confidencial.</strong></p>
+    </td>
+  </tr>
+</table>
+  
+<!-- SECCIÓN E: DATOS DEL PROFESIONAL -->
+<table>
+  <tr>
+    <th colspan="10" class="sec">E. DATOS DEL PROFESIONAL</th>
+  </tr>
+  <tr>
+    <td>NOMBRE Y APELLIDO</td>
+    <td>{{medicoNombre}}</td>
+    <td>CÓDIGO MÉDICO</td>
+    <td>{{medicoCodigo}}</td>
+<td colspan="6"
+    style="border:1px solid #333;
+           height:80px;
+           vertical-align:top;
+           text-align:center;
+           padding:4px;">
+    <div style="font-weight:bold; margin-top:2px;">FIRMA Y SELLO</div>
+    <div style="margin-top:35px;
+                border-top:1px solid #333;
+                width:70%;
+                margin-left:auto;
+                margin-right:auto;"></div>
+</td>
 
-  <table>
-    <tr><th colspan="8" class="sec">C. APTITUD MÉDICA PARA EL TRABAJO</th></tr>
-    <tr><td class="center">APTO</td><td class="center caja">{{chk_apto}}</td>
-        <td class="center">APTO EN OBSERVACIÓN</td><td class="center caja">{{chk_obs}}</td>
-        <td class="center">APTO CON LIMITACIONES</td><td class="center caja">{{chk_lim}}</td>
-        <td class="center">NO APTO</td><td class="center caja">{{chk_noapto}}</td></tr>
-    <tr><td colspan="8">DETALLE DE OBSERVACIONES:<br />{{obs_detalle}}</td></tr>
-  </table>
-  <br />
+  </tr>
+</table>
 
-  <table>
-    <tr><th colspan="8" class="sec">D. RECOMENDACIONES/OBSERVACIONES</th></tr>
-    <tr><td colspan="8">{{recomendaciones}}</td></tr>
-  </table>
-  <br />
-
-  <table>
-    <tr><th colspan="8" class="sec">E. DATOS DEL PROFESIONAL</th></tr>
-    <tr><td>NOMBRE Y APELLIDO</td><td colspan="3">{{medico_nombre}}</td>
-        <td>CÓDIGO MÉDICO</td><td>{{medico_codigo}}</td>
-        <td colspan="2" class="center">FIRMA Y SELLO</td></tr>
-  </table>
+<!-- SECCIÓN F: FIRMA DEL USUARIO -->
+<table>
+  <tr>
+    <th colspan="10" class="sec">F. FIRMA DEL USUARIO</th>
+  </tr>
+  <tr>
+    <td colspan="10" style="height: 40px; border: 1px solid #333;"></td>
+  </tr>
+</table>
+  <div class="footer">
+    Documento generado automáticamente - {{fecha_yyyy}}-{{fecha_MM}}-{{fecha_dd}}
+  </div>
 </body>
 </html>

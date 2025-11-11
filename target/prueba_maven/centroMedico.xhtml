@@ -188,8 +188,9 @@
                                 <f:selectItem itemLabel="Retiro" itemValue="RETIRO"/>
                                 <!-- Re-renderiza el bloque de fechas al cambiar -->
                                 <p:ajax event="valueChange"
-                                        process="@this"
-                                        update="fechasPanel msgs"/>
+                                         listener="#{centroMedicoCtrl.syncTipoEvaluacion}"
+                                        update="@form"
+                                        />
                             </p:selectOneRadio>
                         </h:panelGrid>
 
@@ -1106,7 +1107,7 @@
                             <tbody>
                                 <tr>
                                     <td class="l-cell-radio">
-                                        <p:selectOneRadio id="aptitud" layout="custom"  >
+                                        <p:selectOneRadio id="aptitud" layout="custom" value="#{centroMedicoCtrl.aptitudSel}"  >
                                             <f:selectItem itemLabel="APTO" itemValue="APTO"/>
                                             <f:selectItem itemLabel="APTO_EN_OBS" itemValue="APTO_EN_OBS"/>
                                             <f:selectItem itemLabel="APTO_LIMIT" itemValue="APTO_LIMIT"/>
@@ -1114,6 +1115,7 @@
                                         </p:selectOneRadio>
                                         <p:radioButton for="aptitud" itemIndex="0"/>
                                     </td>
+                                    <td class="l-cell-radio"><p:radioButton for="aptitud" itemIndex="0"/></td>
                                     <td class="l-cell-radio"><p:radioButton for="aptitud" itemIndex="1"/></td>
                                     <td class="l-cell-radio"><p:radioButton for="aptitud" itemIndex="2"/></td>
                                     <td class="l-cell-radio"><p:radioButton for="aptitud" itemIndex="3"/></td>
@@ -1124,7 +1126,7 @@
                         <h:panelGrid columns="1" style="width:100%; margin-top:8px;">
                             <h:outputLabel for="l_obs" value="OBSERVACIONES:" style="font-weight:bold; margin-bottom:4px;"/>
                             <p:inputTextarea id="l_obs"
-
+                                            value="#{centroMedicoCtrl.detalleObservaciones}"
                                              rows="4"
                                              autoResize="true"
                                              styleClass="l-observaciones"
@@ -1136,7 +1138,7 @@
 
                 <!-- M -->
                 <p:fieldset legend="M. Recomendaciones y/o tratamiento" toggleable="true" collapsed="true">
-                    <p:inputTextarea rows="3" style="width:100%"/>
+                    <p:inputTextarea id="i_rec" rows="3" style="width:100%" value="#{centroMedicoCtrl.recomendaciones}"/>
                 </p:fieldset>
 
                 <!-- N -->
@@ -1169,8 +1171,9 @@
                 <!-- O -->
                 <p:fieldset legend="O. Datos del profesional" toggleable="true" collapsed="true">
                     <h:panelGrid columns="4" styleClass="ui-fluid">
-                        <h:outputText value="Nombre y apellido"/><p:inputText/>
-                        <h:outputText value="Código médico"/><p:inputText/>
+                   
+                        <h:outputText value="Nombre y apellido"/><p:inputText id="nombreMedico"  value="#{centroMedicoCtrl.medicoNombre}"/>
+                        <h:outputText value="Código médico"/><p:inputText id="codigoMedico" value="#{centroMedicoCtrl.medicoCodigo}"/>
                     </h:panelGrid>
                 </p:fieldset>
 
