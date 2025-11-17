@@ -1,3 +1,4 @@
+ec\gob\prueba\prueba_maven\modelo\Cie10.class
 ec\gob\prueba\prueba_maven\modelo\converter\Flag01Converter.class
 ec\gob\prueba\prueba_maven\servicio\EmpleadoService.class
 ec\gob\prueba\prueba_maven\modelo\converter\faces\EstadoCivilFacesConverter.class
@@ -25,6 +26,7 @@ ec\gob\prueba\prueba_maven\modelo\enums\GrupoSangre.class
 ec\gob\prueba\prueba_maven\web\PdfServlet.class
 ec\gob\prueba\prueba_maven\modelo\converter\faces\GrupoSangreFacesConverter.class
 ec\gob\prueba\prueba_maven\servicio\MensajeService.class
+ec\gob\prueba\prueba_maven\servicio\Cie10Service.class
 ec\gob\prueba\prueba_maven\modelo\converter\TipoContratoConverter.class
 ec\gob\prueba\prueba_maven\modelo\converter\GrupoSangreConverter.class
 ec\gob\prueba\prueba_maven\modelo\converter\faces\TipoContratoFacesConverter.class

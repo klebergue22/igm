@@ -28,6 +28,10 @@ import org.primefaces.event.SelectEvent;
 import org.primefaces.model.StreamedContent;
 import org.xhtmlrenderer.pdf.ITextRenderer;
 import com.lowagie.text.pdf.BaseFont;
+import ec.gob.prueba.prueba_maven.modelo.Cie10;
+import ec.gob.prueba.prueba_maven.servicio.Cie10Service;
+import java.util.List;
+import javax.ejb.EJB;
 
 @ManagedBean(name = "centroMedicoCtrl")
 @ViewScoped
@@ -130,6 +134,20 @@ public class CentroMedicoCtrl implements Serializable {
 
     public String getPdfObjectUrl() { return pdfObjectUrl; }
     public String getPdfToken()     { return pdfToken; }
+    
+    // ============================
+    // CIE10 – Diagnóstico principal
+    // ============================
+    @EJB
+    private Cie10Service cie10Service;
+
+    // campo que se guarda (código)
+    private String codCie10Ppal;
+
+    // campo que se muestra / busca (descripción)
+    private String descCie10Ppal;
+    
+ 
 
     @PostConstruct
     public void init() {
@@ -492,4 +510,106 @@ private byte[] renderizarPdf(String xhtml) throws Exception {
         else if (lower.endsWith(".gif")) mime = "image/gif";
         return "data:" + mime + ";base64," + base64;
     }
+    
+    public List<Cie10> completarCie10(String query) {
+    return cie10Service.buscarPorCodigoODescripcion(query);
+}
+
+
+ 
+ 
+    
+    
+   // ============================
+// CIE10 – Diagnóstico principal
+// ============================
+@EJB
+private Cie10Service cie10Service;
+
+// campo que se guarda (código)
+private String codCie10Ppal;
+
+// campo que se muestra / busca (descripción)
+private String descCie10Ppal;
+
+// ===========================================================
+// AUTOCOMPLETE POR CÓDIGO (trabajando solo con String)
+// ===========================================================
+public List<String> completarCie10PorCodigo(String query) {
+    // 1) Usamos tu lógica jerárquica existente
+    List<Cie10> lista = cie10Service.buscarJerarquiaPorTerm(query);
+
+    List<String> codigos = new java.util.ArrayList<String>();
+
+    if (lista != null) {
+        for (Cie10 c : lista) {
+            if (c != null && c.getCodigo() != null && !codigos.contains(c.getCodigo())) {
+                codigos.add(c.getCodigo());
+            }
+        }
+    }
+
+    // 2) Si el query es exactamente un código válido y NO está en la lista,
+    //    lo agregamos al inicio para que forceSelection lo considere válido.
+    Cie10 exact = cie10Service.buscarPorCodigo(query);
+    if (exact != null && exact.getCodigo() != null && !codigos.contains(exact.getCodigo())) {
+        codigos.add(0, exact.getCodigo());
+    }
+
+    return codigos;
+}
+
+public void onCie10CodigoSelect(org.primefaces.event.SelectEvent event) {
+    String codigo = (String) event.getObject();
+    this.codCie10Ppal = codigo;
+
+    if (codigo != null && !codigo.isEmpty()) {
+        Cie10 cie = cie10Service.buscarPorCodigo(codigo);
+        if (cie != null) {
+            this.descCie10Ppal = cie.getDescripcion();
+        } else {
+            this.descCie10Ppal = null;
+        }
+    } else {
+        this.descCie10Ppal = null;
+    }
+}
+
+// ===========================================================
+// AUTOCOMPLETE POR DESCRIPCIÓN (trabajando solo con String)
+// ===========================================================
+public List<String> completarCie10PorDescripcion(String query) {
+    List<Cie10> lista = cie10Service.buscarPorDescripcionLike(query);
+
+    List<String> descripciones = new java.util.ArrayList<String>();
+
+    if (lista != null) {
+        for (Cie10 c : lista) {
+            if (c != null && c.getDescripcion() != null && !descripciones.contains(c.getDescripcion())) {
+                descripciones.add(c.getDescripcion());
+            }
+        }
+    }
+    return descripciones;
+}
+
+public void onCie10DescripcionSelect(org.primefaces.event.SelectEvent event) {
+    String descripcion = (String) event.getObject();
+    this.descCie10Ppal = descripcion;
+
+    if (descripcion != null && !descripcion.isEmpty()) {
+        Cie10 cie = cie10Service.buscarPrimeroPorDescripcion(descripcion);
+        if (cie != null) {
+            this.codCie10Ppal = cie.getCodigo();
+        } else {
+            this.codCie10Ppal = null;
+        }
+    } else {
+        this.codCie10Ppal = null;
+    }
+}
+
+ 
+
+
 }

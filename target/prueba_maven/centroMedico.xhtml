@@ -1073,16 +1073,66 @@
                                 </tr>
                             </thead>
 
-                            <tbody>
-                                <ui:repeat value="#{kRows}" var="r">
-                                    <tr>
-                                        <td><p:inputText id="k_cie_#{r}" styleClass="cell-input" placeholder="Código CIE-10 #{r}"/></td>
-                                        <td><p:inputText id="k_desc_#{r}" styleClass="cell-input" placeholder="Descripción #{r}"/></td>
-                                        <td style="text-align:center"><input type="radio" name="diag_tipo_#{r}" value="PRE"/></td>
-                                        <td style="text-align:center"><input type="radio" name="diag_tipo_#{r}" value="DEF"/></td>
-                                    </tr>
-                                </ui:repeat>
-                            </tbody>
+               <tbody>
+    <ui:repeat value="#{kRows}" var="r">
+        <tr>
+
+            <!-- ====== AUTOCOMPLETE CÓDIGO ======= -->
+            <td>
+                <p:autoComplete id="k_cie_#{r}"
+                                value="#{centroMedicoCtrl.listaDiag[r-1].codigo}" 
+                                completeMethod="#{centroMedicoCtrl.completarCie10PorCodigo}"
+                                var="it"
+                                itemLabel="#{it.codigo}"
+                                itemValue="#{it.codigo}"
+                                forceSelection="true"
+                                dropdown="true"
+                                cache="false"
+                                minQueryLength="1"
+                                styleClass="cell-input">
+
+                    <p:ajax event="itemSelect"
+                            listener="#{centroMedicoCtrl.onCie10SelectCodigo(r-1)}"
+                            update="k_cie_#{r} k_desc_#{r}"/>
+                </p:autoComplete>
+            </td>
+
+            <!-- ====== AUTOCOMPLETE DESCRIPCIÓN ======= -->
+            <td>
+                <p:autoComplete id="k_desc_#{r}"
+                                value="#{centroMedicoCtrl.listaDiag[r-1].descripcion}" 
+                                completeMethod="#{centroMedicoCtrl.completarCie10PorDescripcion}"
+                                var="it"
+                                itemLabel="#{it.descripcion}"
+                                itemValue="#{it.descripcion}"
+                                forceSelection="true"
+                                dropdown="true"
+                                cache="false"
+                                minQueryLength="2"
+                                styleClass="cell-input">
+
+                    <p:ajax event="itemSelect"
+                            listener="#{centroMedicoCtrl.onCie10SelectDescripcion(r-1)}"
+                            update="k_cie_#{r} k_desc_#{r}"/>
+                </p:autoComplete>
+            </td>
+
+            <!-- RADIO PRE/DEF -->
+            <td style="text-align:center">
+                <h:selectOneRadio value="#{centroMedicoCtrl.listaDiag[r-1].tipo}">
+                    <f:selectItem itemLabel="" itemValue="PRE"/>
+                </h:selectOneRadio>
+            </td>
+
+            <td style="text-align:center">
+                <h:selectOneRadio value="#{centroMedicoCtrl.listaDiag[r-1].tipo}">
+                    <f:selectItem itemLabel="" itemValue="DEF"/>
+                </h:selectOneRadio>
+            </td>
+        </tr>
+    </ui:repeat>
+</tbody>
+
                         </table>
 
                     </h:panelGroup>

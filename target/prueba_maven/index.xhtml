@@ -13,6 +13,51 @@
         <p:panel header="Bienvenido" style="margin-top:10px">
             <h:outputText value="Selecciona un módulo en el menú superior."/>
         </p:panel>
+        
+        
+   <p:panel header="Diagnóstico principal (CIE10)">
+    <h:panelGrid columns="2" columnClasses="lbl,val" >
+
+        <!-- 1) AUTOCOMPLETE POR CÓDIGO -->
+        <h:outputLabel for="cie10Cod" value="Código CIE10"/>
+        <p:autoComplete id="cie10Cod"
+                        value="#{centroMedicoCtrl.codCie10Ppal}"
+                        completeMethod="#{centroMedicoCtrl.completarCie10PorCodigo}"
+                        var="it"
+                        itemLabel="#{it.codigo}"      
+                        itemValue="#{it.codigo}"      
+                        dropdown="true"
+                        forceSelection="false"
+                        minQueryLength="1"
+                        cache="false">
+
+            <p:ajax event="itemSelect"
+                    listener="#{centroMedicoCtrl.onCie10CodigoSelect}"
+                    update="cie10Cod cie10Desc"/>
+        </p:autoComplete>
+
+        <!-- 2) AUTOCOMPLETE POR DESCRIPCIÓN -->
+        <h:outputLabel for="cie10Desc" value="Descripción CIE10"/>
+        <p:autoComplete id="cie10Desc"
+                        value="#{centroMedicoCtrl.descCie10Ppal}"
+                        completeMethod="#{centroMedicoCtrl.completarCie10PorDescripcion}"
+                        var="it"
+                        itemLabel="#{it.descripcion}"  
+                        itemValue="#{it.descripcion}"  
+                        dropdown="true"
+                        forceSelection="true"
+                        minQueryLength="2"
+                        cache="false">
+
+            <p:ajax event="itemSelect"
+                    listener="#{centroMedicoCtrl.onCie10DescripcionSelect}"
+                    update="cie10Cod cie10Desc"/>
+        </p:autoComplete>
+
+    </h:panelGrid>
+</p:panel>
+
+
 
 
  
