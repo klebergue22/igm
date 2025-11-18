@@ -188,7 +188,7 @@
                                 <f:selectItem itemLabel="Retiro" itemValue="RETIRO"/>
                                 <!-- Re-renderiza el bloque de fechas al cambiar -->
                                 <p:ajax event="valueChange"
-                                         listener="#{centroMedicoCtrl.syncTipoEvaluacion}"
+                                        listener="#{centroMedicoCtrl.syncTipoEvaluacion}"
                                         update="@form"
                                         />
                             </p:selectOneRadio>
@@ -1073,65 +1073,77 @@
                                 </tr>
                             </thead>
 
-               <tbody>
-    <ui:repeat value="#{kRows}" var="r">
-        <tr>
+                            <tbody>
+                                <ui:repeat value="#{kRows}" var="r">
+                                    <tr>
 
-            <!-- ====== AUTOCOMPLETE CÓDIGO ======= -->
-            <td>
-                <p:autoComplete id="k_cie_#{r}"
-                                value="#{centroMedicoCtrl.listaDiag[r-1].codigo}" 
-                                completeMethod="#{centroMedicoCtrl.completarCie10PorCodigo}"
-                                var="it"
-                                itemLabel="#{it.codigo}"
-                                itemValue="#{it.codigo}"
-                                forceSelection="true"
-                                dropdown="true"
-                                cache="false"
-                                minQueryLength="1"
-                                styleClass="cell-input">
+                                        <!-- ====== AUTOCOMPLETE CÓDIGO ======= -->
+                                        <td>
+                                            <p:autoComplete id="k_cie"
+                                                            value="#{centroMedicoCtrl.listaDiag[r-1].codigo}" 
+                                                            completeMethod="#{centroMedicoCtrl.completarCie10PorCodigo}"
+                                                            var="it"
+                                                            itemLabel="#{it}"
+                                                            itemValue="#{it}"
+                                                            forceSelection="true"
+                                                            dropdown="true"
+                                                            cache="false"
+                                                            minQueryLength="1"
+                                                            styleClass="cell-input">
 
-                    <p:ajax event="itemSelect"
-                            listener="#{centroMedicoCtrl.onCie10SelectCodigo(r-1)}"
-                            update="k_cie_#{r} k_desc_#{r}"/>
-                </p:autoComplete>
-            </td>
+                                                <!-- Selección con click -->
+                                                <p:ajax event="itemSelect"
+                                                        listener="#{centroMedicoCtrl.onCie10SelectCodigo(r-1)}"
+                                                        update="k_cie k_desc"/>
 
-            <!-- ====== AUTOCOMPLETE DESCRIPCIÓN ======= -->
-            <td>
-                <p:autoComplete id="k_desc_#{r}"
-                                value="#{centroMedicoCtrl.listaDiag[r-1].descripcion}" 
-                                completeMethod="#{centroMedicoCtrl.completarCie10PorDescripcion}"
-                                var="it"
-                                itemLabel="#{it.descripcion}"
-                                itemValue="#{it.descripcion}"
-                                forceSelection="true"
-                                dropdown="true"
-                                cache="false"
-                                minQueryLength="2"
-                                styleClass="cell-input">
+                                                <!-- TAB / ENTER (al salir del campo) -->
+                                                <p:ajax event="blur"
+                                                        listener="#{centroMedicoCtrl.onCie10BlurCodigo(r-1)}"
+                                                        update="k_cie k_desc"/>
+                                            </p:autoComplete>
+                                        </td>
 
-                    <p:ajax event="itemSelect"
-                            listener="#{centroMedicoCtrl.onCie10SelectDescripcion(r-1)}"
-                            update="k_cie_#{r} k_desc_#{r}"/>
-                </p:autoComplete>
-            </td>
 
-            <!-- RADIO PRE/DEF -->
-            <td style="text-align:center">
-                <h:selectOneRadio value="#{centroMedicoCtrl.listaDiag[r-1].tipo}">
-                    <f:selectItem itemLabel="" itemValue="PRE"/>
-                </h:selectOneRadio>
-            </td>
+                                        <!-- ====== AUTOCOMPLETE DESCRIPCIÓN ======= -->
+                                        <td>
+                                            <p:autoComplete id="k_desc"
+                                                            value="#{centroMedicoCtrl.listaDiag[r-1].descripcion}" 
+                                                            completeMethod="#{centroMedicoCtrl.completarCie10PorDescripcion}"
+                                                            var="it"
+                                                            itemLabel="#{it}"
+                                                            itemValue="#{it}"
+                                                            forceSelection="true"
+                                                            dropdown="true"
+                                                            cache="false"
+                                                            minQueryLength="2"
+                                                            styleClass="cell-input">
 
-            <td style="text-align:center">
-                <h:selectOneRadio value="#{centroMedicoCtrl.listaDiag[r-1].tipo}">
-                    <f:selectItem itemLabel="" itemValue="DEF"/>
-                </h:selectOneRadio>
-            </td>
-        </tr>
-    </ui:repeat>
-</tbody>
+                                                <!-- Selección con click -->
+                                                <p:ajax event="itemSelect"
+                                                        listener="#{centroMedicoCtrl.onCie10SelectDescripcion(r-1)}"
+                                                        update="k_cie k_desc"/>
+
+                                                <!-- TAB / ENTER -->
+                                                <p:ajax event="blur"
+                                                        listener="#{centroMedicoCtrl.onCie10BlurDescripcion(r-1)}"
+                                                        update="k_cie k_desc"/>
+                                            </p:autoComplete>
+                                        </td>
+
+
+                                        <!-- RADIO PRE/DEF -->
+                                        <td style="text-align:center" colspan="2">
+                                            <h:selectOneRadio value="#{centroMedicoCtrl.listaDiag[r-1].tipoDiag}">
+                                                <f:selectItem itemLabel="PRE" itemValue="PRE"/>
+                                                <f:selectItem itemLabel="DEF" itemValue="DEF"/>
+                                            </h:selectOneRadio>
+                                        </td>
+
+
+                                    </tr>
+                                </ui:repeat>
+
+                            </tbody>
 
                         </table>
 
@@ -1176,7 +1188,7 @@
                         <h:panelGrid columns="1" style="width:100%; margin-top:8px;">
                             <h:outputLabel for="l_obs" value="OBSERVACIONES:" style="font-weight:bold; margin-bottom:4px;"/>
                             <p:inputTextarea id="l_obs"
-                                            value="#{centroMedicoCtrl.detalleObservaciones}"
+                                             value="#{centroMedicoCtrl.detalleObservaciones}"
                                              rows="4"
                                              autoResize="true"
                                              styleClass="l-observaciones"
@@ -1221,7 +1233,7 @@
                 <!-- O -->
                 <p:fieldset legend="O. Datos del profesional" toggleable="true" collapsed="true">
                     <h:panelGrid columns="4" styleClass="ui-fluid">
-                   
+
                         <h:outputText value="Nombre y apellido"/><p:inputText id="nombreMedico"  value="#{centroMedicoCtrl.medicoNombre}"/>
                         <h:outputText value="Código médico"/><p:inputText id="codigoMedico" value="#{centroMedicoCtrl.medicoCodigo}"/>
                     </h:panelGrid>

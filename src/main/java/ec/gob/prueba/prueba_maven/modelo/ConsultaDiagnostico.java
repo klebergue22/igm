@@ -49,4 +49,41 @@ public class ConsultaDiagnostico implements Serializable {
 
     @Column(name = "ES_PPAL", insertable = false, updatable = false)
     private Integer esPpal; // virtual (1 si es principal, NULL si no)
+    
+        // ========= Puente hacia Cie10 para la vista/controlador =========
+
+    @Transient
+    public String getCodigo() {
+        return (cie10 != null ? cie10.getCodigo() : null);
+    }
+
+    public void setCodigo(String codigo) {
+        if (codigo == null || codigo.trim().isEmpty()) {
+            this.cie10 = null;   // si borras el código, limpias el CIE10
+        } else {
+            if (this.cie10 == null) {
+                this.cie10 = new Cie10();
+            }
+            this.cie10.setCodigo(codigo);
+        }
+    }
+
+    @Transient
+    public String getDescripcion() {
+        return (cie10 != null ? cie10.getDescripcion() : null);
+    }
+
+    public void setDescripcion(String descripcion) {
+        if (descripcion == null || descripcion.trim().isEmpty()) {
+            if (this.cie10 != null) {
+                this.cie10.setDescripcion(null);
+            }
+        } else {
+            if (this.cie10 == null) {
+                this.cie10 = new Cie10();
+            }
+            this.cie10.setDescripcion(descripcion);
+        }
+    }
+
 }

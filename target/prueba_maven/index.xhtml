@@ -15,59 +15,7 @@
         </p:panel>
 
 
-        <h:panelGrid columns="2" columnClasses="etiqueta,valor">
-            <h:outputLabel for="cie10Cod" value="Código CIE10:" />
-
-            <p:autoComplete id="cie10Cod"
-                            value="#{centroMedicoCtrl.codCie10Ppal}"
-                            completeMethod="#{centroMedicoCtrl.completarCie10}"
-                            var="it"
-                            itemLabel="#{it.codigo} - #{it.descripcion}"    
-                            itemValue="#{it.codigo}"
-                            dropdown="true"
-                            forceSelection="false"
-                            cache="false"
-                            minQueryLength="1">
-
-                            <!-- CLIC o ENTER sobre un ítem de la lista -->
-                            <p:ajax event="itemSelect"
-                    listener="#{centroMedicoCtrl.onCie10CodigoSelect}"
-                    update="cie10Cod cie10Desc"/>
-
-                <!-- TAB / ENTER sin seleccionar nada de la lista -->
-                <p:ajax event="blur"
-                        listener="#{centroMedicoCtrl.onCie10CodigoBlur}"
-                        update="cie10Cod cie10Desc"/>
-            </p:autoComplete>
-
-
-
-
-
-            <h:outputLabel for="cie10Desc" value="Diagnóstico CIE10:" />
-
-            <p:autoComplete id="cie10Desc"
-                            value="#{centroMedicoCtrl.descCie10Ppal}"
-                            completeMethod="#{centroMedicoCtrl.completarCie10}"
-                            var="it"
-                            itemLabel="#{it.descripcion} (#{it.codigo})"   
-                            itemValue="#{it.descripcion}"
-                            dropdown="true"
-                            forceSelection="false"
-                            cache="false"
-                            minQueryLength="2">
-
-                            <!-- CLIC o ENTER sobre un ítem de la lista -->
-                            <p:ajax event="itemSelect"
-                    listener="#{centroMedicoCtrl.onCie10DescripcionSelect}"
-                    update="cie10Cod cie10Desc"/>
-
-                <!-- TAB / ENTER sin seleccionar nada de la lista -->
-                <p:ajax event="blur"
-                        listener="#{centroMedicoCtrl.onCie10DescripcionBlur}"
-                        update="cie10Cod cie10Desc"/>
-            </p:autoComplete>
-        </h:panelGrid>
+       
         
 
 
