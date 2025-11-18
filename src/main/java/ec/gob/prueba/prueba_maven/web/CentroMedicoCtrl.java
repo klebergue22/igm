@@ -135,6 +135,27 @@ public class CentroMedicoCtrl implements Serializable {
     public String getPdfObjectUrl() { return pdfObjectUrl; }
     public String getPdfToken()     { return pdfToken; }
     
+    // ========= OBJETOS DE DOMINIO PARA GUARDAR EN BD =========
+
+// Empleado seleccionado (llenado desde otra pantalla)
+private DatEmpleado empleadoSel;
+
+// Ficha ocupacional (tabla CONSULTORIO.FICHA_OCUPACIONAL)
+private FichaOcupacional ficha;
+
+// Signos vitales (tabla CONSULTORIO.SIGNOS_VITALES) – por ahora opcional
+private SignosVitales signos;
+
+// Consulta médica (tabla CONSULTORIO.CONSULTA_MEDICA)
+private ConsultaMedica consulta;
+
+// Lista de diagnósticos de la consulta (tabla CONSULTORIO.CONSULTA_DIAGNOSTICO)
+private List<ConsultaDiagnostico> listaDiag;
+
+// Paso actual del wizard (step1, step2, step3, step4)
+private String currentStep = "step1";
+
+    
     // ============================
     // CIE10 – Diagnóstico principal
     // ============================
@@ -515,56 +536,57 @@ private byte[] renderizarPdf(String xhtml) throws Exception {
     return cie10Service.buscarPorCodigoODescripcion(query);
 }
 
+// Suponiendo que tienes algo como:
+// private List<DiagnosticoFila> listaDiag;
+// donde DiagnosticoFila tiene getCodigo()/setCodigo(), getDescripcion()/setDescripcion()
 
- 
- 
-    
-    
-   // ============================
-// CIE10 – Diagnóstico principal
-// ============================
-@EJB
-private Cie10Service cie10Service;
-
-// campo que se guarda (código)
-private String codCie10Ppal;
-
-// campo que se muestra / busca (descripción)
-private String descCie10Ppal;
-
-// ===========================================================
-// AUTOCOMPLETE POR CÓDIGO (trabajando solo con String)
-// ===========================================================
-public List<String> completarCie10PorCodigo(String query) {
-    // 1) Usamos tu lógica jerárquica existente
-    List<Cie10> lista = cie10Service.buscarJerarquiaPorTerm(query);
-
-    List<String> codigos = new java.util.ArrayList<String>();
-
-    if (lista != null) {
-        for (Cie10 c : lista) {
-            if (c != null && c.getCodigo() != null && !codigos.contains(c.getCodigo())) {
-                codigos.add(c.getCodigo());
-            }
-        }
+public void onCie10SelectCodigo(int index) {
+    if (listaDiag == null || index < 0 || index >= listaDiag.size()) {
+        return;
     }
 
-    // 2) Si el query es exactamente un código válido y NO está en la lista,
-    //    lo agregamos al inicio para que forceSelection lo considere válido.
-    Cie10 exact = cie10Service.buscarPorCodigo(query);
-    if (exact != null && exact.getCodigo() != null && !codigos.contains(exact.getCodigo())) {
-        codigos.add(0, exact.getCodigo());
+    var diag = listaDiag.get(index);
+    String codigo = diag.getCodigo();
+
+    if (codigo == null || codigo.trim().isEmpty()) {
+        diag.setDescripcion(null);
+        return;
     }
 
-    return codigos;
+    Cie10 cie = cie10Service.buscarPorCodigo(codigo.trim());
+    if (cie != null) {
+        diag.setDescripcion(cie.getDescripcion());
+    } else {
+        diag.setDescripcion(null);
+    }
 }
 
-public void onCie10CodigoSelect(org.primefaces.event.SelectEvent event) {
+// ============================
+// AUTOCOMPLETE CIE10 – UN SOLO DIAGNÓSTICO
+// ============================
+
+// Cuando el usuario selecciona un CÓDIGO desde el autocomplete
+public void onCie10CodigoSelect(SelectEvent event) {
     String codigo = (String) event.getObject();
     this.codCie10Ppal = codigo;
 
-    if (codigo != null && !codigo.isEmpty()) {
-        Cie10 cie = cie10Service.buscarPorCodigo(codigo);
+    if (codigo != null && !codigo.trim().isEmpty()) {
+        Cie10 cie = cie10Service.buscarPorCodigo(codigo.trim());
+        if (cie != null) {
+            // si tu campo se llama diagnostico en vez de descripcion, cambia aquí
+            this.descCie10Ppal = cie.getDescripcion();
+        } else {
+            this.descCie10Ppal = null;
+        }
+    } else {
+        this.descCie10Ppal = null;
+    }
+}
+
+// Cuando escribe el código y solo da ENTER/TAB (sale del campo)
+public void onCie10CodigoBlur() {
+    if (this.codCie10Ppal != null && !this.codCie10Ppal.trim().isEmpty()) {
+        Cie10 cie = cie10Service.buscarPorCodigo(this.codCie10Ppal.trim());
         if (cie != null) {
             this.descCie10Ppal = cie.getDescripcion();
         } else {
@@ -575,30 +597,13 @@ public void onCie10CodigoSelect(org.primefaces.event.SelectEvent event) {
     }
 }
 
-// ===========================================================
-// AUTOCOMPLETE POR DESCRIPCIÓN (trabajando solo con String)
-// ===========================================================
-public List<String> completarCie10PorDescripcion(String query) {
-    List<Cie10> lista = cie10Service.buscarPorDescripcionLike(query);
-
-    List<String> descripciones = new java.util.ArrayList<String>();
-
-    if (lista != null) {
-        for (Cie10 c : lista) {
-            if (c != null && c.getDescripcion() != null && !descripciones.contains(c.getDescripcion())) {
-                descripciones.add(c.getDescripcion());
-            }
-        }
-    }
-    return descripciones;
-}
-
-public void onCie10DescripcionSelect(org.primefaces.event.SelectEvent event) {
+// Cuando el usuario selecciona una DESCRIPCIÓN desde el autocomplete
+public void onCie10DescripcionSelect(SelectEvent event) {
     String descripcion = (String) event.getObject();
     this.descCie10Ppal = descripcion;
 
-    if (descripcion != null && !descripcion.isEmpty()) {
-        Cie10 cie = cie10Service.buscarPrimeroPorDescripcion(descripcion);
+    if (descripcion != null && !descripcion.trim().isEmpty()) {
+        Cie10 cie = cie10Service.buscarPrimeroPorDescripcion(descripcion.trim());
         if (cie != null) {
             this.codCie10Ppal = cie.getCodigo();
         } else {
@@ -609,7 +614,21 @@ public void onCie10DescripcionSelect(org.primefaces.event.SelectEvent event) {
     }
 }
 
- 
+// Cuando escribe la descripción y solo da ENTER/TAB
+public void onCie10DescripcionBlur() {
+    if (this.descCie10Ppal != null && !this.descCie10Ppal.trim().isEmpty()) {
+        Cie10 cie = cie10Service.buscarPrimeroPorDescripcion(this.descCie10Ppal.trim());
+        if (cie != null) {
+            this.codCie10Ppal = cie.getCodigo();
+        } else {
+            this.codCie10Ppal = null;
+        }
+    } else {
+        this.codCie10Ppal = null;
+    }
+}
+
+
 
 
 }
