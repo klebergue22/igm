@@ -1,30 +1,61 @@
- package ec.gob.prueba.prueba_maven.web;
+/* 
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package ec.gob.prueba.prueba_maven.web;
 
-import java.io.ByteArrayInputStream;
+import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.Serializable;
+import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
+import org.primefaces.PrimeFaces;
+
 import javax.annotation.PostConstruct;
+import javax.ejb.EJB;
 import javax.faces.application.FacesMessage;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ViewScoped;
-import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
 
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
+import org.primefaces.event.SelectEvent;
 import org.primefaces.model.StreamedContent;
-import org.primefaces.model.DefaultStreamedContent;
-
 import org.xhtmlrenderer.pdf.ITextRenderer;
+import com.lowagie.text.pdf.BaseFont;
+
+import ec.gob.prueba.prueba_maven.modelo.Cie10;
+import ec.gob.prueba.prueba_maven.modelo.ConsultaDiagnostico;
+import ec.gob.prueba.prueba_maven.modelo.ConsultaMedica;
+import ec.gob.prueba.prueba_maven.modelo.DatEmpleado;
+import ec.gob.prueba.prueba_maven.modelo.FichaOcupacional;
+import ec.gob.prueba.prueba_maven.modelo.FichaRiesgo;
+import ec.gob.prueba.prueba_maven.modelo.PersonaAux;
+import ec.gob.prueba.prueba_maven.modelo.SignosVitales;
+import ec.gob.prueba.prueba_maven.modelo.AuditoriaConsultorio;
+import ec.gob.prueba.prueba_maven.servicio.Cie10Service;
+import ec.gob.prueba.prueba_maven.servicio.EmpleadoService;
+import ec.gob.prueba.prueba_maven.servicio.FichaOcupacionalService;
+import ec.gob.prueba.prueba_maven.servicio.FichaRiesgoService;
+import ec.gob.prueba.prueba_maven.servicio.PersonaAuxService;
+import ec.gob.prueba.prueba_maven.servicio.SignosVitalesService;
+import ec.gob.prueba.prueba_maven.servicio.AuditoriaConsultorioService;
+import org.primefaces.PrimeFaces;
 
 @ManagedBean(name = "centroMedicoCtrl")
 @ViewScoped
@@ -34,6 +65,14 @@ import org.xhtmlrenderer.pdf.ITextRenderer;
 public class CentroMedicoCtrl implements Serializable {
 
     private static final long serialVersionUID = 1L;
+
+    // ====== BÚSQUEDA POR CÉDULA / PERSONA AUXILIAR ======
+    private String cedulaBusqueda;          // se enlaza al inputText del popup
+    private DatEmpleado empleadoSeleccionado;
+    private PersonaAux personaAux;          // registro auxiliar cuando no existe en RRHH
+    private boolean mostrarDialogoAux;      // para controlar la visualización del diálogo
+    private boolean permitirIngresoManual;  // <-- NUEVO: controla el botón "Ingresar manualmente"
+    private boolean mostrarDlgCedula = true; //Dialogo de la cedula 
 
     // ========= A. DATOS DEL ESTABLECIMIENTO / USUARIO =========
     private String institucion;
@@ -59,10 +98,10 @@ public class CentroMedicoCtrl implements Serializable {
     // Sexo (M o F)
     private String sexo;
 
-    // Fecha nacimiento / Edad
+    // Fechas / Edad
     private Date fechaNacimiento;
     private Date fechaAtencion;
-    private String tipoEval;
+    private String tipoEval;       // Selección en UI
     private Date fecIngreso;
     private Date fecReintegro;
     private Date fecRetiro;
@@ -95,44 +134,197 @@ public class CentroMedicoCtrl implements Serializable {
     private String planificacionCual;
 
     // ---- Constantes vitales
-    private Double peso;   // kg
-    private Double talla;  // cm
-    private Double imc;    // kg/m2
+    private Double peso;   // kg (en el form está en kg)
+    private Double talla;  // cm (en el form está en cm)
+    private Double imc;    // kg/m2 (calculado en el bean)
 
-    private Date fechaEmision;           // Step 3
-    private String tipoEvaluacion;         // Step 3: INGRESO / PERIODICO / REINTEGRO / RETIRO
+    // ====== STEP 3: Datos para el certificado ====== 
+    private Date fechaEmision;
+    private String tipoEvaluacion; // INGRESO / PERIODICO / REINTEGRO / RETIRO
 
-    // Aptitud (Step 3)
+    // Aptitud
     private boolean apto;
     private boolean aptoObservacion;
     private boolean aptoLimitaciones;
     private boolean noApto;
+    private String aptitudSel;  // "APTO", "APTO_EN_OBS", "APTO_LIMIT", "NO_APTO"
 
-    private String detalleObservaciones;   // Step 3
-    private String recomendaciones;        // Step 3
+    private String detalleObservaciones;
+    private String recomendaciones;
 
-    private String medicoNombre;           // Step 3
-    private String medicoCodigo;           // Step 3
+    private String medicoNombre;
+    private String medicoCodigo;
 
     // ====== Vista previa / descarga ======
-    private StreamedContent pdfPreview;
-    private StreamedContent pdfDescarga;
+    private StreamedContent pdfPreview;  // (no se usa con el servlet, se deja por compatibilidad)
+    private StreamedContent pdfDescarga; // (no se usa con el servlet, se deja por compatibilidad)
     private boolean certificadoListo;
+
+    // === PREVIEW POR <object>/<iframe> via Servlet ===
+    private String pdfObjectUrl; // opcional
+    private String pdfToken;     // clave en sesión para el servlet
+
+    public String getPdfObjectUrl() {
+        return pdfObjectUrl;
+    }
+
+    public String getPdfToken() {
+        return pdfToken;
+    }
+
+    // ========= OBJETOS DE DOMINIO PARA GUARDAR EN BD =========
+    // Empleado seleccionado (llenado desde otra pantalla)
+    private DatEmpleado empleadoSel;
+
+    // Ficha ocupacional (tabla CONSULTORIO.FICHA_OCUPACIONAL)
+    private FichaOcupacional ficha;
+
+    // Signos vitales (tabla CONSULTORIO.SIGNOS_VITALES)
+    private SignosVitales signos;
+
+    // Consulta médica (tabla CONSULTORIO.CONSULTA_MEDICA) – opcional
+    private ConsultaMedica consulta;
+
+    // Lista de diagnósticos de la consulta (CONSULTORIO.CONSULTA_DIAGNOSTICO)
+    private List<ConsultaDiagnostico> listaDiag;
+
+    // Paso actual del wizard (step1, step2, step3, step4)
+    private String currentStep = "step1";
+    //Riesgos
+    private FichaRiesgo fichaRiesgo;
+
+    // Medidas preventivas seleccionadas en la matriz (STEP 2)
+    private List<String> medidasPreventivas = new ArrayList<>();
+
+    // ============================
+    // CIE10 – Diagnóstico principal
+    // ============================
+    @EJB
+    private Cie10Service cie10Service;
+
+    @EJB
+    private FichaOcupacionalService fichaService;
+
+    @EJB
+    private SignosVitalesService signosService;
+    @EJB
+    private FichaRiesgoService fichaRiesgoService;
+
+    @EJB
+    private EmpleadoService empleadoService;
+
+    @EJB
+    private PersonaAuxService personaAuxService;
+
+    @EJB
+    private AuditoriaConsultorioService auditoriaService;
+
+    // campo que se guarda (código)
+    private String codCie10Ppal;
+
+    // campo que se muestra / busca (descripción)
+    private String descCie10Ppal;
 
     @PostConstruct
     public void init() {
+        mostrarDlgCedula = true;
         fechaAtencion = new Date();
         tipoEval = "INGRESO";
         sexo = "M";
         grupoSanguineo = "";
         lateralidad = "";
+
         FacesContext.getCurrentInstance().getViewRoot().setLocale(new Locale("es"));
+
+        institucion = "Instituto Geográfico Militar";
+        institucion = institucion.toUpperCase();
+        ruc = "1768007200001";
+
+        // ====== INICIALIZAR OBJETOS DE DOMINIO ======
+        ficha = new FichaOcupacional();
+        signos = new SignosVitales();
+        consulta = new ConsultaMedica();
+        listaDiag = new ArrayList<>();
+        fichaRiesgo = new FichaRiesgo();
+        fichaRiesgo.setFicha(ficha);
+        fichaRiesgo.setEstado("BORRADOR");
+
+        if (medidasPreventivas == null) {
+            medidasPreventivas = new ArrayList<>();
+        }
+
+        // Si ya tienes empleadoSel seteado desde otra pantalla,
+        // aquí lo amarras:
+        if (empleadoSel != null) {
+            ficha.setEmpleado(empleadoSel);
+            consulta.setEmpleado(empleadoSel);
+        }
+
+        // Valores base
+        ficha.setFechaEvaluacion(fechaAtencion);
+        ficha.setTipoEvaluacion(tipoEval);
+
+        // 👉 IMPORTANTE: inicializar filas de diagnósticos
+        // Ajusta 6 si en tu UI tienes otro número de filas.
+        for (int i = 0; i < 6; i++) {
+            ConsultaDiagnostico cd = new ConsultaDiagnostico();
+            // si manejas tipo P/S puedes inicializar en "P" o dejar null
+            cd.setTipoDiag("P");
+            listaDiag.add(cd);
+        }
+        if (ficha == null) {
+            ficha = new FichaOcupacional();
+            // set defaults si hace falta
+        }
+
+        if (fichaRiesgo == null) {
+            fichaRiesgo = new FichaRiesgo();
+            fichaRiesgo.setFicha(ficha);
+            fichaRiesgo.setEstado("BORRADOR");
+        }
+        personaAux = new PersonaAux();
+
+    }
+
+    private ConsultaDiagnostico ensureDiag(int index) {
+        // si la lista es muy corta, agrándala
+        while (listaDiag.size() <= index) {
+            listaDiag.add(new ConsultaDiagnostico());
+        }
+
+        ConsultaDiagnostico d = listaDiag.get(index);
+        if (d == null) {
+            d = new ConsultaDiagnostico();
+            listaDiag.set(index, d);
+        }
+        return d;
+    }
+
+    // ===== TUS LISTENERS =====
+    public void onCie10BlurCodigo(int index) {
+        ConsultaDiagnostico diag = ensureDiag(index);
+
+        String codigo = diag.getCodigo();
+        if (codigo == null || codigo.trim().isEmpty()) {
+            diag.setDescripcion(null);
+            diag.setCie10(null);
+            return;
+        }
+
+        Cie10 cie = cie10Service.buscarPorCodigo(codigo.trim());
+        if (cie != null) {
+            diag.setDescripcion(cie.getDescripcion());
+            diag.setCie10(cie);
+        } else {
+            diag.setDescripcion(null);
+            diag.setCie10(null);
+        }
     }
 
     // ===========================================================
     // MÉTODOS DE FECHAS Y EDAD
     // ===========================================================
-    public void onFechaNacimientoSelect(org.primefaces.event.SelectEvent e) {
+    public void onFechaNacimientoSelect(SelectEvent e) {
         this.fechaNacimiento = (java.util.Date) e.getObject();
         this.edad = calcularEdad(this.fechaNacimiento);
         FacesContext.getCurrentInstance().addMessage(null,
@@ -147,19 +339,16 @@ public class CentroMedicoCtrl implements Serializable {
                         "Edad calculada: " + (edad == null ? "(sin fecha)" : edad + " años")));
     }
 
-    public void setFechaNacimiento(Date f) {  // por si cambia vía binding
+    public void setFechaNacimiento(Date f) {
         this.fechaNacimiento = f;
         this.edad = calcularEdad(f);
     }
 
-    // Añade esto dentro de CentroMedicoCtrl
     public void calcularEdad() {
-        // JSF ya habrá seteado fechaNacimiento; sólo recalculamos
         this.edad = calcularEdad(this.fechaNacimiento);
     }
 
     private Integer calcularEdad(Date f) {
-
         if (f == null) {
             return null;
         }
@@ -187,7 +376,7 @@ public class CentroMedicoCtrl implements Serializable {
     public void validarEdadMinima() {
         if (edad != null && edad < 18) {
             FacesContext.getCurrentInstance().addMessage(null,
-                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "La edad debe ser ? 18 años"));
+                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "La edad debe ser ≥ 18 años"));
             fechaNacimiento = null;
             edad = null;
         }
@@ -204,158 +393,1313 @@ public class CentroMedicoCtrl implements Serializable {
             this.imc = null;
         }
     }
+
+    private boolean isBlank(String s) {
+        return s == null || s.trim().isEmpty();
+    }
+
+    /**
+     * Registra una auditoría genérica en CONSULTORIO.AUDITORIA_CONSULTORIO. Por
+     * ahora el usuario se maneja como literal "USR_APP" hasta que exista login
+     * real.
+     */
+    private void registrarAuditoria(String accion, String tabla, String campo, String observaciones) {
+        try {
+            AuditoriaConsultorio aud = new AuditoriaConsultorio();
+            aud.setModulo("CENTRO_MEDICO");
+            aud.setUsuario("USR_APP"); // TODO: reemplazar por usuario logueado cuando exista
+            aud.setFecha(new Date());
+            aud.setAccion(accion);
+            aud.setTablaAfecta(tabla);
+            aud.setCampoAfecta(campo);
+            aud.setObservaciones(observaciones);
+            auditoriaService.guardar(aud);
+        } catch (Exception e) {
+            // No romper el flujo funcional si la auditoría falla
+            e.printStackTrace();
+        }
+    }
+
+// ===========================================================
+// WIZARD: GUARDAR POR STEP
+// ===========================================================
+    public void guardarStepActual() {
+        FacesContext ctx = FacesContext.getCurrentInstance();
+        try {
+            boolean ok = true;
+
+            if ("step1".equals(currentStep)) {
+                // (aquí más adelante puedes llamar a validarStep1 si ya lo tienes)
+                guardarStep1();
+                currentStep = "step2";
+
+            } else if ("step2".equals(currentStep)) {
+                // (igual para validarStep2 cuando lo tengas listo)
+                guardarStep2();
+                currentStep = "step3";
+
+            } else if ("step3".equals(currentStep)) {
+                ok = validarStep3();
+                if (ok) {
+                    guardarStep3();
+                    currentStep = "step4";
+                }
+            }
+
+            // Si falló alguna validación, se lo avisamos a PrimeFaces
+            if (!ok) {
+                ctx.validationFailed(); // esto hace que args.validationFailed sea true en el oncomplete
+            }
+
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            ctx.addMessage(null,
+                    new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                            "Error",
+                            "Ocurrió un error al guardar la información del paso actual."));
+            ctx.validationFailed();
+        }
+    }
+
+    public void retrocederStep() {
+        if ("step2".equals(currentStep)) {
+            currentStep = "step1";
+        } else if ("step3".equals(currentStep)) {
+            currentStep = "step2";
+        } else if ("step4".equals(currentStep)) {
+            currentStep = "step3";
+        }
+    }
+
+    private boolean validarStep1() {
+        FacesContext ctx = FacesContext.getCurrentInstance();
+        boolean valido = true;
+
+        // ===== NOMBRES Y APELLIDOS =====
+        if (isBlank(apellido1) && isBlank(apellido2)) {
+            ctx.addMessage(null, new FacesMessage(
+                    FacesMessage.SEVERITY_ERROR,
+                    "Step 1",
+                    "Debe ingresar al menos un apellido."));
+            valido = false;
+        }
+
+        if (isBlank(nombre1) && isBlank(nombre2)) {
+            ctx.addMessage(null, new FacesMessage(
+                    FacesMessage.SEVERITY_ERROR,
+                    "Step 1",
+                    "Debe ingresar al menos un nombre."));
+            valido = false;
+        }
+
+        // ===== SEXO =====
+        if (isBlank(sexo)) {
+            ctx.addMessage(null, new FacesMessage(
+                    FacesMessage.SEVERITY_ERROR,
+                    "Step 1",
+                    "Debe seleccionar el sexo del paciente."));
+            valido = false;
+        }
+
+        // ===== TIPO DE EVALUACIÓN =====
+        if (isBlank(tipoEval)) {
+            ctx.addMessage(null, new FacesMessage(
+                    FacesMessage.SEVERITY_ERROR,
+                    "Step 1",
+                    "Debe seleccionar el tipo de evaluación (Ingreso, Periódica, etc.)."));
+            valido = false;
+        }
+
+        // ===== SIGNOS VITALES OBLIGATORIOS =====
+        if (signos == null) {
+            ctx.addMessage(null, new FacesMessage(
+                    FacesMessage.SEVERITY_ERROR,
+                    "Step 1",
+                    "Debe registrar los signos vitales."));
+            return false;
+        }
+
+        // PA (sistólica y diastólica)
+        if (signos.getPaSistolica() == null || signos.getPaDiastolica() == null) {
+            ctx.addMessage(null, new FacesMessage(
+                    FacesMessage.SEVERITY_ERROR,
+                    "Step 1",
+                    "Debe ingresar la presión arterial completa (PA sistólica y diastólica)."));
+            valido = false;
+        }
+
+        // FC
+        if (signos.getFrecuenciaCard() == null) {
+            ctx.addMessage(null, new FacesMessage(
+                    FacesMessage.SEVERITY_ERROR,
+                    "Step 1",
+                    "Debe ingresar la frecuencia cardíaca (FC)."));
+            valido = false;
+        }
+
+        // Peso
+        if (signos.getPesoKg() == null) {
+            ctx.addMessage(null, new FacesMessage(
+                    FacesMessage.SEVERITY_ERROR,
+                    "Step 1",
+                    "Debe ingresar el peso (kg)."));
+            valido = false;
+        }
+
+        // Talla
+        if (signos.getTallaM() == null) {
+            ctx.addMessage(null, new FacesMessage(
+                    FacesMessage.SEVERITY_ERROR,
+                    "Step 1",
+                    "Debe ingresar la talla (en metros o convertir desde cm)."));
+            valido = false;
+        }
+
+        // ===== PUESTO DE TRABAJO =====
+        if (fichaRiesgo == null || isBlank(fichaRiesgo.getPuestoTrabajo())) {
+            ctx.addMessage(null, new FacesMessage(
+                    FacesMessage.SEVERITY_ERROR,
+                    "Step 1",
+                    "Debe ingresar el puesto de trabajo."));
+            valido = false;
+        }
+
+        return valido;
+    }
+
+    /**
+     * STEP 1: - Atención prioritaria - Antecedentes personales -
+     * Gineco-obstétricos (Solo llena la FichaOcupacional en memoria, aún no
+     * persiste)
+     */
+    public void guardarStep1() {
+        // Aseguramos empleado si viene seteado
+        if (empleadoSel != null) {
+            ficha.setEmpleado(empleadoSel);
+        }
+
+        // FECHA_EVALUACION y TIPO_EVALUACION
+        ficha.setFechaEvaluacion(fechaAtencion);
+        ficha.setTipoEvaluacion(tipoEval);
+
+        // Atención prioritaria: S/N
+        ficha.setApEmbarazada(apEmbarazada ? "S" : "N");
+        ficha.setApDiscapacidad(apDiscapacidad ? "S" : "N");
+        ficha.setApCatastrofica(apCatastrofica ? "S" : "N");
+        ficha.setApLactancia(apLactancia ? "S" : "N");
+        ficha.setApAdultoMayor(apAdultoMayor ? "S" : "N");
+
+        // Antecedentes personales
+        ficha.setAntClinicoQuir(antClinicoQuirurgico);
+        ficha.setAntFamiliares(antFamiliares);
+        ficha.setCondicionEspecial(condicionEspecial);
+
+        // Transfusión / tratamientos hormonales
+        ficha.setAutorizaTransfusion(autorizaTransfusion);
+        ficha.setTratHormonal(tratamientoHormonal);
+        ficha.setTratHormonalCual(tratamientoHormonalCual);
+
+        // Reproductivos masculinos
+        ficha.setExamReproMasc(examenReproMasculino);
+        ficha.setTiempoReproMasc(tiempoReproMasculino);
+
+        // Gineco-obstétricos (mujer)
+        ficha.setFum(fum);
+        ficha.setGestas(gestas);
+        ficha.setPartos(partos);
+        ficha.setCesareas(cesareas);
+        ficha.setAbortos(abortos);
+        ficha.setPlanificacion(planificacion);
+        ficha.setPlanificacionCual(planificacionCual);
+
+        // Estado y auditoría mínima
+        Date ahora = new Date();
+        if (ficha.getEstado() == null) {
+            ficha.setEstado("BORRADOR");
+            ficha.setFechaCreacion(ahora);
+            ficha.setUsrCreacion("USR_APP"); // TODO: usuario real
+        } else {
+            ficha.setFechaActualizacion(ahora);
+            ficha.setUsrActualizacion("USR_APP");
+        }
+
+        // Guardar BORRADOR
+        ficha = fichaService.guardar(ficha);
+        registrarAuditoria("GUARDAR_STEP1", "FICHA_OCUPACIONAL", "*",
+                "Step 1: datos generales guardados. ID_FICHA=" + ficha.getIdFicha());
+
+        FacesContext.getCurrentInstance().addMessage(null,
+                new FacesMessage(FacesMessage.SEVERITY_INFO,
+                        "Step 1",
+                        "Datos del Step 1 guardados correctamente (borrador)."));
+    }
+
+    private boolean validarStep2() {
+        FacesContext ctx = FacesContext.getCurrentInstance();
+        boolean valido = true;
+
+        // Puesto de trabajo (mismo campo usado ya en Step 1)
+        if (fichaRiesgo == null || isBlank(fichaRiesgo.getPuestoTrabajo())) {
+            ctx.addMessage(null, new FacesMessage(
+                    FacesMessage.SEVERITY_ERROR,
+                    "Step 2",
+                    "Debe ingresar el puesto de trabajo."));
+            valido = false;
+        }
+
+        // Al menos una actividad (actividad1..actividad7 en FichaRiesgo)
+        boolean hayActividad
+                = !isBlank(fichaRiesgo.getActividad1())
+                || !isBlank(fichaRiesgo.getActividad2())
+                || !isBlank(fichaRiesgo.getActividad3())
+                || !isBlank(fichaRiesgo.getActividad4())
+                || !isBlank(fichaRiesgo.getActividad5())
+                || !isBlank(fichaRiesgo.getActividad6())
+                || !isBlank(fichaRiesgo.getActividad7());
+
+        if (!hayActividad) {
+            ctx.addMessage(null, new FacesMessage(
+                    FacesMessage.SEVERITY_ERROR,
+                    "Step 2",
+                    "Debe registrar al menos una actividad laboral."));
+            valido = false;
+        }
+
+        // Al menos una medida preventiva seleccionada
+        if (medidasPreventivas == null || medidasPreventivas.isEmpty()) {
+            ctx.addMessage(null, new FacesMessage(
+                    FacesMessage.SEVERITY_ERROR,
+                    "Step 2",
+                    "Debe seleccionar al menos una medida preventiva."));
+            valido = false;
+        }
+
+        return valido;
+    }
+
+    /**
+     * STEP 2: Riesgos (matriz G). Por ahora solo actualiza la ficha (BORRADOR)
+     * para dejar registro de que se pasó por este paso. Cuando tengas la tabla
+     * de riesgos, aquí se mapea y persiste.
+     */
+    public void guardarStep2() {
+        Date ahora = new Date();
+
+        if (fichaRiesgo == null) {
+            fichaRiesgo = new FichaRiesgo();
+            fichaRiesgo.setFicha(ficha);
+        } else {
+            fichaRiesgo.setFicha(ficha);
+        }
+
+        // Puedes concatenar medidas preventivas en un campo de texto si añadiste la columna
+        if (medidasPreventivas != null && !medidasPreventivas.isEmpty()) {
+            String resumenMedidas = String.join(", ", medidasPreventivas);
+            fichaRiesgo.setObservaciones(resumenMedidas); // o un campo específico si lo definiste
+        }
+
+        // Auditoría básica
+        if (fichaRiesgo.getIdFichaRiesgo() == null) {
+            fichaRiesgo.setEstado("BORRADOR");
+            fichaRiesgo.setFechaCreacion(ahora);
+            fichaRiesgo.setUsrCreacion("USR_APP");
+        } else {
+            fichaRiesgo.setFechaActualizacion(ahora);
+            fichaRiesgo.setUsrActualizacion("USR_APP");
+        }
+
+        fichaRiesgo = fichaRiesgoService.guardar(fichaRiesgo);
+        registrarAuditoria("GUARDAR_STEP2", "FICHA_RIESGO", "*",
+                "Step 2: riesgos laborales guardados. ID_FICHA="
+                + (ficha != null ? ficha.getIdFicha() : null));
+
+        FacesContext.getCurrentInstance().addMessage(null,
+                new FacesMessage(FacesMessage.SEVERITY_INFO,
+                        "Step 2",
+                        "Riesgos laborales guardados correctamente."));
+    }
+
+    /**
+     * Validaciones del STEP 3: - Al menos 1 diagnóstico - Aptitud seleccionada
+     * - Al menos 1 recomendación - Nombre del profesional - Código del médico
+     */
+    private boolean validarStep3() {
+        FacesContext ctx = FacesContext.getCurrentInstance();
+        boolean valido = true;
+
+        // 1) Al menos un diagnóstico en listaDiag
+        boolean hayDiagnostico = false;
+        if (listaDiag != null) {
+            for (ConsultaDiagnostico d : listaDiag) {
+                if (d == null) {
+                    continue;
+                }
+                boolean tieneCodigo = !isBlank(d.getCodigo());
+                boolean tieneDescripcion = !isBlank(d.getDescripcion());
+                boolean tieneCie = d.getCie10() != null;
+
+                if (tieneCodigo || tieneDescripcion || tieneCie) {
+                    hayDiagnostico = true;
+                    break;
+                }
+            }
+        }
+
+        if (!hayDiagnostico) {
+            ctx.addMessage(null, new FacesMessage(
+                    FacesMessage.SEVERITY_ERROR,
+                    "Step 3",
+                    "Debe registrar al menos un diagnóstico (CIE10) en la sección de diagnósticos."));
+            valido = false;
+        }
+
+        // 2) Aptitud
+        if (isBlank(aptitudSel)) {
+            ctx.addMessage(null, new FacesMessage(
+                    FacesMessage.SEVERITY_ERROR,
+                    "Step 3",
+                    "Debe seleccionar la aptitud médica (APTO, APTO EN OBS, APTO CON LIMITACIONES o NO APTO)."));
+            valido = false;
+        }
+
+        // 3) Al menos una recomendación
+        if (isBlank(recomendaciones)) {
+            ctx.addMessage(null, new FacesMessage(
+                    FacesMessage.SEVERITY_ERROR,
+                    "Step 3",
+                    "Debe ingresar al menos una recomendación para el trabajador."));
+            valido = false;
+        }
+
+        // 4) Nombre del profesional
+        if (isBlank(medicoNombre)) {
+            ctx.addMessage(null, new FacesMessage(
+                    FacesMessage.SEVERITY_ERROR,
+                    "Step 3",
+                    "Debe ingresar el nombre del profesional que emite el certificado."));
+            valido = false;
+        }
+
+        // 5) Código del médico
+        if (isBlank(medicoCodigo)) {
+            ctx.addMessage(null, new FacesMessage(
+                    FacesMessage.SEVERITY_ERROR,
+                    "Step 3",
+                    "Debe ingresar el código del médico (registro profesional)."));
+            valido = false;
+        }
+
+        return valido;
+    }
+
+    /**
+     * STEP 3: - Signos vitales básicos (peso, talla) - Aptitud, observaciones,
+     * recomendaciones - CIE10 principal, médico, fechas Aquí SÍ se persiste la
+     * FICHA_OCUPACIONAL (y SIGNOS_VITALES).
+     */
+    public void guardarStep3() {
+        // === Signos vitales (solo peso/talla desde este formulario) ===
+        if (peso != null || talla != null) {
+            signos.setPesoKg(peso);
+            // En BD TALLA_M está en metros; en el form manejas cm.
+            if (talla != null) {
+                signos.setTallaM(talla / 100.0);
+            }
+            signos.setFechaCreacion(new Date());
+            signos.setUsrCreacion("USR_APP"); // reemplaza por el usuario logueado
+
+            signos = signosService.guardar(signos);
+            ficha.setSignos(signos);
+        }
+
+        // Sincronizar tipoEvaluacion si no lo hiciste antes
+        if (tipoEval != null) {
+            ficha.setTipoEvaluacion(tipoEval);
+        }
+
+        // Aptitud
+        ficha.setAptitudSel(aptitudSel);                 // APTO / APTO_EN_OBS / APTO_LIMIT / NO_APTO
+        ficha.setDetalleObs(detalleObservaciones);       // DETALLE_OBS
+        ficha.setRecomendaciones(recomendaciones);       // RECOMENDACIONES
+
+        // Fechas
+        Date fEmision = (fechaEmision != null) ? fechaEmision : new Date();
+        ficha.setFechaEmision(fEmision);
+
+        // Médico
+        ficha.setMedicoNombre(medicoNombre);
+        ficha.setMedicoCodigo(medicoCodigo);
+
+        // CIE10 principal (desde tu autocomplete de codCie10Ppal)
+        if (codCie10Ppal != null && !codCie10Ppal.trim().isEmpty()) {
+            Cie10 cie = cie10Service.buscarPorCodigo(codCie10Ppal.trim());
+            if (cie != null) {
+                ficha.setCie10Principal(cie);
+            } else {
+                ficha.setCie10Principal(null);
+            }
+        } else {
+            ficha.setCie10Principal(null);
+        }
+
+        // Estado de la ficha: pasa de BORRADOR a EMITIDA en Step 3
+        if (ficha.getEstado() == null || "BORRADOR".equals(ficha.getEstado())) {
+            ficha.setEstado("EMITIDA");
+        }
+
+// Auditoría mínima
+        Date ahora = new Date();
+        if (ficha.getFechaCreacion() == null) {
+            ficha.setFechaCreacion(ahora);
+            ficha.setUsrCreacion("USR_APP"); // reemplaza por usuario real
+        } else {
+            ficha.setFechaActualizacion(ahora);
+            ficha.setUsrActualizacion("USR_APP");
+        }
+
+// === Persistir en BD ===
+        ficha = fichaService.guardar(ficha);
+        registrarAuditoria("GUARDAR_STEP3", "FICHA_OCUPACIONAL", "*",
+                "Step 3: certificado emitido / actualizado. ID_FICHA=" + ficha.getIdFicha());
+
+        FacesContext.getCurrentInstance().addMessage(null,
+                new FacesMessage(FacesMessage.SEVERITY_INFO,
+                        "Step 3",
+                        "Ficha ocupacional guardada correctamente en la base de datos (estado EMITIDA)."));
+
+    }
+
+    /**
+     * Verifica que todo lo necesario esté guardado para poder generar el
+     * certificado. No guarda nada, solo valida.
+     */
+    private boolean verificarFichaCompleta() {
+        StringBuilder sb = new StringBuilder();
+
+        if (ficha == null || ficha.getIdFicha() == null) {
+            sb.append("- La ficha ocupacional aún no se ha guardado (Steps 1 y 3).\n");
+        } else {
+            // Puedes incluso recargar desde BD si quieres estar 100% seguro:
+            // ficha = fichaService.buscarPorId(ficha.getIdFicha());
+        }
+
+        if (ficha != null) {
+            if (ficha.getEmpleado() == null) {
+                sb.append("- Falta seleccionar el empleado.\n");
+            }
+            if (ficha.getFechaEvaluacion() == null) {
+                sb.append("- Falta la fecha de evaluación.\n");
+            }
+            if (ficha.getTipoEvaluacion() == null || ficha.getTipoEvaluacion().trim().isEmpty()) {
+                sb.append("- Falta el tipo de evaluación (INGRESO/PERÍODICA/etc.).\n");
+            }
+            if (ficha.getAptitudSel() == null || ficha.getAptitudSel().trim().isEmpty()) {
+                sb.append("- Debe seleccionar la aptitud médica.\n");
+            }
+            if (ficha.getCie10Principal() == null) {
+                sb.append("- Debe registrar un diagnóstico CIE10 principal.\n");
+            }
+            if (ficha.getSignos() == null) {
+                sb.append("- Debe registrar signos vitales (peso/talla) en Step 3.\n");
+            }
+            if (ficha.getFechaEmision() == null) {
+                sb.append("- Falta la fecha de emisión del certificado.\n");
+            }
+        }
+
+        if (sb.length() > 0) {
+            FacesContext.getCurrentInstance().addMessage(null,
+                    new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                            "Validación antes de generar el certificado",
+                            sb.toString()));
+            return false;
+        }
+
+        return true;
+    }
+
     // ===========================================================
     // PDF PREVIEW Y DESCARGA (STEP 4)
     // ===========================================================
+    public void prepararVistaPrevia() {
+        try {
+            // >>> VALIDACIÓN SOLO LECTURA, NO GUARDA NADA <<<
+            if (!verificarFichaCompleta()) {
+                // No generar PDF si falta algo
+                certificadoListo = false;
+                return;
+            }
 
-public void prepararVistaPrevia() {
-    try {
-        // 1) Construir HTML desde plantilla + placeholders
-        String html = construirHtmlDesdePlantilla();
+            String html = construirHtmlDesdePlantilla();
+            byte[] bytes = renderizarPdf(html);
 
-        // 2) Renderizar a PDF en memoria
-        byte[] bytes = renderizarPdf(html);
+            // 1) Generar token único por ejecución
+            this.pdfToken = "CERT_" + System.currentTimeMillis();
 
-        // 3) Preparar preview/descarga (Java 7 friendly: sin Supplier/lambdas)
-        java.io.InputStream in1 = new java.io.ByteArrayInputStream(bytes);
-        java.io.InputStream in2 = new java.io.ByteArrayInputStream(bytes);
+            // 2) Guardar bytes en sesión
+            FacesContext.getCurrentInstance()
+                    .getExternalContext()
+                    .getSessionMap()
+                    .put(pdfToken, bytes);
 
-        pdfPreview = new org.primefaces.model.DefaultStreamedContent(
-                in1, "application/pdf", "Certificado_preview.pdf");
-        pdfDescarga = new org.primefaces.model.DefaultStreamedContent(
-                in2, "application/pdf", "Certificado.pdf");
+            // Si usas servlet para previsualizar, desactiva objectUrl
+            this.pdfObjectUrl = null;
 
-        certificadoListo = true;
-    } catch (Exception e) {
+            certificadoListo = true;
+
+            FacesContext.getCurrentInstance().addMessage(null,
+                    new FacesMessage(FacesMessage.SEVERITY_INFO, "PDF listo",
+                            "Se generó el certificado para vista previa y descarga."));
+        } catch (Exception e) {
+            certificadoListo = false;
+
+            if (pdfToken != null) {
+                FacesContext.getCurrentInstance()
+                        .getExternalContext()
+                        .getSessionMap()
+                        .remove(pdfToken);
+            }
+            pdfToken = null;
+            pdfObjectUrl = null;
+
+            FacesContext.getCurrentInstance().addMessage(null,
+                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "No se pudo generar el PDF"));
+            e.printStackTrace();
+        }
+    }
+
+    public void limpiarVistaPrevia() {
+        if (pdfToken != null) {
+            FacesContext.getCurrentInstance()
+                    .getExternalContext()
+                    .getSessionMap()
+                    .remove(pdfToken);
+        }
         certificadoListo = false;
-        pdfPreview = null;
-        pdfDescarga = null;
-        e.printStackTrace();
+        pdfToken = null;
+        pdfObjectUrl = null;
     }
-}
 
-   public void limpiarVistaPrevia() {
-    certificadoListo = false;
-    pdfPreview = null;
-    pdfDescarga = null;
-}
+    /**
+     * Render PDF con baseURL apuntando a /resources/ (para CSS/IMG) En la
+     * PLANTILLA.html referencia imágenes externas como:
+     * <img src="images/LOGO_IGM_FULL_COLOR.png" />
+     * (Los logos principales se inyectan por Data URI).
+     */
+    private byte[] renderizarPdf(String xhtml) throws Exception {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        ITextRenderer renderer = new ITextRenderer();
 
-/** Renderizado PDF con baseURL apuntando a /resources/ (para CSS/IMG) */
-private byte[] renderizarPdf(String xhtml) throws Exception {
-    java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
-    org.xhtmlrenderer.pdf.ITextRenderer renderer = new org.xhtmlrenderer.pdf.ITextRenderer();
+        // baseURL = raíz del WAR (no /resources/)
+        String baseURL = FacesContext.getCurrentInstance()
+                .getExternalContext()
+                .getResource("/")
+                .toExternalForm(); // p.ej. file:/.../webapp/
 
-    // baseURL = /resources/ del WAR (resuelve href="pdf.css" y src="img/logo.png")
-    String basePath = javax.faces.context.FacesContext.getCurrentInstance()
-            .getExternalContext().getRealPath("/resources/");
-    String baseURL = new java.io.File(basePath).toURI().toURL().toString();
+        // Fuente Unicode (opcional)
+        try {
+            String fontsBase = FacesContext.getCurrentInstance()
+                    .getExternalContext().getRealPath("/resources/fonts/");
+            if (fontsBase != null) {
+                renderer.getFontResolver().addFont(
+                        fontsBase + File.separator + "DejaVuSans.ttf",
+                        BaseFont.IDENTITY_H, true
+                );
+            }
+        } catch (Throwable ignore) {
+        }
 
-    // (Opcional) registrar fuente para tildes/Unicode
-    try {
-        renderer.getFontResolver().addFont(
-                basePath + "fonts/DejaVuSans.ttf",
-                com.lowagie.text.pdf.BaseFont.IDENTITY_H,
-                true
+        renderer.setDocumentFromString(xhtml, baseURL);
+        renderer.layout();
+        renderer.createPDF(baos);
+        renderer.finishPDF();
+        return baos.toByteArray();
+    }
+
+    /**
+     * Lee /resources/pdf/PLANTILLA.html y reemplaza {{placeholders}} Inyecta
+     * además los logos MIDENA/IGM como Data URI.
+     */
+    private String construirHtmlDesdePlantilla() throws Exception {
+        // 1) Cargar plantilla y normalizar a XHTML
+        String template = cargarRecursoComoString("PLANTILLA.html");
+        template = normalizarXhtml(template);
+
+        // 2) Fechas
+        Date f = (fechaEmision != null) ? fechaEmision : new Date();
+        SimpleDateFormat yy = new SimpleDateFormat("yyyy");
+        SimpleDateFormat MM = new SimpleDateFormat("MM");
+        SimpleDateFormat dd = new SimpleDateFormat("dd");
+
+        // 3) Checks de aptitud (según aptitudSel)
+        String aApto = "&nbsp;", aObs = "&nbsp;", aLim = "&nbsp;", aNo = "&nbsp;";
+        if (aptitudSel != null) {
+            switch (aptitudSel) {
+                case "APTO":
+                    aApto = "X";
+                    break;
+                case "APTO_EN_OBS":
+                    aObs = "X";
+                    break;
+                case "APTO_LIMIT":
+                    aLim = "X";
+                    break;
+                case "NO_APTO":
+                    aNo = "X";
+                    break;
+            }
+        }
+
+        // 4) Sincronizar tipoEval -> tipoEvaluacion si está vacío
+        if (tipoEval != null && (tipoEvaluacion == null || tipoEvaluacion.isEmpty())) {
+            tipoEvaluacion = tipoEval;
+        }
+
+        // 5) Checks del tipo de evaluación
+        String chkIngreso = "&nbsp;", chkPeriodico = "&nbsp;", chkReintegro = "&nbsp;", chkRetiro = "&nbsp;";
+        if (tipoEvaluacion != null) {
+            switch (tipoEvaluacion.toUpperCase()) {
+                case "INGRESO":
+                    chkIngreso = "X";
+                    break;
+                case "PERIODICO":
+                case "PERIÓDICO":
+                    chkPeriodico = "X";
+                    break;
+                case "REINTEGRO":
+                    chkReintegro = "X";
+                    break;
+                case "RETIRO":
+                    chkRetiro = "X";
+                    break;
+            }
+        }
+
+        // 6) Resolver URLs absolutas de logos (más robusto que data:)
+        String logoIgmUrl = "";
+        String logoMidenaUrl = "";
+        try {
+            logoIgmUrl = FacesContext.getCurrentInstance()
+                    .getExternalContext()
+                    .getResource("/resources/images/LOGO_IGM_FULL_COLOR.png")
+                    .toExternalForm();
+        } catch (Exception ex) {
+            System.err.println("[PDF] No se pudo resolver LOGO_IGM_FULL_COLOR.png: " + ex.getMessage());
+        }
+        try {
+            logoMidenaUrl = FacesContext.getCurrentInstance()
+                    .getExternalContext()
+                    .getResource("/resources/images/logomidena.PNG")
+                    .toExternalForm();
+        } catch (Exception ex) {
+            System.err.println("[PDF] No se pudo resolver LOGO_MIDENA_FULL_COLO.png: " + ex.getMessage());
+        }
+
+        // 7) Mapa de reemplazos {{clave}} -> valor
+        Map<String, String> rep = new LinkedHashMap<>();
+
+        // Logos (tu plantilla usa estos placeholders)
+        rep.put("LOGO_IGM_DATAURI", logoIgmUrl);
+        rep.put("LOGO_MIDENA_DATAURI", logoMidenaUrl);
+
+        // A. Identificación
+        rep.put("institucion", safe(institucion));
+        rep.put("ruc", safe(ruc));
+        rep.put("num_formulario", safe(noHistoria));
+        rep.put("num_archivo", safe(noArchivo));
+        rep.put("centroTrabajo", safe(centroTrabajo));
+        rep.put("ciiu", safe(ciiu));
+
+        // Paciente
+        rep.put("apellido1", safe(apellido1));
+        rep.put("apellido2", safe(apellido2));
+        rep.put("nombre1", safe(nombre1));
+        rep.put("nombre2", safe(nombre2));
+        rep.put("sexo", safe(sexo));
+
+        // Fecha y evaluación
+        rep.put("fecha_yyyy", yy.format(f));
+        rep.put("fecha_MM", MM.format(f));
+        rep.put("fecha_dd", dd.format(f));
+        rep.put("chk_ingreso", chkIngreso);
+        rep.put("chk_periodico", chkPeriodico);
+        rep.put("chk_reintegro", chkReintegro);
+        rep.put("chk_retiro", chkRetiro);
+
+        // Aptitud
+        rep.put("chk_apto", aApto);
+        rep.put("chk_obs", aObs);
+        rep.put("chk_lim", aLim);
+        rep.put("chk_noapto", aNo);
+
+        // Textos libres
+        rep.put("detalleObservaciones", safe(detalleObservaciones));
+        rep.put("recomendaciones", safe(recomendaciones));
+        rep.put("medicoNombre", safe(medicoNombre));
+        rep.put("medicoCodigo", safe(medicoCodigo));
+
+        // 8) Aplicar reemplazos
+        for (Map.Entry<String, String> e : rep.entrySet()) {
+            String key = e.getKey();
+            String val = (e.getValue() == null) ? "" : e.getValue();
+            template = template.replace("{{" + key + "}}", val);
+        }
+
+        return template;
+    }
+
+    /**
+     * Lee un recurso del WAR a String: /resources/pdf/{pathRelativo}
+     */
+    private String cargarRecursoComoString(String pathRelativo) throws IOException {
+        InputStream in = FacesContext.getCurrentInstance()
+                .getExternalContext()
+                .getResourceAsStream("/resources/pdf/" + pathRelativo);
+        if (in == null) {
+            throw new IllegalArgumentException("No se encontró la plantilla: /resources/pdf/" + pathRelativo);
+        }
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8))) {
+            StringBuilder sb = new StringBuilder();
+            String line;
+            while ((line = reader.readLine()) != null) {
+                sb.append(line).append("\n");
+            }
+            return sb.toString();
+        }
+    }
+
+    /**
+     * Normaliza a XHTML por si el archivo trae meta/br sin cierre.
+     */
+    private static String normalizarXhtml(String s) {
+        if (s == null) {
+            return "";
+        }
+        s = s.replaceAll("(?i)<meta\\s+charset\\s*=\\s*\"?utf-8\"?\\s*>",
+                "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\" />");
+        s = s.replaceAll("(?i)<br(\\s*)>", "<br />");
+        s = s.replaceAll("(?i)<hr(\\s*)>", "<hr />");
+        s = s.replaceAll("(?i)<img([^>]*?)(?<!/)>", "<img$1 />");
+        return s;
+    }
+
+    /**
+     * Escape básico para evitar romper XHTML al inyectar texto.
+     */
+    private String safe(String s) {
+        if (s == null) {
+            return "";
+        }
+        return s.replace("&", "&amp;")
+                .replace("<", "&lt;")
+                .replace(">", "&gt;")
+                .replace("\"", "&quot;")
+                .replace("'", "&#39;");
+    }
+
+    public void syncTipoEvaluacion() {
+        this.tipoEvaluacion = this.tipoEval;
+    }
+
+    // --- Utilitario: convierte /resources/... a Data URI (Base64) ---
+    private String dataUriFromResource(String pathFromResources) throws IOException {
+        InputStream in = FacesContext.getCurrentInstance()
+                .getExternalContext()
+                .getResourceAsStream("/resources/" + pathFromResources);
+        if (in == null) {
+            System.err.println("[PDF] No se encontró recurso: /resources/" + pathFromResources);
+            return ""; // no romper el render
+        }
+        byte[] bytes;
+        try (ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
+            byte[] buf = new byte[8192];
+            int r;
+            while ((r = in.read(buf)) != -1) {
+                bos.write(buf, 0, r);
+            }
+            bytes = bos.toByteArray();
+        }
+        String base64 = java.util.Base64.getEncoder().encodeToString(bytes);
+        String mime = "image/png";
+        String lower = pathFromResources.toLowerCase(Locale.ROOT);
+        if (lower.endsWith(".jpg") || lower.endsWith(".jpeg")) {
+            mime = "image/jpeg";
+        } else if (lower.endsWith(".gif")) {
+            mime = "image/gif";
+        }
+        return "data:" + mime + ";base64," + base64;
+    }
+
+    // ===========================================================
+    // AUTOCOMPLETE CIE10 PRINCIPAL
+    // ===========================================================
+    public List<Cie10> completarCie10(String query) {
+        return cie10Service.buscarPorCodigoODescripcion(query);
+    }
+    // Autocomplete para el campo de CÓDIGO
+
+// ======================
+// AUTOCOMPLETE CIE10
+// ======================
+    public List<String> completarCie10PorCodigo(String query) {
+        List<String> codigos = new ArrayList<>();
+
+        if (query == null) {
+            return codigos;
+        }
+
+        String q = query.trim().toUpperCase();
+        if (q.isEmpty()) {
+            return codigos;
+        }
+
+        // Puedes seguir usando el mismo servicio general...
+        List<Cie10> lista = cie10Service.buscarJerarquiaPorTerm(q);
+
+        for (Cie10 c : lista) {
+            if (c != null && c.getCodigo() != null) {
+                String cod = c.getCodigo().toUpperCase();
+
+                // FILTRO SOLO POR CÓDIGO
+                // si quieres "contenga":
+                // if (cod.contains(q)) {
+                // si quieres "empieza por":
+                if (cod.startsWith(q)) {
+                    codigos.add(c.getCodigo());
+                }
+            }
+        }
+
+        return codigos;
+    }
+
+    public List<String> completarCie10PorDescripcion(String query) {
+        List<String> descripciones = new ArrayList<String>();
+
+        if (query == null || query.trim().isEmpty()) {
+            return descripciones;
+        }
+
+        // Igual: busca tanto por código como por descripción
+        List<Cie10> lista = cie10Service.buscarPorCodigoODescripcion(query);
+
+        for (Cie10 c : lista) {
+            if (c != null && c.getDescripcion() != null) {
+                descripciones.add(c.getDescripcion());
+            }
+        }
+
+        return descripciones;
+    }
+
+    // Cuando el usuario selecciona un CÓDIGO desde el autocomplete
+    public void onCie10CodigoSelect(SelectEvent event) {
+        String codigo = (String) event.getObject();
+        this.codCie10Ppal = codigo;
+
+        if (codigo != null && !codigo.trim().isEmpty()) {
+            Cie10 cie = cie10Service.buscarPorCodigo(codigo.trim());
+            if (cie != null) {
+                this.descCie10Ppal = cie.getDescripcion();
+            } else {
+                this.descCie10Ppal = null;
+            }
+        } else {
+            this.descCie10Ppal = null;
+        }
+    }
+
+    // Cuando escribe el código y solo da ENTER/TAB (sale del campo)
+    public void onCie10CodigoBlur() {
+        if (this.codCie10Ppal != null && !this.codCie10Ppal.trim().isEmpty()) {
+            Cie10 cie = cie10Service.buscarPorCodigo(this.codCie10Ppal.trim());
+            if (cie != null) {
+                this.descCie10Ppal = cie.getDescripcion();
+            } else {
+                this.descCie10Ppal = null;
+            }
+        } else {
+            this.descCie10Ppal = null;
+        }
+    }
+
+    // Cuando el usuario selecciona una DESCRIPCIÓN desde el autocomplete
+    public void onCie10DescripcionSelect(SelectEvent event) {
+        String descripcion = (String) event.getObject();
+        this.descCie10Ppal = descripcion;
+
+        if (descripcion != null && !descripcion.trim().isEmpty()) {
+            Cie10 cie = cie10Service.buscarPrimeroPorDescripcion(descripcion.trim());
+            if (cie != null) {
+                this.codCie10Ppal = cie.getCodigo();
+            } else {
+                this.codCie10Ppal = null;
+            }
+        } else {
+            this.codCie10Ppal = null;
+        }
+    }
+
+    // Cuando escribe la descripción y solo da ENTER/TAB
+    public void onCie10DescripcionBlur() {
+        if (this.descCie10Ppal != null && !this.descCie10Ppal.trim().isEmpty()) {
+            Cie10 cie = cie10Service.buscarPrimeroPorDescripcion(this.descCie10Ppal.trim());
+            if (cie != null) {
+                this.codCie10Ppal = cie.getCodigo();
+            } else {
+                this.codCie10Ppal = null;
+            }
+        } else {
+            this.codCie10Ppal = null;
+        }
+    }
+
+    public void onCie10SelectCodigo(int index) {
+        if (listaDiag == null || index < 0 || index >= listaDiag.size()) {
+            return;
+        }
+
+        ConsultaDiagnostico diag = listaDiag.get(index);
+        String codigo = diag.getCodigo();
+
+        if (codigo == null || codigo.trim().isEmpty()) {
+            diag.setDescripcion(null);
+            return;
+        }
+
+        Cie10 cie = cie10Service.buscarPorCodigo(codigo.trim());
+        if (cie != null) {
+            diag.setDescripcion(cie.getDescripcion());
+        } else {
+            diag.setDescripcion(null);
+        }
+    }
+
+    public void onCie10SelectDescripcion(int index) {
+        if (listaDiag == null || index < 0 || index >= listaDiag.size()) {
+            return;
+        }
+
+        ConsultaDiagnostico diag = listaDiag.get(index);
+        String desc = diag.getDescripcion();
+
+        if (desc == null || desc.trim().isEmpty()) {
+            diag.setCodigo(null);
+            return;
+        }
+
+        Cie10 cie = cie10Service.buscarPrimeroPorDescripcion(desc.trim());
+        if (cie != null) {
+            diag.setCodigo(cie.getCodigo());
+        } else {
+            diag.setCodigo(null);
+        }
+    }
+
+// TAB / ENTER en campo DESCRIPCIÓN
+    public void onCie10BlurDescripcion(int index) {
+        onCie10SelectDescripcion(index);
+    }
+
+    public void abrirPersonaAuxManual() {
+        if (personaAux == null) {
+            personaAux = new PersonaAux();
+        }
+        // Si ya escribió una cédula en el popup, la reutilizamos
+        if (cedulaBusqueda != null && (personaAux.getCedula() == null || personaAux.getCedula().isEmpty())) {
+            personaAux.setCedula(cedulaBusqueda.trim());
+        }
+        mostrarDialogoAux = true;
+        PrimeFaces.current().executeScript("PF('dlgPersonaAux').show();");
+    }
+
+    public void buscarCedula() {
+        FacesContext ctx = FacesContext.getCurrentInstance();
+
+        // Siempre reseteamos el flag antes de empezar
+        permitirIngresoManual = false;
+
+        // Validación básica de entrada
+        if (cedulaBusqueda == null || cedulaBusqueda.trim().isEmpty()) {
+            ctx.addMessage(null, new FacesMessage(
+                    FacesMessage.SEVERITY_WARN,
+                    "Búsqueda",
+                    "Ingrese una cédula para realizar la búsqueda."
+            ));
+            return;
+        }
+
+        String cedula = cedulaBusqueda.trim();
+
+        try {
+            // ==== BÚSQUEDA EN RRHH ====
+            DatEmpleado emp = empleadoService.buscarPorCedula(cedula);
+
+            if (emp != null) {
+                // ==============================
+                // 1) EMPLEADO ENCONTRADO
+                // ==============================
+
+                // Cargar datos básicos en la ficha
+                // Ajusta estos getters a los que tenga realmente tu DatEmpleado
+                this.apellido1 = emp.getPriApellido();
+                this.apellido2 = emp.getSegApellido();
+                this.nombre1 = emp.getNombres();   // si luego quieres separar, lo haces aparte
+
+                // Sexo: DatEmpleado.sexo es enum Sexo -> convertimos a "M"/"F"
+                this.sexo = (emp.getSexo() != null ? emp.getSexo().getCodigo() : null);
+
+                // Si quieres también poner la cédula en algún campo de la ficha, hazlo aquí
+                // this.cedulaPaciente = cedula; // solo si tienes ese atributo
+                // Si quieres calcular la edad a partir de una fecha de nacimiento:
+                // (solo descomenta si sabes cómo se llama el getter de la fecha)
+                /*
+            Date fn = emp.getFechaNacimiento(); // ajusta nombre del getter
+            if (fn != null) {
+                this.fechaNacimiento = fn;
+                Calendar hoy = Calendar.getInstance();
+                Calendar nac = Calendar.getInstance();
+                nac.setTime(fn);
+                int age = hoy.get(Calendar.YEAR) - nac.get(Calendar.YEAR);
+                if (hoy.get(Calendar.DAY_OF_YEAR) < nac.get(Calendar.DAY_OF_YEAR)) {
+                    age--;
+                }
+                this.edad = age;
+            }
+                 */
+                // Ocultamos diálogo de cédula, no se necesita ingreso manual
+                mostrarDlgCedula = false;
+                permitirIngresoManual = false;
+
+                ctx.addMessage(null, new FacesMessage(
+                        FacesMessage.SEVERITY_INFO,
+                        "Búsqueda",
+                        "Se cargó la información del empleado desde RRHH."
+                ));
+
+            } else {
+                // ==============================
+                // 2) NO SE ENCONTRÓ → INGRESO MANUAL
+                // ==============================
+                ctx.addMessage(null, new FacesMessage(
+                        FacesMessage.SEVERITY_WARN,
+                        "Búsqueda",
+                        "No se encontró la cédula en RRHH. Puede ingresarla manualmente."
+                ));
+
+                if (personaAux == null) {
+                    personaAux = new PersonaAux();
+                }
+
+                // Prellenamos la cédula en el DTO auxiliar
+                personaAux.setCedula(cedula);
+                // Los demás campos se completan en el diálogo (nombres, apellidos, etc.)
+                personaAux.setNombres(null);
+                personaAux.setApellidos(null);
+                personaAux.setSexo(null);
+                personaAux.setFechaNac(null);
+
+                // Seguimos mostrando el diálogo y habilitamos el botón "Ingresar manualmente"
+                mostrarDlgCedula = true;
+                permitirIngresoManual = true;
+            }
+
+        } catch (Exception e) {
+            permitirIngresoManual = false;
+            mostrarDlgCedula = true;
+
+            ctx.addMessage(null, new FacesMessage(
+                    FacesMessage.SEVERITY_ERROR,
+                    "Error",
+                    "Ocurrió un error al buscar la cédula. Intente nuevamente."
+            ));
+            e.printStackTrace();
+        }
+    }
+
+    public boolean isMostrarDlgCedula() {
+        return mostrarDlgCedula;
+    }
+
+    public void setMostrarDlgCedula(boolean mostrarDlgCedula) {
+        this.mostrarDlgCedula = mostrarDlgCedula;
+    }
+
+    public void guardarPersonaAuxYUsar() {
+        FacesContext ctx = FacesContext.getCurrentInstance();
+
+        if (personaAux == null) {
+            ctx.addMessage(null, new FacesMessage(
+                    FacesMessage.SEVERITY_ERROR,
+                    "Ingreso manual",
+                    "No hay datos de persona para guardar.")
+            );
+            ctx.validationFailed();
+            return;
+        }
+
+        // === Validaciones básicas ===
+        boolean error = false;
+
+        if (isBlank(personaAux.getCedula())) {
+            ctx.addMessage(null, new FacesMessage(
+                    FacesMessage.SEVERITY_WARN,
+                    "Ingreso manual",
+                    "La cédula es obligatoria.")
+            );
+            error = true;
+        }
+
+        if (isBlank(personaAux.getNombres())) {
+            ctx.addMessage(null, new FacesMessage(
+                    FacesMessage.SEVERITY_WARN,
+                    "Ingreso manual",
+                    "Los nombres son obligatorios.")
+            );
+            error = true;
+        }
+
+        if (isBlank(personaAux.getApellidos())) {
+            ctx.addMessage(null, new FacesMessage(
+                    FacesMessage.SEVERITY_WARN,
+                    "Ingreso manual",
+                    "Los apellidos son obligatorios.")
+            );
+            error = true;
+        }
+
+        if (personaAux.getSexo() == null) {
+            ctx.addMessage(null, new FacesMessage(
+                    FacesMessage.SEVERITY_WARN,
+                    "Ingreso manual",
+                    "Debe seleccionar el sexo.")
+            );
+            error = true;
+        }
+
+        if (personaAux.getFechaNac() == null) {
+            ctx.addMessage(null, new FacesMessage(
+                    FacesMessage.SEVERITY_WARN,
+                    "Ingreso manual",
+                    "La fecha de nacimiento es obligatoria.")
+            );
+            error = true;
+        }
+
+        if (error) {
+            ctx.validationFailed();
+            return;
+        }
+
+        // ==========================
+        // Mapear a la FICHA (como RRHH)
+        // ==========================
+        // 1) Separar apellidos en apellido1 / apellido2
+        String[] aps = splitEnDos(personaAux.getApellidos());
+        this.apellido1 = aps[0];
+        this.apellido2 = aps[1];
+
+        // 2) Separar nombres en nombre1 / nombre2
+        String[] noms = splitEnDos(personaAux.getNombres());
+        this.nombre1 = noms[0];
+        this.nombre2 = noms[1];
+
+        // 3) Sexo: enum Sexo -> "M" / "F" para el radio de la ficha
+        if (personaAux.getSexo() != null) {
+            this.sexo = personaAux.getSexo();  // "M" o "F"
+        } else {
+            this.sexo = null;
+        }
+
+        // 4) Fecha de nacimiento y edad
+        this.fechaNacimiento = personaAux.getFechaNac();
+
+        if (this.fechaNacimiento != null) {
+            Calendar hoy = Calendar.getInstance();
+            Calendar nac = Calendar.getInstance();
+            nac.setTime(this.fechaNacimiento);
+
+            int age = hoy.get(Calendar.YEAR) - nac.get(Calendar.YEAR);
+            if (hoy.get(Calendar.DAY_OF_YEAR) < nac.get(Calendar.DAY_OF_YEAR)) {
+                age--;
+            }
+            this.edad = age;
+        }
+
+        // 5) Relacionar con la entidad ficha si corresponde
+        if (this.ficha != null) {
+            this.ficha.setPersonaAux(personaAux);
+        }
+
+        // Flags de diálogos
+        mostrarDlgCedula = false;
+        permitirIngresoManual = false;
+
+        ctx.addMessage(null, new FacesMessage(
+                FacesMessage.SEVERITY_INFO,
+                "Ingreso manual",
+                "Los datos se cargaron en la ficha correctamente.")
         );
-    } catch (Throwable ignore) {
-        // si no pones la fuente, no se cae
     }
 
-    renderer.setDocumentFromString(xhtml, baseURL);
-    renderer.layout();
-    renderer.createPDF(baos);
-    renderer.finishPDF();
-    return baos.toByteArray();
-}
+    /**
+     * Separa un texto en dos partes: - [0] = primera palabra - [1] = resto (o
+     * null si no hay resto) Ej: "Guerra Kleber" -> ["Guerra", "Kleber"] "De la
+     * Cruz López" -> ["De", "la Cruz López"]
+     */
+    private String[] splitEnDos(String valor) {
+        String res1 = null;
+        String res2 = null;
 
+        if (!isBlank(valor)) {
+            String trimmed = valor.trim();
+            String[] partes = trimmed.split("\\s+");
+            if (partes.length == 1) {
+                res1 = partes[0];
+            } else if (partes.length > 1) {
+                res1 = partes[0];
+                // el resto tal cual, sin perder lo que el usuario escribió
+                StringBuilder sb = new StringBuilder();
+                for (int i = 1; i < partes.length; i++) {
+                    if (i > 1) {
+                        sb.append(' ');
+                    }
+                    sb.append(partes[i]);
+                }
+                res2 = sb.toString();
+            }
+        }
 
-   /** Carga plantilla /resources/pdf/PLANTILLA.html y reemplaza {{placeholders}} */
-private String construirHtmlDesdePlantilla() throws Exception {
-    String template = cargarRecursoComoString("/resources/pdf/PLANTILLA.html");
-
-    java.util.Date f = (fechaEmision != null) ? fechaEmision : new java.util.Date();
-    java.text.SimpleDateFormat yy = new java.text.SimpleDateFormat("yyyy");
-    java.text.SimpleDateFormat MM = new java.text.SimpleDateFormat("MM");
-    java.text.SimpleDateFormat dd = new java.text.SimpleDateFormat("dd");
-
-    String checkApto = apto ? "X" : "&nbsp;";
-    String checkObs  = aptoObservacion ? "X" : "&nbsp;";
-    String checkLim  = aptoLimitaciones ? "X" : "&nbsp;";
-    String checkNo   = noApto ? "X" : "&nbsp;";
-
-    java.util.Map replacements = new java.util.LinkedHashMap();
-    // A. Identificación
-    replacements.put("institucion",      safe(institucion));
-    replacements.put("ruc",              safe(ruc));
-    replacements.put("num_formulario",   safe(noHistoria));
-    replacements.put("num_archivo",      safe(noArchivo));
-
-    // Paciente
-    replacements.put("apellido1",        safe(apellido1));
-    replacements.put("apellido2",        safe(apellido2));
-    replacements.put("nombre1",          safe(nombre1));
-    replacements.put("nombre2",          safe(nombre2));
-    replacements.put("sexo",             safe(sexo));
-
-    // Tipo evaluación / fecha
-    replacements.put("tipo_eval",        safe(tipoEvaluacion));
-    replacements.put("fecha_yyyy",       yy.format(f));
-    replacements.put("fecha_MM",         MM.format(f));
-    replacements.put("fecha_dd",         dd.format(f));
-
-    // Aptitud
-    replacements.put("chk_apto",         checkApto);
-    replacements.put("chk_obs",          checkObs);
-    replacements.put("chk_lim",          checkLim);
-    replacements.put("chk_noapto",       checkNo);
-
-    // Observaciones / recomendaciones / médico
-    replacements.put("obs_detalle",      safe(detalleObservaciones));
-    replacements.put("recomendaciones",  safe(recomendaciones));
-    replacements.put("medico_nombre",    safe(medicoNombre));
-    replacements.put("medico_codigo",    safe(medicoCodigo));
-
-    // Reemplazo simple {{clave}} -> valor
-    java.util.Iterator it = replacements.entrySet().iterator();
-    while (it.hasNext()) {
-        java.util.Map.Entry e = (java.util.Map.Entry) it.next();
-        String key = (String) e.getKey();
-        String val = (String) e.getValue();
-        template = template.replace("{{" + key + "}}", (val == null ? "" : val));
+        return new String[]{res1, res2};
     }
-    return template;
-}
 
-   /** Lee un recurso del classpath a String (JSF/GlassFish friendly) */
-private String cargarRecursoComoString(String path) throws Exception {
-    java.io.InputStream in = null;
-    try {
-        // 1) Class loader normal
-        in = this.getClass().getResourceAsStream(path);
-        if (in == null) {
-            // 2) ContextClassLoader (algunos contenedores)
-            in = Thread.currentThread().getContextClassLoader()
-                    .getResourceAsStream(path.startsWith("/") ? path.substring(1) : path);
-        }
-        if (in == null) {
-            throw new IllegalArgumentException("No se encontró la plantilla: " + path);
-        }
-        StringBuilder sb = new StringBuilder();
-        byte[] buf = new byte[4096];
-        int r;
-        while ((r = in.read(buf)) != -1) {
-            sb.append(new String(buf, 0, r, "UTF-8"));
-        }
-        return sb.toString();
-    } finally {
-        if (in != null) try { in.close(); } catch (Exception ignore) {}
+    /**
+     * Habilita el ingreso manual de datos cuando no existe empleado en RRHH. Se
+     * invoca desde el botón "Ingreso manual" en la vista.
+     */
+    public void prepararIngresoManual() {
+        // Inicializa el objeto auxiliar
+        this.personaAux = new PersonaAux();
+
+        // Marca que se permite el ingreso manual
+        this.permitirIngresoManual = true;
+
+        // Muestra el diálogo auxiliar en la UI
+        this.mostrarDialogoAux = true;
+
+        // Limpia datos básicos para que el usuario los ingrese
+        this.apellido1 = "";
+        this.apellido2 = "";
+        this.nombre1 = "";
+        this.nombre2 = "";
+        this.sexo = "";
+        this.fechaNacimiento = null;
+
+        // Mensaje informativo en la interfaz
+        FacesContext.getCurrentInstance().addMessage(null,
+                new FacesMessage(FacesMessage.SEVERITY_INFO,
+                        "Ingreso manual habilitado",
+                        "Ahora puede ingresar los datos del paciente manualmente."));
     }
-}
 
-
-/** Escape básico para evitar romper XHTML al inyectar texto */
-private static String safe(String s) {
-    if (s == null) return "";
-    return s.replace("&","&amp;").replace("<","&lt;").replace(">","&gt;");
-}
 }

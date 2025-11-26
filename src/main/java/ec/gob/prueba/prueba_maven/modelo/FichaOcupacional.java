@@ -15,6 +15,8 @@ import lombok.*;
 import javax.persistence.*;
 import java.io.Serializable;
 import java.util.Date;
+import ec.gob.prueba.prueba_maven.modelo.PersonaAux;
+
 
 @Entity
 @Table(name = "FICHA_OCUPACIONAL", schema = "CONSULTORIO")
@@ -48,6 +50,11 @@ public class FichaOcupacional implements Serializable {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "COD_CIE10_PPAL", referencedColumnName = "CODIGO")
     private Cie10 cie10Principal;
+    
+        @ManyToOne
+    @JoinColumn(name = "ID_PERSONA_AUX")
+    private PersonaAux personaAux;
+
 
     // ==== Campos de la tabla ====
 

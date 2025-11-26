@@ -7,7 +7,109 @@
 
     <ui:define name="title">Evaluación Médica Ocupacional</ui:define>
 
-    <ui:define name="content">
+    
+<p:outputPanel>
+    <p:remoteCommand name="mostrarDialogoCedula"
+                     onstart="PF('dlgCedula').show()"
+                     autoRun="true"
+                     rendered="#{centroMedicoCtrl.mostrarDlgCedula}" />
+</p:outputPanel>
+
+<ui:define name="content">
+
+    <!-- DIALOGO BUSCAR CEDULA -->
+<p:dialog id="dlgCedula"
+          widgetVar="dlgCedula"
+          modal="true"
+          header="Buscar por cédula"
+          closable="false"
+          visible="#{centroMedicoCtrl.mostrarDlgCedula}">
+
+    <p:messages id="msgCedula" autoUpdate="true" closable="true"/>
+
+    <h:panelGrid columns="2" columnClasses="etq, val">
+        <h:outputLabel for="cedula" value="Cédula:"/>
+        <p:inputText id="cedula"
+                     value="#{centroMedicoCtrl.cedulaBusqueda}"
+                     maxlength="10"/>
+
+        <!-- Botón BUSCAR -->
+        <h:outputText/>
+        <p:commandButton value="Buscar"
+                         actionListener="#{centroMedicoCtrl.buscarCedula}"
+                         process="@form"
+                         update="@form"/>
+
+        <!-- Botón INGRESAR MANUALMENTE -->
+        <h:outputText/>
+        <h:panelGroup rendered="#{centroMedicoCtrl.permitirIngresoManual}">
+            <p:commandButton value="Ingresar manualmente"
+                             icon="pi pi-user-plus"
+                             actionListener="#{centroMedicoCtrl.prepararIngresoManual}"
+                             process="@this"
+                             update=":layoutForm:dlgPersonaAux"
+                             oncomplete="if (!args.validationFailed) PF('dlgPersonaAux').show();"/>
+        </h:panelGroup>
+    </h:panelGrid>
+</p:dialog>
+
+
+    <!-- DIALOGO PERSONA AUXILIAR -->
+    <p:dialog id="dlgPersonaAux"
+              widgetVar="dlgPersonaAux"
+              header="Ingreso manual de datos"
+              modal="true"
+              closable="true"
+              resizable="false"
+              appendTo="@(body)">
+
+        <p:messages id="msgPersonaAux" autoUpdate="true" closable="true"/>
+
+        <h:panelGrid columns="2" columnClasses="etq, val">
+            <h:outputLabel value="Cédula:" for="cedAuxCed"/>
+            <p:inputText id="cedAuxCed"
+                         value="#{centroMedicoCtrl.personaAux.cedula}"
+                         maxlength="10"
+                         readonly="true"/>
+
+            <h:outputLabel value="Nombres:" for="nombresAux"/>
+            <p:inputText id="nombresAux"
+                         value="#{centroMedicoCtrl.personaAux.nombres}"
+                         maxlength="100"/>
+
+            <h:outputLabel value="Apellidos:" for="apellidosAux"/>
+            <p:inputText id="apellidosAux"
+                         value="#{centroMedicoCtrl.personaAux.apellidos}"
+                         maxlength="100"/>
+
+            <h:outputLabel value="Sexo:" for="sexoAux"/>
+            <p:selectOneMenu id="sexoAux"
+                             value="#{centroMedicoCtrl.personaAux.sexo}">
+                <f:selectItem itemLabel="-- Seleccione --" itemValue="#{null}"/>
+                <f:selectItem itemLabel="Masculino" itemValue="M"/>
+                <f:selectItem itemLabel="Femenino" itemValue="F"/>
+            </p:selectOneMenu>
+
+            <h:outputLabel value="Fecha nacimiento:" for="fecNacAux"/>
+            <p:calendar id="fecNacAux"
+                        value="#{centroMedicoCtrl.personaAux.fechaNac}"
+                        pattern="dd/MM/yyyy"
+                        navigator="true"
+                        yearRange="1900:#{centerBean.fechaActual.year}"/>
+        </h:panelGrid>
+
+        <p:separator/>
+
+        <p:commandButton value="Guardar y usar en ficha"
+                         actionListener="#{centroMedicoCtrl.guardarPersonaAuxYUsar}"
+                         process="@form"
+                         update="@form"
+                         oncomplete="if (!args.validationFailed) { PF('dlgPersonaAux').hide(); PF('dlgCedula').hide(); }"/>
+    </p:dialog>
+
+
+
+
         <!-- igm.css se carga en el template. Aquí sólo iconos -->
         <h:outputStylesheet library="primefaces" name="primeicons/primeicons.css"/>
 
@@ -1301,18 +1403,41 @@
 
         </p:wizard>
 
+        
         <!-- ======================== -->
         <!-- Barra de navegación UI   -->
         <!-- ======================== -->
         <p:toolbar styleClass="mt-3">
             <p:toolbarGroup>
-                <p:commandButton value="Anterior" type="button" icon="pi pi-angle-left"
-                                 onclick="PF('wiz').back();" process="@this" update=":layoutForm"/>
+
+                <!-- ANTERIOR: solo mueve el step en el bean y en el wizard -->
+                <p:commandButton value="Anterior" icon="pi pi-angle-left"
+                                 actionListener="#{centroMedicoCtrl.retrocederStep}"
+                                 process="@this"
+                                 update=":layoutForm"
+                                 oncomplete="PF('wiz').back();"/>
+
                 <p:spacer width="8"/>
-                <p:commandButton value="Siguiente" type="button" icon="pi pi-angle-right"
-                                 onclick="PF('wiz').next();" process="@this" update=":layoutForm"/>
+
+                <!-- SIGUIENTE: guarda el step actual y si todo va bien avanza     -->
+                <p:commandButton value="Siguiente" icon="pi pi-angle-right"
+                                 actionListener="#{centroMedicoCtrl.guardarStepActual}"
+                                 process=":layoutForm"
+                                 update=":layoutForm"
+                                 oncomplete="if (!args.validationFailed) PF('wiz').next();"/>
+
+
+
             </p:toolbarGroup>
         </p:toolbar>
+ 
 
+<h:outputScript target="body">
+    PrimeFaces.ready(function() {
+        if (#{centroMedicoCtrl.mostrarDlgCedula}) {
+            PF('dlgCedula').show();
+        }
+    });
+</h:outputScript>
     </ui:define>
 </ui:composition>

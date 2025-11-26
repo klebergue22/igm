@@ -52,5 +52,19 @@ public class EmpleadoService {
         DatEmpleado e = em.find(DatEmpleado.class, noPersona);
         if (e != null) em.remove(e);
     }
+        public DatEmpleado buscarPorCedula(String cedula) {
+        if (cedula == null || cedula.trim().isEmpty()) {
+            return null;
+        }
+
+        List<DatEmpleado> lista = em.createQuery(
+                        "SELECT e FROM DatEmpleado e WHERE e.noCedula = :ced",
+                        DatEmpleado.class)
+                .setParameter("ced", cedula.trim())
+                .setMaxResults(1)
+                .getResultList();
+
+        return lista.isEmpty() ? null : lista.get(0);
+    }
     
 }
