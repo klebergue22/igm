@@ -55,57 +55,80 @@
 
 
     <!-- DIALOGO PERSONA AUXILIAR -->
-    <p:dialog id="dlgPersonaAux"
-              widgetVar="dlgPersonaAux"
-              header="Ingreso manual de datos"
-              modal="true"
-              closable="true"
-              resizable="false"
-              appendTo="@(body)">
+<p:dialog id="dlgPersonaAux"
+          widgetVar="dlgPersonaAux"
+          header="Ingreso manual de datos"
+          modal="true"
+          closable="true"
+          resizable="false"
+          appendTo="@(body)">
 
-        <p:messages id="msgPersonaAux" autoUpdate="true" closable="true"/>
+    <p:messages id="msgPersonaAux" autoUpdate="true" closable="true"/>
 
-        <h:panelGrid columns="2" columnClasses="etq, val">
-            <h:outputLabel value="Cédula:" for="cedAuxCed"/>
-            <p:inputText id="cedAuxCed"
-                         value="#{centroMedicoCtrl.personaAux.cedula}"
-                         maxlength="10"
-                         readonly="true"/>
+    <!-- FORMULARIO SIMPLE: 2 columnas (label + campo) -->
+    <h:panelGrid id="gridManual"
+                 columns="2"
+                 columnClasses="col-label-man,col-field-man"
+                 styleClass="grid-manual">
 
-            <h:outputLabel value="Nombres:" for="nombresAux"/>
-            <p:inputText id="nombresAux"
-                         value="#{centroMedicoCtrl.personaAux.nombres}"
-                         maxlength="100"/>
+        <h:outputLabel for="cedManual" value="Cédula:"/>
+        <p:inputText id="cedManual"
+                     value="#{centroMedicoCtrl.personaAux.cedula}"
+                     maxlength="10"
+                     styleClass="w100"/>
 
-            <h:outputLabel value="Apellidos:" for="apellidosAux"/>
-            <p:inputText id="apellidosAux"
-                         value="#{centroMedicoCtrl.personaAux.apellidos}"
-                         maxlength="100"/>
+        <h:outputLabel for="ap1" value="Primer apellido:"/>
+        <p:inputText id="ap1"
+                     value="#{centroMedicoCtrl.personaAux.apellido1}"
+                     styleClass="w100"/>
 
-            <h:outputLabel value="Sexo:" for="sexoAux"/>
-            <p:selectOneMenu id="sexoAux"
-                             value="#{centroMedicoCtrl.personaAux.sexo}">
-                <f:selectItem itemLabel="-- Seleccione --" itemValue="#{null}"/>
-                <f:selectItem itemLabel="Masculino" itemValue="M"/>
-                <f:selectItem itemLabel="Femenino" itemValue="F"/>
-            </p:selectOneMenu>
+        <h:outputLabel for="ap2" value="Segundo apellido:"/>
+        <p:inputText id="ap2"
+                     value="#{centroMedicoCtrl.personaAux.apellido2}"
+                     styleClass="w100"/>
 
-            <h:outputLabel value="Fecha nacimiento:" for="fecNacAux"/>
-            <p:calendar id="fecNacAux"
-                        value="#{centroMedicoCtrl.personaAux.fechaNac}"
-                        pattern="dd/MM/yyyy"
-                        navigator="true"
-                        yearRange="1900:#{centerBean.fechaActual.year}"/>
-        </h:panelGrid>
+        <h:outputLabel for="nom1" value="Primer nombre:"/>
+        <p:inputText id="nom1"
+                     value="#{centroMedicoCtrl.personaAux.nombre1}"
+                     styleClass="w100"/>
 
-        <p:separator/>
+        <h:outputLabel for="nom2" value="Segundo nombre:"/>
+        <p:inputText id="nom2"
+                     value="#{centroMedicoCtrl.personaAux.nombre2}"
+                     styleClass="w100"/>
 
-        <p:commandButton value="Guardar y usar en ficha"
-                         actionListener="#{centroMedicoCtrl.guardarPersonaAuxYUsar}"
-                         process="@form"
-                         update="@form"
-                         oncomplete="if (!args.validationFailed) { PF('dlgPersonaAux').hide(); PF('dlgCedula').hide(); }"/>
-    </p:dialog>
+        <h:outputLabel for="sexoManual" value="Sexo:"/>
+        <p:selectOneMenu id="sexoManual"
+                         value="#{centroMedicoCtrl.personaAux.sexo}"
+                         styleClass="w100">
+            <f:selectItem itemLabel="-- Seleccione --" itemValue="#{null}"/>
+            <f:selectItem itemLabel="Masculino" itemValue="M"/>
+            <f:selectItem itemLabel="Femenino" itemValue="F"/>
+        </p:selectOneMenu>
+
+        <h:outputLabel for="fnManual" value="Fecha nacimiento:"/>
+        <p:calendar id="fnManual"
+                    value="#{centroMedicoCtrl.personaAux.fechaNac}"
+                    pattern="dd/MM/yyyy"
+                    navigator="true"
+                     yearRange="1900:#{centerBean.fechaActual.year}"
+                    styleClass="w100"/>
+    </h:panelGrid>
+
+    <p:separator/>
+
+    <p:commandButton value="GUARDAR Y USAR EN FICHA"
+                     actionListener="#{centroMedicoCtrl.guardarPersonaAuxYUsar}"
+                     process="@form"
+                     update="@form"
+                     style="width:100%;"/>
+
+</p:dialog>
+
+
+
+
+
 
 
 

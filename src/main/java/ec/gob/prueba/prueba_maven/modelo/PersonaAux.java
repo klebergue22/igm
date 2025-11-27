@@ -9,9 +9,6 @@ package ec.gob.prueba.prueba_maven.modelo;
  *
  * @author GUERRA_KLEBER
  */
- 
- 
-
 import lombok.Getter;
 import lombok.Setter;
 
@@ -25,13 +22,16 @@ import java.util.Date;
 @Table(name = "PERSONA_AUX", schema = "CONSULTORIO")
 @NamedQueries({
     @NamedQuery(name = "PersonaAux.findAll",
-            query = "SELECT p FROM PersonaAux p ORDER BY p.idPersonaAux"),
+            query = "SELECT p FROM PersonaAux p ORDER BY p.idPersonaAux")
+    ,
 
     @NamedQuery(name = "PersonaAux.findByCedula",
-            query = "SELECT p FROM PersonaAux p WHERE p.cedula = :cedula"),
+            query = "SELECT p FROM PersonaAux p WHERE p.cedula = :cedula")
+    ,
 
     @NamedQuery(name = "PersonaAux.findPendientes",
-            query = "SELECT p FROM PersonaAux p WHERE p.estado = 'PENDIENTE'"),
+            query = "SELECT p FROM PersonaAux p WHERE p.estado = 'PENDIENTE'")
+    ,
 
     @NamedQuery(name = "PersonaAux.findVinculados",
             query = "SELECT p FROM PersonaAux p WHERE p.estado = 'VINCULADO'")
@@ -118,16 +118,28 @@ public class PersonaAux implements Serializable {
 
         // NOMBRES = nombre1 + nombre2
         StringBuilder nom = new StringBuilder();
-        if (nombre1 != null) nom.append(nombre1);
-        if (nombre2 != null && !nombre2.isEmpty())
+        if (nombre1 != null) {
+            nom.append(nombre1);
+        }
+        if (nombre2 != null && !nombre2.isEmpty()) {
             nom.append(" ").append(nombre2);
+        }
         this.nombres = nom.toString().trim();
 
         // APELLIDOS = apellido1 + apellido2
         StringBuilder ape = new StringBuilder();
-        if (apellido1 != null) ape.append(apellido1);
-        if (apellido2 != null && !apellido2.isEmpty())
+        if (apellido1 != null) {
+            ape.append(apellido1);
+        }
+        if (apellido2 != null && !apellido2.isEmpty()) {
             ape.append(" ").append(apellido2);
+        }
         this.apellidos = ape.toString().trim();
     }
+
+    @Override
+    public String toString() {
+        return "PersonaAux{" + "idPersonaAux=" + idPersonaAux + ", cedula=" + cedula + ", apellido1=" + apellido1 + ", apellido2=" + apellido2 + ", nombre1=" + nombre1 + ", nombre2=" + nombre2 + ", nombres=" + nombres + ", apellidos=" + apellidos + ", sexo=" + sexo + ", fechaNac=" + fechaNac + ", noPersona=" + noPersona + ", estado=" + estado + ", fechaCreacion=" + fechaCreacion + ", usrCreacion=" + usrCreacion + ", fechaActualizacion=" + fechaActualizacion + ", usrActualizacion=" + usrActualizacion + '}';
+    }
+
 }
