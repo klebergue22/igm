@@ -51,6 +51,11 @@ public class ConsultaMedica implements Serializable {
 
     @Column(name = "EXAMEN_FISICO", length = 2000)
     private String examenFisico;
+    
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "ID_SIGNOS")
+    private SignosVitales signos;
+
 
     @Column(name = "TEMPERATURA_C", precision = 4, scale = 1)
     private Double temperaturaC;
@@ -78,6 +83,10 @@ public class ConsultaMedica implements Serializable {
 
     @Column(name = "MEDICO_CODIGO", length = 50)
     private String medicoCodigo;
+    
+    @Column(name = "ESTADO", length = 20)
+private String estado;
+
 
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "F_CREACION")
@@ -95,4 +104,5 @@ public class ConsultaMedica implements Serializable {
 
     @OneToMany(mappedBy = "consulta", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ConsultaDiagnostico> diagnosticos;
+    
 }

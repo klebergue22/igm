@@ -6,13 +6,10 @@
 package ec.gob.prueba.prueba_maven.modelo;
 
 /**
- *
- * @author GUERRA_KLEBER
- */
-/*
  * Ficha de riesgos laborales (Step 2)
+ *
+ * Tabla: CONSULTORIO.FICHA_RIESGO
  */
-
 
 import lombok.*;
 import javax.persistence.*;
@@ -31,9 +28,9 @@ public class FichaRiesgo implements Serializable {
 
     @Id
     @SequenceGenerator(
-            name = "FICHA_RIESGO_GEN",
-            sequenceName = "CONSULTORIO.SQ_FICHA_RIESGO",
-            allocationSize = 1
+        name = "FICHA_RIESGO_GEN",
+        sequenceName = "CONSULTORIO.SQ_FICHA_RIESGO",
+        allocationSize = 1
     )
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "FICHA_RIESGO_GEN")
     @Column(name = "ID_FICHA_RIESGO", nullable = false)
@@ -71,7 +68,6 @@ public class FichaRiesgo implements Serializable {
     private String actividad7;
 
     // ===== Resumen de factores de riesgo por bloque =====
-    // (Lo que tú resumas del cuadro de checkboxes)
 
     @Column(name = "RIESGOS_FISICOS", length = 2000)
     private String riesgosFisicos;
@@ -97,7 +93,7 @@ public class FichaRiesgo implements Serializable {
     // ===== Auditoría =====
 
     @Column(name = "ESTADO", length = 20)
-    private String estado; // BORRADOR / EMITIDA / etc.
+    private String estado; // p.ej. ACTIVO / INACTIVO / BORRADOR
 
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "F_CREACION")
@@ -112,5 +108,21 @@ public class FichaRiesgo implements Serializable {
 
     @Column(name = "USR_ACTUALIZACION", length = 30)
     private String usrActualizacion;
-}
 
+    // ===== Hooks de auditoría =====
+
+    @PrePersist
+    public void prePersist() {
+        if (estado == null || estado.trim().isEmpty()) {
+            estado = "ACTIVO";   // o el valor que decidan manejar como default
+        }
+        if (fechaCreacion == null) {
+            fechaCreacion = new Date();
+        }
+    }
+
+    @PreUpdate
+    public void preUpdate() {
+        fechaActualizacion = new Date();
+    }
+}

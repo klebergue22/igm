@@ -1,15 +1,7 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Modelo JPA para CONSULTORIO.SIGNOS_VITALES
  */
 package ec.gob.prueba.prueba_maven.modelo;
-
-/**
- *
- * @author GUERRA_KLEBER
- */
- 
 
 import lombok.*;
 import javax.persistence.*;
@@ -18,8 +10,10 @@ import java.util.Date;
 
 @Entity
 @Table(name = "SIGNOS_VITALES", schema = "CONSULTORIO")
-@Getter @Setter
-@NoArgsConstructor @AllArgsConstructor
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 @Builder(toBuilder = true)
 public class SignosVitales implements Serializable {
 
@@ -33,27 +27,46 @@ public class SignosVitales implements Serializable {
     @Column(name = "ID_SIGNOS", nullable = false)
     private Long idSignos;
 
+    // Temperatura (°C)
     @Column(name = "TEMPERATURA_C", precision = 4, scale = 1)
     private Double temperaturaC;
 
+    // Presión arterial
     @Column(name = "PA_SISTOLICA")
     private Integer paSistolica;
 
     @Column(name = "PA_DIASTOLICA")
     private Integer paDiastolica;
 
+    // Frecuencia cardíaca (FC)
     @Column(name = "FRECUENCIA_CARD")
     private Integer frecuenciaCard;
 
+    // 🔹 NUEVO: Frecuencia respiratoria (FR)
+    @Column(name = "FRECUENCIA_RESP")
+    private Integer frecuenciaResp;
+
+    // 🔹 NUEVO: Saturación de oxígeno (%)
+    @Column(name = "SAT_O2")
+    private Integer satO2;
+
+    // Peso (kg)
     @Column(name = "PESO_KG", precision = 6, scale = 2)
     private Double pesoKg;
 
+    // Talla (m)
     @Column(name = "TALLA_M", precision = 4, scale = 2)
     private Double tallaM;
 
+    // IMC calculado por la BD (columna virtual)
     @Column(name = "IMC", precision = 6, scale = 2, insertable = false, updatable = false)
-    private Double imc; // calculado por la DB
+    private Double imc;
 
+    // 🔹 NUEVO: Perímetro abdominal (cm)
+    @Column(name = "PERIMETRO_ABD_CM", precision = 5, scale = 1)
+    private Double perimetroAbdCm;
+
+    // Auditoría mínima
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "F_CREACION")
     private Date fechaCreacion;
@@ -61,4 +74,3 @@ public class SignosVitales implements Serializable {
     @Column(name = "USR_CREACION", length = 30)
     private String usrCreacion;
 }
-

@@ -77,7 +77,10 @@ public class CentroMedicoCtrl implements Serializable {
     private boolean mostrarDialogoAux;      // para controlar la visualización del diálogo
     private boolean permitirIngresoManual;  // <-- NUEVO: controla el botón "Ingresar manualmente"
     private boolean mostrarDlgCedula = true; //Dialogo de la cedula 
-
+    // ===============================
+// 🔑 PK DEL EMPLEADO (ANTI-JSF-LOSS)
+// ===============================
+    private Integer noPersonaSel;
 
     // ========= A. DATOS DEL ESTABLECIMIENTO / USUARIO =========
     private String institucion;
@@ -142,6 +145,13 @@ public class CentroMedicoCtrl implements Serializable {
     private Double peso;   // kg (en el form está en kg)
     private Double talla;  // cm (en el form está en cm)
     private Double imc;    // kg/m2 (calculado en el bean)
+    private Double temp;
+    private String paStr;
+    private Integer fc;
+    private Integer fr;
+    private Integer satO2;
+    private Double tallaCm;
+    private Double perimetroAbd;
 
     // ====== STEP 3: Datos para el certificado ====== 
     private Date fechaEmision;
@@ -348,6 +358,9 @@ public class CentroMedicoCtrl implements Serializable {
         this.fechaNacimiento = f;
         this.edad = calcularEdad(f);
     }
+    // ===========================================================
+    // CÁLCULO EDAD
+    // ===========================================================
 
     public void calcularEdad() {
         this.edad = calcularEdad(this.fechaNacimiento);
@@ -572,71 +585,247 @@ public class CentroMedicoCtrl implements Serializable {
         return valido;
     }
 
+    // ==========================================================
+// Helpers para mensajes Faces (WARN, INFO, ERROR)
+// ==========================================================
+    private void warn(String msg) {
+        FacesContext.getCurrentInstance().addMessage(null,
+                new FacesMessage(FacesMessage.SEVERITY_WARN, "Step 1", msg));
+    }
+
+    private void info(String msg) {
+        FacesContext.getCurrentInstance().addMessage(null,
+                new FacesMessage(FacesMessage.SEVERITY_INFO, "Step 1", msg));
+    }
+
+    private void error(String msg) {
+        FacesContext.getCurrentInstance().addMessage(null,
+                new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", msg));
+    }
+
+// Helpers
+    private boolean esVacio(String s) {
+        return s == null || s.trim().isEmpty();
+    }
+
     /**
      * STEP 1: - Atención prioritaria - Antecedentes personales -
      * Gineco-obstétricos (Solo llena la FichaOcupacional en memoria, aún no
      * persiste)
      */
     public void guardarStep1() {
-        // Aseguramos empleado si viene seteado
-        if (empleadoSel != null) {
-            ficha.setEmpleado(empleadoSel);
+        try {
+            if (empleadoSel == null && noPersonaSel != null) {
+                empleadoSel = empleadoService.buscarPorId(noPersonaSel);
+            }
+            // =========================================
+            // 1) VALIDACIONES REQUERIDAS DEL STEP 1
+            //    (lo que tú pediste que sea obligatorio)
+            // =========================================
+
+            // Apellido / Nombre
+            if (esVacio(apellido1)) {
+                warn("El primer apellido es obligatorio.");
+                return;
+            }
+            if (esVacio(nombre1)) {
+                warn("El primer nombre es obligatorio.");
+                return;
+            }
+
+            // Sexo (muy usado en la plantilla, mejor exigirlo)
+            if (esVacio(sexo)) {
+                warn("Debe seleccionar el sexo del paciente.");
+                return;
+            }
+
+            // RUC
+            if (esVacio(ruc)) {
+                warn("Debe ingresar el RUC.");
+                return;
+            }
+
+            // Fecha de atención
+            if (fechaAtencion == null) {
+                warn("Debe ingresar la fecha de atención.");
+                return;
+            }
+
+            // Tipo de evaluación
+            if (esVacio(tipoEval)) {
+                warn("Debe seleccionar el tipo de evaluación (Ingreso, Periódica, etc.).");
+                return;
+            }
+
+            // PA, FC, Peso, Talla (obligatorios)
+            if (esVacio(paStr)) {
+                warn("Debe ingresar la presión arterial (PA) en formato 120/80.");
+                return;
+            }
+            if (fc == null) {
+                warn("Debe ingresar la frecuencia cardíaca (FC).");
+                return;
+            }
+            if (peso == null || peso <= 0) {
+                warn("Debe ingresar el peso (kg).");
+                return;
+            }
+
+            // Si tallaCm viene nulo pero usas 'talla', intentamos aprovecharla
+            if (tallaCm == null && talla != null) {
+                tallaCm = talla;
+            }
+            if (tallaCm == null || tallaCm <= 0) {
+                warn("Debe ingresar la talla (cm).");
+                return;
+            }
+
+            // Paciente: empleado RRHH o persona auxiliar
+            if (empleadoSel == null && (personaAux == null || personaAux.getIdPersonaAux() == null)) {
+                warn("Debe seleccionar un empleado de RRHH o registrar una persona auxiliar.");
+                return;
+            }
+
+            // =========================================
+            // 2) DETERMINAR ORIGEN DEL PACIENTE
+            //    Y NÚMERO DE HISTORIA CLÍNICA
+            // =========================================
+            String cedulaPaciente;
+
+            if (empleadoSel != null) {
+                // Paciente desde RRHH
+                ficha.setEmpleado(empleadoSel);
+                ficha.setPersonaAux(null);
+
+                cedulaPaciente = empleadoSel.getNoCedula();
+            } else {
+                // Paciente desde tabla auxiliar
+                ficha.setPersonaAux(personaAux);
+                ficha.setEmpleado(null);
+
+                cedulaPaciente = personaAux.getCedula();
+            }
+
+            // N° Historia clínica = cédula del paciente
+            this.noHistoria = cedulaPaciente;
+            // (si la FichaOcupacional tiene campo para N° historia, aquí lo podrías setear)
+
+            // =========================================
+            // 3) MAPEAR CAMPOS DEL STEP 1 A FICHA_OCUPACIONAL
+            // =========================================
+            // Fecha y tipo de evaluación
+            ficha.setFechaEvaluacion(fechaAtencion);
+            ficha.setTipoEvaluacion(tipoEval);
+
+            // Atención prioritaria: S/N
+            ficha.setApEmbarazada(apEmbarazada ? "S" : "N");
+            ficha.setApDiscapacidad(apDiscapacidad ? "S" : "N");
+            ficha.setApCatastrofica(apCatastrofica ? "S" : "N");
+            ficha.setApLactancia(apLactancia ? "S" : "N");
+            ficha.setApAdultoMayor(apAdultoMayor ? "S" : "N");
+
+            // Antecedentes personales
+            ficha.setAntClinicoQuir(antClinicoQuirurgico);
+            ficha.setAntFamiliares(antFamiliares);
+            ficha.setCondicionEspecial(condicionEspecial);
+
+            // Transfusión / tratamientos hormonales
+            ficha.setAutorizaTransfusion(autorizaTransfusion);
+            ficha.setTratHormonal(tratamientoHormonal);
+            ficha.setTratHormonalCual(tratamientoHormonalCual);
+
+            // Reproductivos masculinos
+            ficha.setExamReproMasc(examenReproMasculino);
+            ficha.setTiempoReproMasc(tiempoReproMasculino);
+
+            // Gineco-obstétricos (mujer)
+            ficha.setFum(fum);
+            ficha.setGestas(gestas);
+            ficha.setPartos(partos);
+            ficha.setCesareas(cesareas);
+            ficha.setAbortos(abortos);
+            ficha.setPlanificacion(planificacion);
+            ficha.setPlanificacionCual(planificacionCual);
+
+            // =========================================
+            // 4) ARMAR / GUARDAR SIGNOS_VITALES
+            //    Y ENLAZAR A LA FICHA
+            // =========================================
+            // Parsear PA "120/80"
+            Integer paSis;
+            Integer paDias;
+            try {
+                String[] parts = paStr.split("/");
+                paSis = Integer.valueOf(parts[0].trim());
+                paDias = Integer.valueOf(parts[1].trim());
+            } catch (Exception ex) {
+                warn("El formato de PA debe ser 120/80 (números enteros separados por '/').");
+                return;
+            }
+
+            // Si la ficha ya tiene signos, se reutiliza, si no creamos uno nuevo
+            SignosVitales sv = ficha.getSignos();
+            if (sv == null) {
+                sv = new SignosVitales();
+            }
+
+            // Mapear signos desde los atributos del controlador
+            sv.setTemperaturaC(temp);
+            sv.setPaSistolica(paSis);
+            sv.setPaDiastolica(paDias);
+            sv.setFrecuenciaCard(fc);
+            sv.setFrecuenciaResp(fr);
+            sv.setSatO2(satO2);
+            sv.setPesoKg(peso);
+
+            // talla viene en cm → se guarda en metros en la tabla
+            Double tallaM = tallaCm != null ? (tallaCm / 100.0) : null;
+            sv.setTallaM(tallaM);
+            sv.setPerimetroAbdCm(perimetroAbd);
+
+            Date ahora = new Date();
+            if (sv.getIdSignos() == null) {
+                sv.setFechaCreacion(ahora);
+                sv.setUsrCreacion("USR_APP"); // TODO: usuario real / login
+            }
+
+            // Guarda/actualiza SIGNOS_VITALES (IMC lo calcula la BD)
+            sv = signosService.guardar(sv);
+            this.signos = sv;      // mantener el atributo del bean sincronizado
+            ficha.setSignos(sv);   // enlazar a la ficha ocupacional
+
+            // =========================================
+            // 5) AUDITORÍA + GUARDADO FICHA_OCUPACIONAL
+            // =========================================
+            if (ficha.getIdFicha() == null) {
+                ficha.setEstado("BORRADOR");
+                ficha.setFechaCreacion(ahora);
+                ficha.setUsrCreacion("USR_APP"); // TODO: usuario real
+            } else {
+                ficha.setFechaActualizacion(ahora);
+                ficha.setUsrActualizacion("USR_APP");
+            }
+
+            // Guardar BORRADOR de la ficha
+            ficha = fichaService.guardar(ficha);
+
+            // Auditoría (una por ficha y una por signos)
+            registrarAuditoria("GUARDAR_STEP1",
+                    "FICHA_OCUPACIONAL",
+                    "*",
+                    "Step 1: datos generales guardados. ID_FICHA=" + ficha.getIdFicha());
+
+            registrarAuditoria("GUARDAR_STEP1",
+                    "SIGNOS_VITALES",
+                    "*",
+                    "Signos vitales guardados. ID_SIGNOS=" + sv.getIdSignos());
+
+            info("Datos del Step 1 guardados correctamente (borrador).");
+
+        } catch (Exception e) {
+            log.log(Level.SEVERE, "Error en guardarStep1", e);
+            error("Ocurrió un error al guardar el Step 1.");
         }
-
-        // FECHA_EVALUACION y TIPO_EVALUACION
-        ficha.setFechaEvaluacion(fechaAtencion);
-        ficha.setTipoEvaluacion(tipoEval);
-
-        // Atención prioritaria: S/N
-        ficha.setApEmbarazada(apEmbarazada ? "S" : "N");
-        ficha.setApDiscapacidad(apDiscapacidad ? "S" : "N");
-        ficha.setApCatastrofica(apCatastrofica ? "S" : "N");
-        ficha.setApLactancia(apLactancia ? "S" : "N");
-        ficha.setApAdultoMayor(apAdultoMayor ? "S" : "N");
-
-        // Antecedentes personales
-        ficha.setAntClinicoQuir(antClinicoQuirurgico);
-        ficha.setAntFamiliares(antFamiliares);
-        ficha.setCondicionEspecial(condicionEspecial);
-
-        // Transfusión / tratamientos hormonales
-        ficha.setAutorizaTransfusion(autorizaTransfusion);
-        ficha.setTratHormonal(tratamientoHormonal);
-        ficha.setTratHormonalCual(tratamientoHormonalCual);
-
-        // Reproductivos masculinos
-        ficha.setExamReproMasc(examenReproMasculino);
-        ficha.setTiempoReproMasc(tiempoReproMasculino);
-
-        // Gineco-obstétricos (mujer)
-        ficha.setFum(fum);
-        ficha.setGestas(gestas);
-        ficha.setPartos(partos);
-        ficha.setCesareas(cesareas);
-        ficha.setAbortos(abortos);
-        ficha.setPlanificacion(planificacion);
-        ficha.setPlanificacionCual(planificacionCual);
-
-        // Estado y auditoría mínima
-        Date ahora = new Date();
-        if (ficha.getEstado() == null) {
-            ficha.setEstado("BORRADOR");
-            ficha.setFechaCreacion(ahora);
-            ficha.setUsrCreacion("USR_APP"); // TODO: usuario real
-        } else {
-            ficha.setFechaActualizacion(ahora);
-            ficha.setUsrActualizacion("USR_APP");
-        }
-
-        // Guardar BORRADOR
-        ficha = fichaService.guardar(ficha);
-        registrarAuditoria("GUARDAR_STEP1", "FICHA_OCUPACIONAL", "*",
-                "Step 1: datos generales guardados. ID_FICHA=" + ficha.getIdFicha());
-
-        FacesContext.getCurrentInstance().addMessage(null,
-                new FacesMessage(FacesMessage.SEVERITY_INFO,
-                        "Step 1",
-                        "Datos del Step 1 guardados correctamente (borrador)."));
     }
 
     private boolean validarStep2() {
@@ -1409,150 +1598,147 @@ public class CentroMedicoCtrl implements Serializable {
 // -----------------------------------------------------------
 // ABRIR DIÁLOGO DE INGRESO MANUAL (botón "INGRESAR MANUALMENTE")
 // -----------------------------------------------------------
-public void abrirPersonaAuxManual() {
-    // Siempre aseguramos que exista el objeto
-    if (personaAux == null) {
-        personaAux = new PersonaAux();
+    public void abrirPersonaAuxManual() {
+        // Siempre aseguramos que exista el objeto
+        if (personaAux == null) {
+            personaAux = new PersonaAux();
+        }
+
+        // Si ya escribió una cédula en el popup, la reutilizamos
+        if (!esVacio(cedulaBusqueda)
+                && (personaAux.getCedula() == null || personaAux.getCedula().isEmpty())) {
+            personaAux.setCedula(cedulaBusqueda.trim());
+        }
+
+//    // Limpiamos los campos auxiliares del diálogo
+//    auxApellido1 = null;
+//    auxApellido2 = null;
+//    auxNombre1  = null;
+//    auxNombre2  = null;
+        // sexo y fechaNacimiento los puedes dejar como estén o limpiar:
+        // sexo = null;
+        // fechaNacimiento = null;
+        mostrarDialogoAux = true;
+        PrimeFaces.current().executeScript("PF('dlgPersonaAux').show();");
     }
-
-    // Si ya escribió una cédula en el popup, la reutilizamos
-    if (!esVacio(cedulaBusqueda) &&
-        (personaAux.getCedula() == null || personaAux.getCedula().isEmpty())) {
-        personaAux.setCedula(cedulaBusqueda.trim());
-    }
-
-    // Limpiamos los campos auxiliares del diálogo
-    auxApellido1 = null;
-    auxApellido2 = null;
-    auxNombre1  = null;
-    auxNombre2  = null;
-    // sexo y fechaNacimiento los puedes dejar como estén o limpiar:
-    // sexo = null;
-    // fechaNacimiento = null;
-
-    mostrarDialogoAux = true;
-    PrimeFaces.current().executeScript("PF('dlgPersonaAux').show();");
-}
 
 // -----------------------------------------------------------
 // GUARDAR PERSONA AUXILIAR Y USARLA EN LA FICHA
 // (botón "GUARDAR Y USAR EN FICHA")
 // -----------------------------------------------------------
-public void guardarPersonaAuxYUsar() {
+    public void guardarPersonaAuxYUsar() {
 
-    System.out.println("INGRESA AL METODO DE GUARDAR ");
-    FacesContext ctx = FacesContext.getCurrentInstance();
+        System.out.println("INGRESA AL METODO DE GUARDAR ");
+        FacesContext ctx = FacesContext.getCurrentInstance();
 
-    // 0) Asegurar que exista el objeto
-    if (personaAux == null) {
-        ctx.addMessage(null, new FacesMessage(
-                FacesMessage.SEVERITY_ERROR,
-                "Error",
-                "No existe información de la persona para guardar."
-        ));
-        PrimeFaces.current().ajax().addCallbackParam("validationFailed", true);
-        return;
-    }
-
-    System.out.println("PERSONA AUXILIAR ANTES VALIDAR: " + personaAux);
-
-    // 1) Validar campos obligatorios sobre EL MISMO personaAux
-    if (esVacio(personaAux.getCedula())
-            || esVacio(personaAux.getApellido1())
-            || esVacio(personaAux.getNombre1())
-            || esVacio(personaAux.getSexo())
-            || personaAux.getFechaNac() == null) {
-
-        ctx.addMessage(null, new FacesMessage(
-                FacesMessage.SEVERITY_WARN,
-                "Datos incompletos",
-                "Cédula, primer apellido, primer nombre, sexo y fecha de nacimiento son obligatorios."
-        ));
-        PrimeFaces.current().ajax().addCallbackParam("validationFailed", true);
-        return;
-    }
-
-    try {
-        // 2) Normalizar un poco
-        personaAux.setCedula(personaAux.getCedula().trim());
-
-        if (!esVacio(personaAux.getApellido1())) {
-            personaAux.setApellido1(personaAux.getApellido1().trim().toUpperCase());
-        }
-        if (!esVacio(personaAux.getApellido2())) {
-            personaAux.setApellido2(personaAux.getApellido2().trim().toUpperCase());
-        }
-        if (!esVacio(personaAux.getNombre1())) {
-            personaAux.setNombre1(personaAux.getNombre1().trim().toUpperCase());
-        }
-        if (!esVacio(personaAux.getNombre2())) {
-            personaAux.setNombre2(personaAux.getNombre2().trim().toUpperCase());
-        }
-        if (!esVacio(personaAux.getSexo())) {
-            personaAux.setSexo(personaAux.getSexo().trim().toUpperCase());
+        // 0) Asegurar que exista el objeto
+        if (personaAux == null) {
+            ctx.addMessage(null, new FacesMessage(
+                    FacesMessage.SEVERITY_ERROR,
+                    "Error",
+                    "No existe información de la persona para guardar."
+            ));
+            PrimeFaces.current().ajax().addCallbackParam("validationFailed", true);
+            return;
         }
 
-        // 3) Auditoría básica
-        Date ahora = new Date();
-        if (personaAux.getIdPersonaAux() == null) {
-            personaAux.setEstado("A");
-            personaAux.setFechaCreacion(ahora);
-            personaAux.setUsrCreacion("SISTEMA");
-        } else {
-            personaAux.setFechaActualizacion(ahora);
-            personaAux.setUsrActualizacion("SISTEMA");
+        System.out.println("PERSONA AUXILIAR ANTES VALIDAR: " + personaAux);
+
+        // 1) Validar campos obligatorios sobre EL MISMO personaAux
+        if (esVacio(personaAux.getCedula())
+                || esVacio(personaAux.getApellido1())
+                || esVacio(personaAux.getNombre1())
+                || esVacio(personaAux.getSexo())
+                || personaAux.getFechaNac() == null) {
+
+            ctx.addMessage(null, new FacesMessage(
+                    FacesMessage.SEVERITY_WARN,
+                    "Datos incompletos",
+                    "Cédula, primer apellido, primer nombre, sexo y fecha de nacimiento son obligatorios."
+            ));
+            PrimeFaces.current().ajax().addCallbackParam("validationFailed", true);
+            return;
         }
 
-        // 4) Persistir en CONSULTORIO.PERSONA_AUX
-        personaAux = personaAuxService.guardar(personaAux);
+        try {
+            // 2) Normalizar un poco
+            personaAux.setCedula(personaAux.getCedula().trim());
 
-        // 5) Pasar datos a la ficha principal (step 1)
-        this.cedulaBusqueda  = personaAux.getCedula();
-        this.apellido1       = personaAux.getApellido1();
-        this.apellido2       = personaAux.getApellido2();
-        this.nombre1         = personaAux.getNombre1();
-        this.nombre2         = personaAux.getNombre2();
-        this.sexo            = personaAux.getSexo();
-        this.fechaNacimiento = personaAux.getFechaNac();
+            if (!esVacio(personaAux.getApellido1())) {
+                personaAux.setApellido1(personaAux.getApellido1().trim().toUpperCase());
+            }
+            if (!esVacio(personaAux.getApellido2())) {
+                personaAux.setApellido2(personaAux.getApellido2().trim().toUpperCase());
+            }
+            if (!esVacio(personaAux.getNombre1())) {
+                personaAux.setNombre1(personaAux.getNombre1().trim().toUpperCase());
+            }
+            if (!esVacio(personaAux.getNombre2())) {
+                personaAux.setNombre2(personaAux.getNombre2().trim().toUpperCase());
+            }
+            if (!esVacio(personaAux.getSexo())) {
+                personaAux.setSexo(personaAux.getSexo().trim().toUpperCase());
+            }
 
-        // 6) Cerrar diálogos y deshabilitar ingreso manual
-        mostrarDialogoAux      = false;
-        mostrarDlgCedula       = false;
-        permitirIngresoManual  = false;
+            // 3) Auditoría básica
+            Date ahora = new Date();
+            if (personaAux.getIdPersonaAux() == null) {
+                personaAux.setEstado("A");
+                personaAux.setFechaCreacion(ahora);
+                personaAux.setUsrCreacion("SISTEMA");
+            } else {
+                personaAux.setFechaActualizacion(ahora);
+                personaAux.setUsrActualizacion("SISTEMA");
+            }
 
-        PrimeFaces.current().ajax().addCallbackParam("validationFailed", false);
-        PrimeFaces.current().executeScript(
-                "PF('dlgPersonaAux').hide(); PF('dlgBuscarCedula').hide();"
-        );
+            // 4) Persistir en CONSULTORIO.PERSONA_AUX
+            personaAux = personaAuxService.guardar(personaAux);
 
-        ctx.addMessage(null, new FacesMessage(
-                FacesMessage.SEVERITY_INFO,
-                "Datos guardados",
-                "Se guardó la persona auxiliar y se cargaron los datos en la ficha."
-        ));
+            // 5) Pasar datos a la ficha principal (step 1)
+            this.cedulaBusqueda = personaAux.getCedula();
+            this.apellido1 = personaAux.getApellido1();
+            this.apellido2 = personaAux.getApellido2();
+            this.nombre1 = personaAux.getNombre1();
+            this.nombre2 = personaAux.getNombre2();
+            this.sexo = personaAux.getSexo();
+            this.fechaNacimiento = personaAux.getFechaNac();
+            this.noHistoria = personaAux.getCedula();
+            // 6) Cerrar diálogos y deshabilitar ingreso manual
+            mostrarDialogoAux = false;
+            mostrarDlgCedula = false;
+            permitirIngresoManual = false;
+            PrimeFaces.current().ajax().update("layoutForm:noHistoria");
+            PrimeFaces.current().ajax().addCallbackParam("validationFailed", false);
+            PrimeFaces.current().executeScript(
+                    "PF('dlgPersonaAux').hide(); PF('dlgBuscarCedula').hide();"
+            );
 
-        log.log(Level.INFO,
-                "PersonaAux guardada manualmente: {0} {1} / {2} {3} (cedula={4})",
-                new Object[]{
+            ctx.addMessage(null, new FacesMessage(
+                    FacesMessage.SEVERITY_INFO,
+                    "Datos guardados",
+                    "Se guardó la persona auxiliar y se cargaron los datos en la ficha."
+            ));
+
+            log.log(Level.INFO,
+                    "PersonaAux guardada manualmente: {0} {1} / {2} {3} (cedula={4})",
+                    new Object[]{
                         personaAux.getApellido1(),
                         personaAux.getApellido2(),
                         personaAux.getNombre1(),
                         personaAux.getNombre2(),
                         personaAux.getCedula()
-                });
+                    });
 
-    } catch (Exception e) {
-        log.log(Level.SEVERE, "Error guardando datos manuales", e);
-        ctx.addMessage(null, new FacesMessage(
-                FacesMessage.SEVERITY_ERROR,
-                "Error",
-                "Ocurrió un error al procesar y guardar los datos."
-        ));
-        PrimeFaces.current().ajax().addCallbackParam("validationFailed", true);
+        } catch (Exception e) {
+            log.log(Level.SEVERE, "Error guardando datos manuales", e);
+            ctx.addMessage(null, new FacesMessage(
+                    FacesMessage.SEVERITY_ERROR,
+                    "Error",
+                    "Ocurrió un error al procesar y guardar los datos."
+            ));
+            PrimeFaces.current().ajax().addCallbackParam("validationFailed", true);
+        }
     }
-}
-
-
 
     /**
      * REALIZA LA BUSQUEDA POR CEDULA
@@ -1585,6 +1771,8 @@ public void guardarPersonaAuxYUsar() {
                 // ==============================
                 // 1) EMPLEADO ENCONTRADO
                 // ==============================
+                this.empleadoSel = emp;
+                this.noPersonaSel = emp.getNoPersona();
                 this.apellido1 = emp.getPriApellido();
                 this.apellido2 = emp.getSegApellido();
                 this.nombre1 = emp.getNombres(); // si viene concatenado, luego separas
@@ -1595,7 +1783,7 @@ public void guardarPersonaAuxYUsar() {
                 if (fn != null) {
                     this.fechaNacimiento = fn;
                 }
-
+                this.noHistoria = emp.getNoCedula();
                 // Cerramos el diálogo y deshabilitamos ingreso manual
                 mostrarDlgCedula = false;
                 permitirIngresoManual = false;
@@ -1606,6 +1794,8 @@ public void guardarPersonaAuxYUsar() {
                         "Se cargó la información del empleado desde RRHH."
                 ));
             } else {
+                this.empleadoSel = null;
+                this.noPersonaSel = null;
                 // ==============================
                 // 2) NO SE ENCONTRÓ → INGRESO MANUAL
                 // ==============================
@@ -1627,6 +1817,7 @@ public void guardarPersonaAuxYUsar() {
                 personaAux.setFechaActualizacion(new Date());
                 personaAux.setUsrActualizacion("SISTEMA"); // o el usuario logueado
 
+                this.noHistoria = cedula;
                 // Dejamos abierto el diálogo de cédula y habilitamos el botón
                 mostrarDlgCedula = true;
                 permitirIngresoManual = true;
@@ -1637,6 +1828,8 @@ public void guardarPersonaAuxYUsar() {
                         "No se encontró la cédula en RRHH. Puede ingresarla manualmente."
                 ));
             }
+            // 🔄 Actualizar visualmente el campo de historia clínica
+            PrimeFaces.current().ajax().update("layoutForm:noHistoria");
 
         } catch (Exception e) {
             permitirIngresoManual = false;
@@ -1658,9 +1851,6 @@ public void guardarPersonaAuxYUsar() {
     public void setMostrarDlgCedula(boolean mostrarDlgCedula) {
         this.mostrarDlgCedula = mostrarDlgCedula;
     }
-
-
-
 
 // ayudita
     private String esNulo(String s) {
@@ -1739,10 +1929,6 @@ public void guardarPersonaAuxYUsar() {
 // ===============================
 //   MÉTODOS UTILITARIOS
 // ===============================
-    private boolean esVacio(String s) {
-        return s == null || s.trim().isEmpty();
-    }
-
     private String primerToken(String texto) {
         if (esVacio(texto)) {
             return null;

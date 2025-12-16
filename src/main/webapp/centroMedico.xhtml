@@ -5,55 +5,58 @@
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
 
-    <ui:define name="title">Evaluación Médica Ocupacional</ui:define>
+    <!--    <ui:define name="title">Evaluación Médica Ocupacional</ui:define>-->
 
 
-    <p:outputPanel>
-        <p:remoteCommand name="mostrarDialogoCedula"
-                         onstart="PF('dlgCedula').show()"
-                         autoRun="true"
-                         rendered="#{centroMedicoCtrl.mostrarDlgCedula}" />
-    </p:outputPanel>
 
-    <ui:define name="content">
+
+    <ui:define name="content"> Evaluación Médica Ocupacional
+<!--        <p:outputPanel>
+            <p:remoteCommand name="mostrarDialogoCedula"
+                             onstart="PF('dlgCedula').show()"
+                             autoRun="true"
+                             rendered="#{centroMedicoCtrl.mostrarDlgCedula}" />
+        </p:outputPanel>-->
 
         <!-- DIALOGO BUSCAR CEDULA -->
-        <p:dialog id="dlgCedula"
-                  widgetVar="dlgCedula"
-                  modal="true"
-                  header="Buscar por cédula"
-                  closable="false"
-                  visible="#{centroMedicoCtrl.mostrarDlgCedula}">
+        <h:form id="formDialogs">
+            <p:dialog id="dlgCedula"
+                      widgetVar="dlgCedula"
+                      modal="true"
+                      header="Buscar por cédula"
+                      closable="false"
+                      visible="#{centroMedicoCtrl.mostrarDlgCedula}">
 
-            <p:messages id="msgCedula"   closable="true"/>
+                <p:messages id="msgCedula"   closable="true"/>
 
-            <h:panelGrid columns="2" columnClasses="etq, val">
-                <h:outputLabel for="cedula" value="Cédula:"/>
-                <p:inputText id="cedula"
-                             value="#{centroMedicoCtrl.cedulaBusqueda}"
-                             maxlength="10"/>
+                <h:panelGrid columns="2" columnClasses="etq, val">
+                    <h:outputLabel for="cedula" value="Cédula:"/>
+                    <p:inputText id="cedula"
+                                 value="#{centroMedicoCtrl.cedulaBusqueda}"
+                                 maxlength="10"/>
 
-                <!-- Botón BUSCAR -->
-                <h:outputText/>
-                <p:commandButton value="Buscar"
-                                 actionListener="#{centroMedicoCtrl.buscarCedula}"
-                                 process="@form"
-                                 update="@form"/>
+                    <!-- Botón BUSCAR -->
+                    <h:outputText/>
+                    <p:commandButton value="Buscar"
+                                     actionListener="#{centroMedicoCtrl.buscarCedula}"
+                                     process="@form"
+                                     update="@form"/>
 
-                <!-- Botón INGRESAR MANUALMENTE -->
-                <h:outputText/>
-                <h:panelGroup rendered="#{centroMedicoCtrl.permitirIngresoManual}">
-                  <p:commandButton value="INGRESAR MANUALMENTE"
-                 actionListener="#{centroMedicoCtrl.prepararIngresoManual}"
-                 process="@this"
-                 update=":layoutForm:dlgPersonaAux"
-                 oncomplete="if (!args.validationFailed) PF('dlgPersonaAux').show();"/>
+                    <!-- Botón INGRESAR MANUALMENTE -->
+                    <h:outputText/>
+                    <h:panelGroup rendered="#{centroMedicoCtrl.permitirIngresoManual}">
+                        <p:commandButton value="INGRESAR MANUALMENTE"
+                                         actionListener="#{centroMedicoCtrl.prepararIngresoManual}"
+                                         process="@this"
+                                         update=":layoutForm:dlgPersonaAux"
+                                         oncomplete="if (!args.validationFailed) PF('dlgPersonaAux').show();"/>
 
-                </h:panelGroup>
-            </h:panelGrid>
-        </p:dialog>
+                    </h:panelGroup>
+                </h:panelGrid>
+            </p:dialog>
+        </h:form>
 
- 
+
 
 
 
@@ -109,7 +112,7 @@
 
                         <h:outputLabel value="N° Historia clínica"/>
                         <h:panelGroup styleClass="field-wrap">
-                            <p:inputText value="#{centroMedicoCtrl.noHistoria}"/>
+                            <p:inputText id="noHistoria" value="#{centroMedicoCtrl.noHistoria}"/>
                         </h:panelGroup>
 
                         <h:outputLabel value="N° Archivo"/>
@@ -555,33 +558,33 @@
                     <h:panelGrid columns="10" styleClass="ui-fluid vit-grid">
 
                         <h:outputText value="Temp (°C)"/>
-                        <p:inputNumber id="temp" decimalPlaces="1"/>
+                        <p:inputNumber id="temp" value="#{centroMedicoCtrl.temp}" decimalPlaces="1"/>
 
                         <h:outputText value="PA (mmHg)"/>
-                        <p:inputText id="pa" placeholder="120&#47;80"/>
+                        <p:inputText id="pa" value="#{centroMedicoCtrl.paStr}" placeholder="120&#47;80"/>
 
                         <h:outputText value="FC"/>
-                        <p:inputNumber id="fc" decimalPlaces="0"/>
+                        <p:inputNumber id="fc" value="#{centroMedicoCtrl.fc}" decimalPlaces="0"/>
 
                         <h:outputText value="FR"/>
-                        <p:inputNumber id="fr" decimalPlaces="0"/>
+                        <p:inputNumber id="fr" value="#{centroMedicoCtrl.fr}" decimalPlaces="0"/>
 
                         <h:outputText value="Sat O&#8322; (&#37;)"/>
-                        <p:inputNumber id="satO2" decimalPlaces="0"/>
+                        <p:inputNumber id="satO2" value="#{centroMedicoCtrl.satO2}" decimalPlaces="0"/>
 
                         <h:outputText value="Peso (kg)"/>
-                        <p:inputNumber id="peso" decimalPlaces="2"
+                        <p:inputNumber id="peso" value="#{centroMedicoCtrl.peso}" decimalPlaces="2"
                                        oninput="calcIMC()" onkeyup="calcIMC()" onchange="calcIMC()"/>
 
                         <h:outputText value="Talla (cm)"/>
-                        <p:inputNumber id="talla" decimalPlaces="2"
+                        <p:inputNumber id="talla" value="#{centroMedicoCtrl.tallaCm}" decimalPlaces="2"
                                        oninput="calcIMC()" onkeyup="calcIMC()" onchange="calcIMC()"/>
 
                         <h:outputText value="IMC"/>
-                        <p:inputNumber id="imc" decimalPlaces="2" disabled="true"/>
+                        <p:inputNumber id="imc" value="#{centroMedicoCtrl.imc}" decimalPlaces="2" disabled="true"/>
 
                         <h:outputText value="Perímetro abd (cm)"/>
-                        <p:inputNumber id="perimetroAbd" decimalPlaces="1"/>
+                        <p:inputNumber id="perimetroAbd" value="#{centroMedicoCtrl.perimetroAbd}" decimalPlaces="1"/>
                     </h:panelGrid>
 
                     <h:outputScript target="body">
@@ -1394,86 +1397,86 @@
             });
         </h:outputScript>
         <!-- ============ DIÁLOGO DE INGRESO MANUAL PERSONA AUX ============ -->
-<p:outputPanel id="dialogPersonaAuxZone" layout="block">
-    <!-- DIALOGO PERSONA AUXILIAR -->
-<p:dialog id="dlgPersonaAux"
-          widgetVar="dlgPersonaAux"
-          header="Ingreso manual de datos"
-          modal="true"
-          closable="true"
-          resizable="false"
-          appendTo="@(body)">
+        <p:outputPanel id="dialogPersonaAuxZone" layout="block">
+            <!-- DIALOGO PERSONA AUXILIAR -->
+            <p:dialog id="dlgPersonaAux"
+                      widgetVar="dlgPersonaAux"
+                      header="Ingreso manual de datos"
+                      modal="true"
+                      closable="true"
+                      resizable="false"
+                      appendTo="@(body)">
 
-    <!-- OJO: form propio, porque appendTo mueve el diálogo FUERA de layoutForm -->
-    <h:form id="frmPersonaAux">
+                <!-- OJO: form propio, porque appendTo mueve el diálogo FUERA de layoutForm -->
+                <h:form id="frmPersonaAux">
 
-        <p:messages id="msgPersonaAux" autoUpdate="true" closable="true"/>
+                    <p:messages id="msgPersonaAux" autoUpdate="true" closable="true"/>
 
-        <h:panelGrid id="gridManual"
-                     columns="2"
-                     columnClasses="col-label-man,col-field-man"
-                     styleClass="grid-manual">
+                    <h:panelGrid id="gridManual"
+                                 columns="2"
+                                 columnClasses="col-label-man,col-field-man"
+                                 styleClass="grid-manual">
 
-            <h:outputLabel for="cedManual" value="Cédula * *"/>
-            <p:inputText id="cedManual"
-                         value="#{centroMedicoCtrl.personaAux.cedula}"
-                         maxlength="10"
-                         styleClass="w100"
-                         readonly="true"/>
+                        <h:outputLabel for="cedManual" value="Cédula * *"/>
+                        <p:inputText id="cedManual"
+                                     value="#{centroMedicoCtrl.personaAux.cedula}"
+                                     maxlength="10"
+                                     styleClass="w100"
+                                     readonly="true"/>
 
-            <h:outputLabel for="ap1" value="Primer apellido * *"/>
-            <p:inputText id="ap1"
-                         value="#{centroMedicoCtrl.personaAux.apellido1}"
-                         styleClass="w100"/>
+                        <h:outputLabel for="ap1" value="Primer apellido * *"/>
+                        <p:inputText id="ap1"
+                                     value="#{centroMedicoCtrl.personaAux.apellido1}"
+                                     styleClass="w100"/>
 
-            <h:outputLabel for="ap2" value="Segundo apellido"/>
-            <p:inputText id="ap2"
-                         value="#{centroMedicoCtrl.personaAux.apellido2}"
-                         styleClass="w100"/>
+                        <h:outputLabel for="ap2" value="Segundo apellido"/>
+                        <p:inputText id="ap2"
+                                     value="#{centroMedicoCtrl.personaAux.apellido2}"
+                                     styleClass="w100"/>
 
-            <h:outputLabel for="nom1" value="Primer nombre * *"/>
-            <p:inputText id="nom1"
-                         value="#{centroMedicoCtrl.personaAux.nombre1}"
-                         styleClass="w100"/>
+                        <h:outputLabel for="nom1" value="Primer nombre * *"/>
+                        <p:inputText id="nom1"
+                                     value="#{centroMedicoCtrl.personaAux.nombre1}"
+                                     styleClass="w100"/>
 
-            <h:outputLabel for="nom2" value="Segundo nombre"/>
-            <p:inputText id="nom2"
-                         value="#{centroMedicoCtrl.personaAux.nombre2}"
-                         styleClass="w100"/>
+                        <h:outputLabel for="nom2" value="Segundo nombre"/>
+                        <p:inputText id="nom2"
+                                     value="#{centroMedicoCtrl.personaAux.nombre2}"
+                                     styleClass="w100"/>
 
-            <h:outputLabel for="sexoManual" value="Sexo * *"/>
-            <p:selectOneMenu id="sexoManual"
-                             value="#{centroMedicoCtrl.personaAux.sexo}"
-                             styleClass="w100">
-                <f:selectItem itemLabel="-- Seleccione --" itemValue="#{null}"/>
-                <f:selectItem itemLabel="Masculino" itemValue="M"/>
-                <f:selectItem itemLabel="Femenino" itemValue="F"/>
-            </p:selectOneMenu>
+                        <h:outputLabel for="sexoManual" value="Sexo * *"/>
+                        <p:selectOneMenu id="sexoManual"
+                                         value="#{centroMedicoCtrl.personaAux.sexo}"
+                                         styleClass="w100">
+                            <f:selectItem itemLabel="-- Seleccione --" itemValue="#{null}"/>
+                            <f:selectItem itemLabel="Masculino" itemValue="M"/>
+                            <f:selectItem itemLabel="Femenino" itemValue="F"/>
+                        </p:selectOneMenu>
 
-            <h:outputLabel for="fnManual" value="Fecha nacimiento * *"/>
-            <p:calendar id="fnManual"
-                        value="#{centroMedicoCtrl.personaAux.fechaNac}"
-                        pattern="dd/MM/yyyy"
-                        navigator="true"
-                        yearRange="1900:2099"
-                        styleClass="w100"/>
-        </h:panelGrid>
+                        <h:outputLabel for="fnManual" value="Fecha nacimiento * *"/>
+                        <p:calendar id="fnManual"
+                                    value="#{centroMedicoCtrl.personaAux.fechaNac}"
+                                    pattern="dd/MM/yyyy"
+                                    navigator="true"
+                                    yearRange="1900:2099"
+                                    styleClass="w100"/>
+                    </h:panelGrid>
 
-        <p:separator/>
+                    <p:separator/>
 
-        <!-- BOTÓN GUARDAR -->
-        <p:commandButton value="GUARDAR Y USAR EN FICHA"
-                         action="#{centroMedicoCtrl.guardarPersonaAuxYUsar}"
-                         process="@form"
-                         update=":layoutForm"
-                         style="width:100%;"/>
+                    <!-- BOTÓN GUARDAR -->
+                    <p:commandButton value="GUARDAR Y USAR EN FICHA"
+                                     action="#{centroMedicoCtrl.guardarPersonaAuxYUsar}"
+                                     process="@form"
+                                     update=":layoutForm"
+                                     style="width:100%;"/>
 
-    </h:form>
-</p:dialog>
+                </h:form>
+            </p:dialog>
 
 
-</p:outputPanel>
-<!-- ============ FIN DIÁLOGO PERSONA AUX ============ -->
+        </p:outputPanel>
+        <!-- ============ FIN DIÁLOGO PERSONA AUX ============ -->
 
     </ui:define>
 </ui:composition>
