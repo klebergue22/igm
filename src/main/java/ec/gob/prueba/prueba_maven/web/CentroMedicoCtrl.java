@@ -208,6 +208,15 @@ public class CentroMedicoCtrl implements Serializable {
     //Riesgos
     private FichaRiesgo fichaRiesgo;
 
+    // STEP 2 - actividades 1..7 (para poder bindear en XHTML)
+    private List<String> actividadesLab = new ArrayList<>();
+
+// STEP 2 - checks de riesgos (se guardan como resumen en observaciones)
+    private Map<String, Boolean> riesgos = new LinkedHashMap<>();
+
+// STEP 2 - “otros” por columna/categoría
+    private Map<String, String> otrosRiesgos = new LinkedHashMap<>();
+
     // Medidas preventivas seleccionadas en la matriz (STEP 2)
     private List<String> medidasPreventivas = new ArrayList<>();
 
@@ -297,6 +306,27 @@ public class CentroMedicoCtrl implements Serializable {
             fichaRiesgo = new FichaRiesgo();
             fichaRiesgo.setFicha(ficha);
             fichaRiesgo.setEstado("BORRADOR");
+        }
+        // ===== STEP 2: asegurar tamaños =====
+        if (actividadesLab == null) {
+            actividadesLab = new ArrayList<>();
+        }
+        while (actividadesLab.size() < 7) {
+            actividadesLab.add(null);
+        }
+
+        if (medidasPreventivas == null) {
+            medidasPreventivas = new ArrayList<>();
+        }
+        while (medidasPreventivas.size() < 7) {
+            medidasPreventivas.add(null);
+        }
+
+        if (riesgos == null) {
+            riesgos = new LinkedHashMap<>();
+        }
+        if (otrosRiesgos == null) {
+            otrosRiesgos = new LinkedHashMap<>();
         }
 
     }
@@ -453,6 +483,7 @@ public class CentroMedicoCtrl implements Serializable {
 
             } else if ("step2".equals(currentStep)) {
                 // (igual para validarStep2 cuando lo tengas listo)
+                 ok = validarStep2();
                 guardarStep2();
                 currentStep = "step3";
 
@@ -829,89 +860,144 @@ public class CentroMedicoCtrl implements Serializable {
     }
 
     private boolean validarStep2() {
-        FacesContext ctx = FacesContext.getCurrentInstance();
-        boolean valido = true;
+    FacesContext ctx = FacesContext.getCurrentInstance();
+    boolean valido = true;
 
-        // Puesto de trabajo (mismo campo usado ya en Step 1)
-        if (fichaRiesgo == null || isBlank(fichaRiesgo.getPuestoTrabajo())) {
-            ctx.addMessage(null, new FacesMessage(
-                    FacesMessage.SEVERITY_ERROR,
-                    "Step 2",
-                    "Debe ingresar el puesto de trabajo."));
-            valido = false;
-        }
-
-        // Al menos una actividad (actividad1..actividad7 en FichaRiesgo)
-        boolean hayActividad
-                = !isBlank(fichaRiesgo.getActividad1())
-                || !isBlank(fichaRiesgo.getActividad2())
-                || !isBlank(fichaRiesgo.getActividad3())
-                || !isBlank(fichaRiesgo.getActividad4())
-                || !isBlank(fichaRiesgo.getActividad5())
-                || !isBlank(fichaRiesgo.getActividad6())
-                || !isBlank(fichaRiesgo.getActividad7());
-
-        if (!hayActividad) {
-            ctx.addMessage(null, new FacesMessage(
-                    FacesMessage.SEVERITY_ERROR,
-                    "Step 2",
-                    "Debe registrar al menos una actividad laboral."));
-            valido = false;
-        }
-
-        // Al menos una medida preventiva seleccionada
-        if (medidasPreventivas == null || medidasPreventivas.isEmpty()) {
-            ctx.addMessage(null, new FacesMessage(
-                    FacesMessage.SEVERITY_ERROR,
-                    "Step 2",
-                    "Debe seleccionar al menos una medida preventiva."));
-            valido = false;
-        }
-
-        return valido;
+    // Puesto de trabajo
+    if (fichaRiesgo == null || isBlank(fichaRiesgo.getPuestoTrabajo())) {
+        ctx.addMessage(null, new FacesMessage(
+                FacesMessage.SEVERITY_ERROR, "Step 2",
+                "Debe ingresar el puesto de trabajo."));
+        valido = false;
     }
+
+    // Al menos 1 actividad (desde lista actividadesLab)
+    boolean hayActividad = false;
+    if (actividadesLab != null) {
+        for (String a : actividadesLab) {
+            if (!isBlank(a)) { hayActividad = true; break; }
+        }
+    }
+    if (!hayActividad) {
+        ctx.addMessage(null, new FacesMessage(
+                FacesMessage.SEVERITY_ERROR, "Step 2",
+                "Debe registrar al menos una actividad laboral."));
+        valido = false;
+    }
+
+    // Al menos 1 medida preventiva (texto)
+    boolean hayMedida = false;
+    if (medidasPreventivas != null) {
+        for (String m : medidasPreventivas) {
+            if (!isBlank(m)) { hayMedida = true; break; }
+        }
+    }
+    if (!hayMedida) {
+        ctx.addMessage(null, new FacesMessage(
+                FacesMessage.SEVERITY_ERROR, "Step 2",
+                "Debe registrar al menos una medida preventiva."));
+        valido = false;
+    }
+
+    return valido;
+}
+
 
     /**
      * STEP 2: Riesgos (matriz G). Por ahora solo actualiza la ficha (BORRADOR)
      * para dejar registro de que se pasó por este paso. Cuando tengas la tabla
      * de riesgos, aquí se mapea y persiste.
      */
-    public void guardarStep2() {
-        Date ahora = new Date();
+   public void guardarStep2() {
+    FacesContext ctx = FacesContext.getCurrentInstance();
 
-        if (fichaRiesgo == null) {
-            fichaRiesgo = new FichaRiesgo();
-            fichaRiesgo.setFicha(ficha);
-        } else {
-            fichaRiesgo.setFicha(ficha);
-        }
-
-        // Puedes concatenar medidas preventivas en un campo de texto si añadiste la columna
-        if (medidasPreventivas != null && !medidasPreventivas.isEmpty()) {
-            String resumenMedidas = String.join(", ", medidasPreventivas);
-            fichaRiesgo.setObservaciones(resumenMedidas); // o un campo específico si lo definiste
-        }
-
-        // Auditoría básica
-        if (fichaRiesgo.getIdFichaRiesgo() == null) {
-            fichaRiesgo.setEstado("BORRADOR");
-            fichaRiesgo.setFechaCreacion(ahora);
-            fichaRiesgo.setUsrCreacion("USR_APP");
-        } else {
-            fichaRiesgo.setFechaActualizacion(ahora);
-            fichaRiesgo.setUsrActualizacion("USR_APP");
-        }
-
-        fichaRiesgo = fichaRiesgoService.guardar(fichaRiesgo);
-        registrarAuditoria("GUARDAR_STEP2", "FICHA_RIESGO", "*",
-                "Step 2: riesgos laborales guardados. ID_FICHA="
-                + (ficha != null ? ficha.getIdFicha() : null));
-
-        FacesContext.getCurrentInstance().addMessage(null,
-                new FacesMessage(FacesMessage.SEVERITY_INFO,
-                        "Step 2",
-                        "Riesgos laborales guardados correctamente."));
+    if (!validarStep2()) {
+        ctx.validationFailed();
+        return;
     }
+
+    Date ahora = new Date();
+
+    if (fichaRiesgo == null) {
+        fichaRiesgo = new FichaRiesgo();
+    }
+    fichaRiesgo.setFicha(ficha);
+
+    // 1) Copiar actividadesLab -> campos actividad1..7 (si existen en tu entidad)
+    //    (si tu entidad NO tiene estos setters, me dices y lo adapto)
+    fichaRiesgo.setActividad1(actividadesLab.get(0));
+    fichaRiesgo.setActividad2(actividadesLab.get(1));
+    fichaRiesgo.setActividad3(actividadesLab.get(2));
+    fichaRiesgo.setActividad4(actividadesLab.get(3));
+    fichaRiesgo.setActividad5(actividadesLab.get(4));
+    fichaRiesgo.setActividad6(actividadesLab.get(5));
+    fichaRiesgo.setActividad7(actividadesLab.get(6));
+
+    // 2) Armar resumen de medidas
+    StringBuilder med = new StringBuilder();
+    for (int i = 0; i < medidasPreventivas.size(); i++) {
+        String m = medidasPreventivas.get(i);
+        if (!isBlank(m)) {
+            if (med.length() > 0) med.append(" | ");
+            med.append("M").append(i + 1).append(": ").append(m.trim());
+        }
+    }
+
+    // 3) Armar resumen de checks marcados (riesgos)
+    StringBuilder r = new StringBuilder();
+    if (riesgos != null) {
+        for (Map.Entry<String, Boolean> e : riesgos.entrySet()) {
+            if (Boolean.TRUE.equals(e.getValue())) {
+                if (r.length() > 0) r.append(", ");
+                r.append(e.getKey());
+            }
+        }
+    }
+
+    // 4) Armar resumen de “otros”
+    StringBuilder o = new StringBuilder();
+    if (otrosRiesgos != null) {
+        for (Map.Entry<String, String> e : otrosRiesgos.entrySet()) {
+            if (!isBlank(e.getValue())) {
+                if (o.length() > 0) o.append(" | ");
+                o.append(e.getKey()).append(": ").append(e.getValue().trim());
+            }
+        }
+    }
+
+    // 5) Guardar todo en observaciones (sin perder nada)
+    StringBuilder obs = new StringBuilder();
+    if (med.length() > 0) obs.append("MEDIDAS: ").append(med);
+    if (r.length() > 0) {
+        if (obs.length() > 0) obs.append(" || ");
+        obs.append("RIESGOS: ").append(r);
+    }
+    if (o.length() > 0) {
+        if (obs.length() > 0) obs.append(" || ");
+        obs.append("OTROS: ").append(o);
+    }
+    fichaRiesgo.setObservaciones(obs.toString());
+
+    // Auditoría / estado
+    if (fichaRiesgo.getIdFichaRiesgo() == null) {
+        fichaRiesgo.setEstado("BORRADOR");
+        fichaRiesgo.setFechaCreacion(ahora);
+        fichaRiesgo.setUsrCreacion("USR_APP");
+    } else {
+        fichaRiesgo.setFechaActualizacion(ahora);
+        fichaRiesgo.setUsrActualizacion("USR_APP");
+    }
+
+    fichaRiesgo = fichaRiesgoService.guardar(fichaRiesgo);
+
+    registrarAuditoria("GUARDAR_STEP2", "FICHA_RIESGO", "*",
+            "Step 2 guardado. ID_FICHA=" + (ficha != null ? ficha.getIdFicha() : null));
+
+    ctx.addMessage(null, new FacesMessage(
+            FacesMessage.SEVERITY_INFO, "Step 2",
+            "Riesgos laborales guardados correctamente."));
+}
+
 
     /**
      * Validaciones del STEP 3: - Al menos 1 diagnóstico - Aptitud seleccionada
