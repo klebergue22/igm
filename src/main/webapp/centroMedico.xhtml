@@ -17,8 +17,6 @@
                                      autoRun="true"
                                      rendered="#{centroMedicoCtrl.mostrarDlgCedula}" />
                 </p:outputPanel>-->
-
-        <!-- DIALOGO BUSCAR CEDULA -->
         <!-- DIALOGO BUSCAR CEDULA -->
         <p:dialog id="dlgCedula"
                   widgetVar="dlgCedula"
@@ -587,7 +585,6 @@
                     </h:panelGrid>
 
                     <h:outputScript target="body">
-                        //<![CDATA[
                         function q(s){return document.querySelector("input[id$='"+s+"']");}
                         function n(v){return parseFloat(String(v).replace(',','.'));}
 
@@ -595,13 +592,13 @@
                         var peso=q("peso_input"), talla=q("talla_input"), imc=q("imc_input");
                         if(!peso||!talla||!imc)return;
                         var p=n(peso.value), t=n(talla.value);
-                        if(!isNaN(p)&&!isNaN(t)&&t>0){
+                        if(!isNaN(p)&amp;&amp;!isNaN(t)&amp;&amp;t>0){
                         imc.value=(p/Math.pow(t/100,2)).toFixed(2);
                         }else imc.value="";
                         }
                         document.addEventListener('DOMContentLoaded',calcIMC);
-                        //]]>
                     </h:outputScript>
+
                 </p:fieldset>
 
 
@@ -1101,7 +1098,7 @@
                             styleClass="hx-fieldset">
                     <div class="hx-scroll">
 
-                        <ui:param name="rows" value="#{['1','2','3','4','5','6','7','8']}" />
+                        <ui:param name="rows" value="#{['1','2','3']}" />
 
                         <table class="hx-grid">
                             <colgroup>
@@ -1161,9 +1158,16 @@
                                         <td style="text-align:center"><p:selectBooleanCheckbox id="iess_no_#{r}"/></td>
 
                                         <td class="hx-date">
-                                            <p:calendar id="iess_fecha_#{r}" pattern="yyyy/MM/dd"
-                                                        mask="true" navigator="true" showOn="button"/>
+                                            <p:calendar id="iess_fecha_#{r}"
+                                                        value="#{centroMedicoCtrl.iessFecha[r]}"
+                                                        pattern="yyyy/MM/dd"
+                                                        navigator="true"
+                                                        showOn="button"
+                                                        mask="true">
+                                                <f:convertDateTime pattern="yyyy/MM/dd"/>
+                                            </p:calendar>
                                         </td>
+
 
                                         <td><p:inputTextarea id="iess_especificar_#{r}" rows="2"
                                                              autoResize="true" styleClass="hx-cell-textarea"
@@ -1179,6 +1183,7 @@
 
                     </div>
                 </p:fieldset>
+
 
                 <!-- I -->
                 <p:fieldset legend="I. Actividades extralaborales" toggleable="true" collapsed="true">
@@ -1244,110 +1249,145 @@
                 </p:fieldset>
 
                 <!-- K -->
-                <p:fieldset legend="K. Diagnóstico — PRE: Presuntivo  DEF: Definitivo" toggleable="true" collapsed="true">
+                <!-- K -->
+                <p:fieldset legend="K. Diagnóstico — PRE: Presuntivo  DEF: Definitivo"
+                            toggleable="true" collapsed="true">
+
                     <h:panelGroup layout="block" styleClass="ui-fluid panel-scroll">
 
-                        <ui:param name="kRows" value="#{['1','2','3','4','5','6']}" />
+                        <!-- CONTENEDOR FIJO PARA UPDATE (evita ComponentNotFoundException) -->
+                        <p:outputPanel id="kPanel" layout="block">
 
-                        <table class="k-grid">
-                            <colgroup>
-                                <col class="k-col-cie"/>
-                                <col class="k-col-desc"/>
-                                <col class="k-col-pre"/>
-                                <col class="k-col-def"/>
-                            </colgroup>
+                            <ui:param name="kRows" value="#{['1','2','3','4','5','6']}" />
 
-                            <thead>
-                                <tr class="k-head">
-                                    <th colspan="4">
-                                        K. DIAGNÓSTICO
-                                        <span style="font-weight:400"> PRE: PRESUNTIVO  DEF: DEFINITIVO</span>
-                                    </th>
-                                </tr>
-                                <tr class="k-sub">
-                                    <th>CIE-10</th>
-                                    <th>Descripción</th>
-                                    <th>PRE</th>
-                                    <th>DEF</th>
-                                </tr>
-                            </thead>
+                            <table class="k-grid">
+                                <colgroup>
+                                    <col class="k-col-cie"/>
+                                    <col class="k-col-desc"/>
+                                    <col class="k-col-pre"/>
+                                    <col class="k-col-def"/>
+                                </colgroup>
 
-                            <tbody>
-                                <ui:repeat value="#{kRows}" var="r">
-                                    <tr>
-
-                                        <!-- ====== AUTOCOMPLETE CÓDIGO ======= -->
-                                        <td>
-                                            <p:autoComplete id="k_cie"
-                                                            value="#{centroMedicoCtrl.listaDiag[r-1].codigo}" 
-                                                            completeMethod="#{centroMedicoCtrl.completarCie10PorCodigo}"
-                                                            var="it"
-                                                            itemLabel="#{it}"
-                                                            itemValue="#{it}"
-                                                            forceSelection="true"
-                                                            dropdown="true"
-                                                            cache="false"
-                                                            minQueryLength="1"
-                                                            styleClass="cell-input">
-
-                                                <!-- Selección con click -->
-                                                <p:ajax event="itemSelect"
-                                                        listener="#{centroMedicoCtrl.onCie10SelectCodigo(r-1)}"
-                                                        update="k_cie k_desc"/>
-
-                                                <!-- TAB / ENTER (al salir del campo) -->
-                                                <p:ajax event="blur"
-                                                        listener="#{centroMedicoCtrl.onCie10BlurCodigo(r-1)}"
-                                                        update="k_cie k_desc"/>
-                                            </p:autoComplete>
-                                        </td>
-
-
-                                        <!-- ====== AUTOCOMPLETE DESCRIPCIÓN ======= -->
-                                        <td>
-                                            <p:autoComplete id="k_desc"
-                                                            value="#{centroMedicoCtrl.listaDiag[r-1].descripcion}" 
-                                                            completeMethod="#{centroMedicoCtrl.completarCie10PorDescripcion}"
-                                                            var="it"
-                                                            itemLabel="#{it}"
-                                                            itemValue="#{it}"
-                                                            forceSelection="true"
-                                                            dropdown="true"
-                                                            cache="false"
-                                                            minQueryLength="2"
-                                                            styleClass="cell-input">
-
-                                                <!-- Selección con click -->
-                                                <p:ajax event="itemSelect"
-                                                        listener="#{centroMedicoCtrl.onCie10SelectDescripcion(r-1)}"
-                                                        update="k_cie k_desc"/>
-
-                                                <!-- TAB / ENTER -->
-                                                <p:ajax event="blur"
-                                                        listener="#{centroMedicoCtrl.onCie10BlurDescripcion(r-1)}"
-                                                        update="k_cie k_desc"/>
-                                            </p:autoComplete>
-                                        </td>
-
-
-                                        <!-- RADIO PRE/DEF -->
-                                        <td style="text-align:center" colspan="2">
-                                            <h:selectOneRadio value="#{centroMedicoCtrl.listaDiag[r-1].tipoDiag}">
-                                                <f:selectItem itemLabel="PRE" itemValue="PRE"/>
-                                                <f:selectItem itemLabel="DEF" itemValue="DEF"/>
-                                            </h:selectOneRadio>
-                                        </td>
-
-
+                                <thead>
+                                    <tr class="k-head">
+                                        <th colspan="4">
+                                            K. DIAGNÓSTICO
+                                            <span style="font-weight:400"> PRE: PRESUNTIVO  DEF: DEFINITIVO</span>
+                                        </th>
                                     </tr>
-                                </ui:repeat>
+                                    <tr class="k-sub">
+                                        <th>CIE-10</th>
+                                        <th>Descripción</th>
+                                        <th>PRE</th>
+                                        <th>DEF</th>
+                                    </tr>
+                                </thead>
 
-                            </tbody>
+                                <tbody>
+                                    <ui:repeat value="#{kRows}" var="r" varStatus="st">
+                                        <tr>
 
-                        </table>
+                                            <!-- ===================== -->
+                                            <!-- AUTOCOMPLETE CÓDIGO   -->
+                                            <!-- ===================== -->
+                                            <td>
+                                                <p:autoComplete id="k_cie_#{st.index}"
+                                                                value="#{centroMedicoCtrl.listaDiag[st.index].codigo}"
+                                                                completeMethod="#{centroMedicoCtrl.completarCie10PorCodigo}"
+                                                                var="it"
+                                                                itemLabel="#{it}"
+                                                                itemValue="#{it}"
+                                                                dropdown="true"
+                                                                cache="false"
+                                                                minQueryLength="1"
+                                                                forceSelection="false"
+                                                                styleClass="cell-input"
+                                                                onkeydown="if (event.keyCode === 13) {
+                                                                            this.blur();
+                                                                            return false;
+                                                                        }">
+
+                                                    <!-- índice de la fila -->
+                                                    <f:attribute name="idx" value="#{st.index}"/>
+
+                                                    <!-- selecciona sugerencia -->
+                                                    <p:ajax event="itemSelect"
+                                                            listener="#{centroMedicoCtrl.onKCieCodigoSelect}"
+                                                            process="@this"
+                                                            update=":layoutForm:kPanel"/>
+
+                                                    <!-- escribe y sale (TAB/CLICK/ENTER->blur) -->
+                                                    <p:ajax event="blur"
+                                                            listener="#{centroMedicoCtrl.onKCieCodigoBlur}"
+                                                            process="@this"
+                                                            update=":layoutForm:kPanel"/>
+
+                                                </p:autoComplete>
+                                            </td>
+
+                                            <!-- ========================= -->
+                                            <!-- AUTOCOMPLETE DESCRIPCIÓN  -->
+                                            <!-- ========================= -->
+                                            <td>
+                                                <p:autoComplete id="k_desc_#{st.index}"
+                                                                value="#{centroMedicoCtrl.listaDiag[st.index].descripcion}"
+                                                                completeMethod="#{centroMedicoCtrl.completarCie10PorDescripcion}"
+                                                                var="it"
+                                                                itemLabel="#{it}"
+                                                                itemValue="#{it}"
+                                                                dropdown="true"
+                                                                cache="false"
+                                                                minQueryLength="2"
+                                                                forceSelection="false"
+                                                                styleClass="cell-input"
+                                                                onkeydown="if (event.keyCode === 13) {
+                                                                            this.blur();
+                                                                            return false;
+                                                                        }">
+
+                                                    <!-- índice de la fila -->
+                                                    <f:attribute name="idx" value="#{st.index}"/>
+
+                                                    <!-- selecciona sugerencia -->
+                                                    <p:ajax event="itemSelect"
+                                                            listener="#{centroMedicoCtrl.onKDescSelect}"
+                                                            process="@this"
+                                                            update=":layoutForm:kPanel"/>
+
+                                                    <!-- escribe y sale -->
+                                                    <p:ajax event="blur"
+                                                            listener="#{centroMedicoCtrl.onKDescBlur}"
+                                                            process="@this"
+                                                            update=":layoutForm:kPanel"/>
+
+                                                </p:autoComplete>
+                                            </td>
+
+                                            <!-- ===================== -->
+                                            <!-- RADIO PRE / DEF       -->
+                                            <!-- ===================== -->
+                                            <td class="txt-c">
+                                                <h:selectOneRadio value="#{centroMedicoCtrl.listaDiag[st.index].tipoDiag}">
+                                                    <f:selectItem itemLabel="PRE" itemValue="PRE"/>
+                                                    <f:selectItem itemLabel="DEF" itemValue="DEF"/>
+                                                </h:selectOneRadio>
+                                            </td>
+
+                                            <!-- celda vacía para mantener 4 columnas (si tu grid lo requiere) -->
+                                            <td class="txt-c"></td>
+
+                                        </tr>
+                                    </ui:repeat>
+                                </tbody>
+
+                            </table>
+
+                        </p:outputPanel>
 
                     </h:panelGroup>
                 </p:fieldset>
+
+
 
                 <!-- L -->
                 <p:fieldset legend="L. APTITUD MÉDICA PARA EL TRABAJO" toggleable="true">
@@ -1461,7 +1501,8 @@
                                              value="Descargar PDF"
                                              icon="pi pi-download"
                                              disabled="#{!centroMedicoCtrl.certificadoListo}"
-                                             onclick="PF('dlgDescarga').show();return false;"
+                                             onclick="PF('dlgDescarga').show();
+                                                     return false;"
                                              update="@form msg"/>
                         </p:toolbarGroup>
                     </p:toolbar>

@@ -17,6 +17,8 @@ import java.util.Date;
 @Builder(toBuilder = true)
 public class SignosVitales implements Serializable {
 
+    private static final long serialVersionUID = 1L;
+
     @Id
     @SequenceGenerator(
         name = "SIGNOS_GEN",
@@ -26,6 +28,10 @@ public class SignosVitales implements Serializable {
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "SIGNOS_GEN")
     @Column(name = "ID_SIGNOS", nullable = false)
     private Long idSignos;
+
+    // ========================
+    // SIGNOS CLÍNICOS
+    // ========================
 
     // Temperatura (°C)
     @Column(name = "TEMPERATURA_C", precision = 4, scale = 1)
@@ -42,11 +48,11 @@ public class SignosVitales implements Serializable {
     @Column(name = "FRECUENCIA_CARD")
     private Integer frecuenciaCard;
 
-    // 🔹 NUEVO: Frecuencia respiratoria (FR)
+    // Frecuencia respiratoria (FR)
     @Column(name = "FRECUENCIA_RESP")
     private Integer frecuenciaResp;
 
-    // 🔹 NUEVO: Saturación de oxígeno (%)
+    // Saturación de oxígeno (%)
     @Column(name = "SAT_O2")
     private Integer satO2;
 
@@ -62,15 +68,25 @@ public class SignosVitales implements Serializable {
     @Column(name = "IMC", precision = 6, scale = 2, insertable = false, updatable = false)
     private Double imc;
 
-    // 🔹 NUEVO: Perímetro abdominal (cm)
+    // Perímetro abdominal (cm)
     @Column(name = "PERIMETRO_ABD_CM", precision = 5, scale = 1)
     private Double perimetroAbdCm;
 
-    // Auditoría mínima
+    // ========================
+    // AUDITORÍA
+    // ========================
+
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "F_CREACION")
     private Date fechaCreacion;
 
     @Column(name = "USR_CREACION", length = 30)
     private String usrCreacion;
+
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "F_ACTUALIZACION")
+    private Date fechaActualizacion;
+
+    @Column(name = "USR_ACTUALIZACION", length = 30)
+    private String usrActualizacion;
 }
