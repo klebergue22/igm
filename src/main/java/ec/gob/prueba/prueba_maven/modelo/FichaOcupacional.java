@@ -1,4 +1,4 @@
- /*
+/*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
@@ -9,7 +9,6 @@ package ec.gob.prueba.prueba_maven.modelo;
  *
  * @author GUERRA_KLEBER
  */
-
 import lombok.*;
 import javax.persistence.*;
 import java.io.Serializable;
@@ -27,9 +26,9 @@ public class FichaOcupacional implements Serializable {
 
     @Id
     @SequenceGenerator(
-        name = "FICHA_OCUP_GEN",
-        sequenceName = "CONSULTORIO.SQ_FICHA",
-        allocationSize = 1
+            name = "FICHA_OCUP_GEN",
+            sequenceName = "CONSULTORIO.SQ_FICHA",
+            allocationSize = 1
     )
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "FICHA_OCUP_GEN")
     @Column(name = "ID_FICHA", nullable = false)
@@ -57,7 +56,6 @@ public class FichaOcupacional implements Serializable {
     private Cie10 cie10Principal;
 
     // ==== Campos de la tabla ====
-
     @Temporal(TemporalType.DATE)
     @Column(name = "FECHA_EVALUACION", nullable = false)
     private Date fechaEvaluacion;
@@ -129,9 +127,83 @@ public class FichaOcupacional implements Serializable {
     @Column(name = "PLANIFICACION_CUAL", length = 200)
     private String planificacionCual;
 
-    // Aptitud
-    @Column(name = "APTITUD_SEL", length = 20, nullable = false)
-    private String aptitudSel; // APTO / APTO_EN_OBS / APTO_LIMIT / NO_APTO
+    // TABACO
+    @Column(name = "TAB_CONS_MESES")
+    private Integer tabConsMeses;
+
+    @Column(name = "TAB_EX_CONS")
+    private String tabExCons; // 'S'/'N'
+
+    @Column(name = "TAB_ABS_MESES")
+    private Integer tabAbsMeses;
+
+    @Column(name = "TAB_NO_CONS")
+    private String tabNoCons; // 'S'/'N'
+
+// ALCOHOL
+    @Column(name = "ALC_CONS_MESES")
+    private Integer alcConsMeses;
+
+    @Column(name = "ALC_EX_CONS")
+    private String alcExCons;
+
+    @Column(name = "ALC_ABS_MESES")
+    private Integer alcAbsMeses;
+
+    @Column(name = "ALC_NO_CONS")
+    private String alcNoCons;
+
+// OTRAS
+    @Column(name = "OTR_CUAL")
+    private String otrCual;
+
+    @Column(name = "OTR_CONS_MESES")
+    private Integer otrConsMeses;
+
+    @Column(name = "OTR_EX_CONS")
+    private String otrExCons;
+
+    @Column(name = "OTR_ABS_MESES")
+    private Integer otrAbsMeses;
+
+    @Column(name = "OTR_NO_CONS")
+    private String otrNoCons;
+
+// ACTIVIDAD FISICA (3)
+    @Column(name = "AF_CUAL_1")
+    private String afCual1;
+    @Column(name = "AF_TIEMPO_1")
+    private String afTiempo1;
+    @Column(name = "AF_CUAL_2")
+    private String afCual2;
+    @Column(name = "AF_TIEMPO_2")
+    private String afTiempo2;
+    @Column(name = "AF_CUAL_3")
+    private String afCual3;
+    @Column(name = "AF_TIEMPO_3")
+    private String afTiempo3;
+
+// MEDICACION (3)
+    @Column(name = "MED_CUAL_1")
+    private String medCual1;
+    @Column(name = "MED_CANT_1")
+    private Integer medCant1;
+    @Column(name = "MED_CUAL_2")
+    private String medCual2;
+    @Column(name = "MED_CANT_2")
+    private Integer medCant2;
+    @Column(name = "MED_CUAL_3")
+    private String medCual3;
+    @Column(name = "MED_CANT_3")
+    private Integer medCant3;
+
+// OBS
+    @Column(name = "OBS_CONSUMO_VIDA_COND", length = 2000)
+    private String obsConsumoVidaCond;
+
+// Aptitud (en BD puede ser null si BORRADOR)
+    @Column(name = "APTITUD_SEL", length = 20) //  
+    private String aptitudSel;
 
     @Column(name = "DETALLE_OBS", length = 2000)
     private String detalleObs;
@@ -139,8 +211,9 @@ public class FichaOcupacional implements Serializable {
     @Column(name = "RECOMENDACIONES", length = 2000)
     private String recomendaciones;
 
+// Fecha emisión (en BD puede ser null si BORRADOR)
     @Temporal(TemporalType.DATE)
-    @Column(name = "FECHA_EMISION", nullable = false)
+    @Column(name = "FECHA_EMISION") //  
     private Date fechaEmision;
 
     @Column(name = "MEDICO_NOMBRE", length = 150)
@@ -166,33 +239,61 @@ public class FichaOcupacional implements Serializable {
     @Column(name = "USR_ACTUALIZACION", length = 30)
     private String usrActualizacion;
 
- // ===== Auditoría básica / defaults =====
-@PrePersist
-public void prePersist() {
-    Date ahora = new Date();
+    // === Step 1 (establecimiento / historia clínica / archivo)
+    @Column(name = "INST_SISTEMA", length = 200)
+    private String instSistema;
 
-    // Estado por defecto para guardado progresivo
-    if (estado == null || estado.trim().isEmpty()) {
-        estado = "BORRADOR"; // <-- mejor para wizard (no EMITIDA)
+    @Column(name = "RUC_ESTABLECIMIENTO", length = 20)
+    private String rucEstablecimiento;
+
+    @Column(name = "CIIU", length = 20)
+    private String ciiu;
+
+    @Column(name = "ESTABLECIMIENTO_CT", length = 250)
+    private String establecimientoCt;
+
+    @Column(name = "NO_HISTORIA_CLINICA", length = 30)
+    private String noHistoriaClinica;
+
+    @Column(name = "NO_ARCHIVO", length = 30)
+    private String noArchivo;
+
+    @Column(name = "AREA_TRABAJO", length = 200)
+    private String areaTrabajo;
+
+    @Column(name = "PUESTO_TRABAJO_TXT", length = 200)
+    private String puestoTrabajoTxt;
+
+// === Step 3 (I. Actividades extra laborales)
+    @Column(name = "EXTRA_LAB_DESC", length = 2000)
+    private String extraLabDesc;
+
+    @Temporal(TemporalType.DATE)
+    @Column(name = "EXTRA_LAB_FECHA")
+    private Date extraLabFecha;
+
+    // ===== Auditoría básica / defaults =====
+    @PrePersist
+    public void prePersist() {
+        Date ahora = new Date();
+
+        if (estado == null || estado.trim().isEmpty()) {
+            estado = "BORRADOR";
+        }
+        if (fechaCreacion == null) {
+            fechaCreacion = ahora;
+        }
+
+        // Solo si ya estás emitiendo (no borrador)
+        if (!"BORRADOR".equalsIgnoreCase(estado)) {
+            if (fechaEmision == null) {
+                fechaEmision = ahora;
+            }
+            if (aptitudSel == null || aptitudSel.trim().isEmpty()) {
+                aptitudSel = "APTO"; // o el default que uses
+            }
+        }
     }
-
-    // Auditoría
-    if (fechaCreacion == null) {
-        fechaCreacion = ahora;
-    }
-
-    // *** CLAVE: evitar ORA-01400 en FECHA_EMISION ***
-    if (fechaEmision == null) {
-        fechaEmision = ahora;
-    }
-
-    // *** RECOMENDADO: evitar ORA-01400 en APTITUD_SEL mientras sea BORRADOR ***
-    if ((aptitudSel == null || aptitudSel.trim().isEmpty())
-            && "BORRADOR".equalsIgnoreCase(estado)) {
-        aptitudSel = "PENDIENTE"; // o "N/A" según tu catálogo/valores permitidos
-    }
-}
-
 
     @PreUpdate
     public void preUpdate() {

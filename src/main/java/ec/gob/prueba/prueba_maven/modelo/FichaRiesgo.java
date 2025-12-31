@@ -10,7 +10,6 @@ package ec.gob.prueba.prueba_maven.modelo;
  *
  * Tabla: CONSULTORIO.FICHA_RIESGO
  */
-
 import lombok.*;
 import javax.persistence.*;
 import java.io.Serializable;
@@ -28,9 +27,9 @@ public class FichaRiesgo implements Serializable {
 
     @Id
     @SequenceGenerator(
-        name = "FICHA_RIESGO_GEN",
-        sequenceName = "CONSULTORIO.SQ_FICHA_RIESGO",
-        allocationSize = 1
+            name = "FICHA_RIESGO_GEN",
+            sequenceName = "CONSULTORIO.SQ_FICHA_RIESGO",
+            allocationSize = 1
     )
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "FICHA_RIESGO_GEN")
     @Column(name = "ID_FICHA_RIESGO", nullable = false)
@@ -42,7 +41,6 @@ public class FichaRiesgo implements Serializable {
     private FichaOcupacional ficha;
 
     // ===== Datos generales del puesto / actividades =====
-
     @Column(name = "PUESTO_TRABAJO", length = 200)
     private String puestoTrabajo;
 
@@ -68,7 +66,6 @@ public class FichaRiesgo implements Serializable {
     private String actividad7;
 
     // ===== Resumen de factores de riesgo por bloque =====
-
     @Column(name = "RIESGOS_FISICOS", length = 2000)
     private String riesgosFisicos;
 
@@ -91,7 +88,6 @@ public class FichaRiesgo implements Serializable {
     private String observaciones;
 
     // ===== Auditoría =====
-
     @Column(name = "ESTADO", length = 20)
     private String estado; // p.ej. ACTIVO / INACTIVO / BORRADOR
 
@@ -109,8 +105,10 @@ public class FichaRiesgo implements Serializable {
     @Column(name = "USR_ACTUALIZACION", length = 30)
     private String usrActualizacion;
 
-    // ===== Hooks de auditoría =====
+    @Column(name = "MEDIDAS_PREVENTIVAS", length = 2000)
+    private String medidasPreventivas;
 
+    // ===== Hooks de auditoría =====
     @PrePersist
     public void prePersist() {
         if (estado == null || estado.trim().isEmpty()) {

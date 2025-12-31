@@ -20,7 +20,7 @@ import java.util.List;
 @Stateless
 public class FichaDiagnosticoService {
 
-    @PersistenceContext
+    @PersistenceContext(unitName = "rhPU")
     private EntityManager em;
 
     public void eliminarPorFicha(Long idFicha) {

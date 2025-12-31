@@ -4,15 +4,21 @@
     <persistence-unit name="rhPU" transaction-type="JTA">
         <provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
         <jta-data-source>jdbc/rrhhDS</jta-data-source>
-        <class>ec.gob.prueba.prueba_maven.modelo.DatEmpleado</class>
-        <class>ec.gob.prueba.prueba_maven.modelo.Contratacion</class>
-        <class>ec.gob.prueba.prueba_maven.modelo.Mensaje</class>
-        <class>ec.gob.prueba.prueba_maven.modelo.FichaOcupacional</class>
-        <class>ec.gob.prueba.prueba_maven.modelo.SignosVitales</class>
+        <class>ec.gob.prueba.prueba_maven.modelo.AuditoriaConsultorio</class>
         <class>ec.gob.prueba.prueba_maven.modelo.Cie10</class>
+        <class>ec.gob.prueba.prueba_maven.modelo.ConsultaDiagnostico</class>
+        <class>ec.gob.prueba.prueba_maven.modelo.ConsultaMedica</class>
+        <class>ec.gob.prueba.prueba_maven.modelo.Contratacion</class>
+        <class>ec.gob.prueba.prueba_maven.modelo.DatEmpleado</class>
+        <class>ec.gob.prueba.prueba_maven.modelo.FichaActLaboral</class>
+        <class>ec.gob.prueba.prueba_maven.modelo.FichaDiagnostico</class>
+        <class>ec.gob.prueba.prueba_maven.modelo.FichaExamenComp</class>
+        <class>ec.gob.prueba.prueba_maven.modelo.FichaOcupacional</class>
         <class>ec.gob.prueba.prueba_maven.modelo.FichaRiesgo</class>
+        <class>ec.gob.prueba.prueba_maven.modelo.FichaRiesgoDet</class>
+        <class>ec.gob.prueba.prueba_maven.modelo.Mensaje</class>
         <class>ec.gob.prueba.prueba_maven.modelo.PersonaAux</class>
-        <class>ec.gob.prueba.prueba_maven.modelo.FichaRiesgo</class>
+        <class>ec.gob.prueba.prueba_maven.modelo.SignosVitales</class>
 
 
 

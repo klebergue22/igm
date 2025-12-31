@@ -72,7 +72,7 @@
         <!-- ====================================== -->
         <!--  WIZARD SIN BARRA (barra propia abajo) -->
         <!-- ====================================== -->
-        <p:wizard widgetVar="wiz" showNavBar="false" showStepStatus="true"
+        <p:wizard id="wiz" widgetVar="wiz" showNavBar="false" showStepStatus="true"
                   nextLabel="Siguiente" backLabel="Anterior">
 
             <!-- ===================================================== -->
@@ -89,32 +89,32 @@
 
                         <h:outputLabel value="Institución del Sistema"/>
                         <h:panelGroup styleClass="field-wrap">
-                            <p:inputText value="#{centroMedicoCtrl.institucion}"/>
+                            <p:inputText value="#{centroMedicoCtrl.ficha.instSistema}" />
                         </h:panelGroup>
 
                         <h:outputLabel value="RUC"/>
                         <h:panelGroup styleClass="field-wrap">
-                            <p:inputText value="#{centroMedicoCtrl.ruc}" maxlength="13"/>
+                            <p:inputText value="#{centroMedicoCtrl.ficha.rucEstablecimiento}" maxlength="20"/>
                         </h:panelGroup>
 
                         <h:outputLabel value=" Puesto de Trabajo CIUO"/>
                         <h:panelGroup styleClass="field-wrap">
-                            <p:inputText value="#{centroMedicoCtrl.ciiu}"/>
+                            <p:inputText value="#{centroMedicoCtrl.ficha.ciiu}" maxlength="20"/>
                         </h:panelGroup>
 
                         <h:outputLabel value="Centro de trabajo"/>
                         <h:panelGroup styleClass="field-wrap">
-                            <p:inputText value="#{centroMedicoCtrl.centroTrabajo}"/>
+                            <p:inputText value="#{centroMedicoCtrl.ficha.establecimientoCt}" maxlength="250"/>
                         </h:panelGroup>
 
                         <h:outputLabel value="N° Historia clínica"/>
                         <h:panelGroup styleClass="field-wrap">
-                            <p:inputText id="noHistoria" value="#{centroMedicoCtrl.noHistoria}"/>
+                            <p:inputText value="#{centroMedicoCtrl.ficha.noHistoriaClinica}" maxlength="30"/>
                         </h:panelGroup>
 
                         <h:outputLabel value="N° Archivo"/>
                         <h:panelGroup styleClass="field-wrap">
-                            <p:inputText value="#{centroMedicoCtrl.noArchivo}"/>
+                            <p:inputText value="#{centroMedicoCtrl.ficha.noArchivo}" maxlength="30"/>
                         </h:panelGroup>
 
                         <h:outputLabel value="Primer apellido"/>
@@ -232,7 +232,10 @@
                         <p:inputText placeholder="CIUO"/>
 
                         <h:outputLabel value="Fecha de atención"/>
-                        <p:calendar value="#{centroMedicoCtrl.fechaAtencion != null ? centroMedicoCtrl.fechaAtencion: now}" pattern="dd/MM/yyyy" navigator="true" showOn="button"/>
+                        <p:calendar value="#{centroMedicoCtrl.fechaAtencion}" 
+                                    pattern="dd/MM/yyyy" 
+                                    navigator="true" 
+                                    showOn="button"/>
 
                         <!-- Selector de tipo de evaluación -->
                         <h:panelGrid  >
@@ -364,10 +367,19 @@
                                             </td>
 
                                             <!-- Números: TODOS con obst-fit -->
-                                            <td class="txt-c"><p:inputNumber decimalPlaces="0" minValue="0" styleClass="obst-fit"/></td>
-                                            <td class="txt-c"><p:inputNumber decimalPlaces="0" minValue="0" styleClass="obst-fit"/></td>
-                                            <td class="txt-c"><p:inputNumber decimalPlaces="0" minValue="0" styleClass="obst-fit"/></td>
-                                            <td class="txt-c"><p:inputNumber decimalPlaces="0" minValue="0" styleClass="obst-fit"/></td>
+                                            <td class="txt-c">
+                                                <p:inputNumber value="#{centroMedicoCtrl.gestas}" decimalPlaces="0" minValue="0" styleClass="obst-fit"/>
+                                            </td>
+                                            <td class="txt-c">
+                                                <p:inputNumber value="#{centroMedicoCtrl.cesareas}" decimalPlaces="0" minValue="0" styleClass="obst-fit"/>
+                                            </td>
+                                            <td class="txt-c">
+                                                <p:inputNumber value="#{centroMedicoCtrl.partos}" decimalPlaces="0" minValue="0" styleClass="obst-fit"/>
+                                            </td>
+                                            <td class="txt-c">
+                                                <p:inputNumber value="#{centroMedicoCtrl.abortos}" decimalPlaces="0" minValue="0" styleClass="obst-fit"/>
+                                            </td>
+
 
                                             <!-- MPF: checks centrados + campo “¿cuál?” a 100% -->
                                             <td><div class="obst-chk"><p:selectBooleanCheckbox widgetVar="wMpfSi" onchange="mpfToggle('si')"/></div></td>
@@ -1092,13 +1104,15 @@
             <!-- ===================================================== -->
             <p:tab id="step3" title="Historia / Resultados (H–O)">
 
+
                 <!-- H -->
                 <p:fieldset legend="H. Actividad laboral / incidentes / accidentes / enfermedades ocupacionales"
                             toggleable="true" collapsed="false"
                             styleClass="hx-fieldset">
                     <div class="hx-scroll">
 
-                        <ui:param name="rows" value="#{['1','2','3']}" />
+                        <!-- ESTE ui:param NO SE USA, lo puedes borrar si quieres -->
+                        <!-- <ui:param name="rows" value="#{['1','2','3']}" /> -->
 
                         <table class="hx-grid">
                             <colgroup>
@@ -1137,99 +1151,215 @@
                             </thead>
 
                             <tbody>
-                                <ui:repeat value="#{rows}" var="r">
+                                <ui:repeat value="#{centroMedicoCtrl.actLabRows}" var="row" varStatus="st">
                                     <tr>
-                                        <!-- Centro / Actividad -->
-                                        <td><p:inputText id="centro_#{r}" styleClass="hx-cell-input" placeholder="Centro #{r}"/></td>
-                                        <td><p:inputText id="act_#{r}"    styleClass="hx-cell-input" placeholder="Actividad #{r}"/></td>
-
-                                        <!-- Trabajo: anterior / actual / tiempo -->
-                                        <td style="text-align:center"><p:selectBooleanCheckbox id="trab_ant_#{r}"/></td>
-                                        <td style="text-align:center"><p:selectBooleanCheckbox id="trab_act_#{r}"/></td>
-                                        <td><p:inputText id="trab_tiempo_#{r}" styleClass="hx-cell-input" placeholder="Tiempo"/></td>
-
-                                        <!-- Incidente / Accidente / Enfermedad profesional -->
-                                        <td style="text-align:center"><p:selectBooleanCheckbox id="incidente_#{r}"/></td>
-                                        <td style="text-align:center"><p:selectBooleanCheckbox id="accidente_#{r}"/></td>
-                                        <td style="text-align:center"><p:selectBooleanCheckbox id="enfermedad_#{r}"/></td>
-
-                                        <!-- IESS: Sí / No / Fecha / Especificar -->
-                                        <td style="text-align:center"><p:selectBooleanCheckbox id="iess_si_#{r}"/></td>
-                                        <td style="text-align:center"><p:selectBooleanCheckbox id="iess_no_#{r}"/></td>
-
-                                        <td class="hx-date">
-                                            <p:calendar id="iess_fecha_#{r}"
-                                                        value="#{centroMedicoCtrl.iessFecha[r]}"
-                                                        pattern="yyyy/MM/dd"
-                                                        navigator="true"
-                                                        showOn="button"
-                                                        mask="true">
-                                                <f:convertDateTime pattern="yyyy/MM/dd"/>
-                                            </p:calendar>
+                                        <!-- CENTRO DE TRABAJO -->
+                                        <td>
+                                            <p:inputText id="centro_#{st.index}"
+                                                         value="#{centroMedicoCtrl.actLabCentroTrabajo[st.index]}"
+                                                         styleClass="hx-cell-input"
+                                                         placeholder="Centro #{st.index+1}"/>
                                         </td>
 
+                                        <!-- ACTIVIDADES -->
+                                        <td>
+                                            <p:inputText id="act_#{st.index}"
+                                                         value="#{centroMedicoCtrl.actLabActividad[st.index]}"
+                                                         styleClass="hx-cell-input"
+                                                         placeholder="Actividad #{st.index+1}"/>
+                                        </td>
 
-                                        <td><p:inputTextarea id="iess_especificar_#{r}" rows="2"
-                                                             autoResize="true" styleClass="hx-cell-textarea"
-                                                             placeholder="Detalle"/></td>
+                                        <!-- TRABAJO: anterior / actual / tiempo -->
+                                        <td style="text-align:center">
+                                            <p:selectBooleanCheckbox id="trab_ant_#{st.index}"
+                                                                     value="#{centroMedicoCtrl.actLabTrabajoAnterior[st.index]}"/>
+                                        </td>
+                                        <td style="text-align:center">
+                                            <p:selectBooleanCheckbox id="trab_act_#{st.index}"
+                                                                     value="#{centroMedicoCtrl.actLabTrabajoActual[st.index]}"/>
+                                        </td>
+                                        <td>
+                                            <p:inputText id="trab_tiempo_#{st.index}"
+                                                         value="#{centroMedicoCtrl.actLabTiempo[st.index]}"
+                                                         styleClass="hx-cell-input"
+                                                         placeholder="Tiempo"/>
+                                        </td>
 
-                                        <td><p:inputTextarea id="obs_#{r}" rows="2"
-                                                             autoResize="true" styleClass="hx-cell-textarea"
-                                                             placeholder="Observaciones"/></td>
+                                        <!-- INCIDENTE / ACCIDENTE / ENFERMEDAD (✅ CORREGIDO) -->
+                                        <td style="text-align:center">
+                                            <p:selectBooleanCheckbox id="incidente_#{st.index}"
+                                                                     value="#{centroMedicoCtrl.actLabIncidenteChk[st.index]}"/>
+                                        </td>
+                                        <td style="text-align:center">
+                                            <p:selectBooleanCheckbox id="accidente_#{st.index}"
+                                                                     value="#{centroMedicoCtrl.actLabAccidenteChk[st.index]}"/>
+                                        </td>
+                                        <td style="text-align:center">
+                                            <p:selectBooleanCheckbox id="enfermedad_#{st.index}"
+                                                                     value="#{centroMedicoCtrl.actLabEnfermedadChk[st.index]}"/>
+                                        </td>
+
+                                        <!-- IESS: SI / NO / FECHA / ESPECIFICAR -->
+                                        <td style="text-align:center">
+                                            <p:selectBooleanCheckbox id="iess_si_#{st.index}"
+                                                                     value="#{centroMedicoCtrl.iessSi[st.index]}"/>
+                                        </td>
+                                        <td style="text-align:center">
+                                            <p:selectBooleanCheckbox id="iess_no_#{st.index}"
+                                                                     value="#{centroMedicoCtrl.iessNo[st.index]}"/>
+                                        </td>
+
+                                        <td class="hx-date">
+                                            <p:calendar id="iess_fecha_#{st.index}"
+                                                        value="#{centroMedicoCtrl.iessFecha[st.index]}"
+                                                        pattern="dd/MM/yyyy"
+                                                        navigator="true"
+                                                        showOn="button"/>
+                                        </td>
+
+                                        <td>
+                                            <p:inputTextarea id="iess_especificar_#{st.index}"
+                                                             value="#{centroMedicoCtrl.iessEspecificar[st.index]}"
+                                                             rows="2"
+                                                             autoResize="true"
+                                                             styleClass="hx-cell-textarea"
+                                                             placeholder="Detalle"/>
+                                        </td>
+
+                                        <!-- OBSERVACIONES -->
+                                        <td>
+                                            <p:inputTextarea id="obs_#{st.index}"
+                                                             value="#{centroMedicoCtrl.actLabObservaciones[st.index]}"
+                                                             rows="2"
+                                                             autoResize="true"
+                                                             styleClass="hx-cell-textarea"
+                                                             placeholder="Observaciones"/>
+                                        </td>
                                     </tr>
                                 </ui:repeat>
                             </tbody>
+
                         </table>
 
                     </div>
                 </p:fieldset>
 
 
+
                 <!-- I -->
-                <p:fieldset legend="I. Actividades extralaborales" toggleable="true" collapsed="true">
+                <p:fieldset legend="I. Actividades extralaborales"
+                            toggleable="true" collapsed="true">
+
                     <h:panelGroup layout="block" styleClass="ui-fluid panel-scroll">
+
                         <ui:param name="actividades" value="#{['1','2','3']}" />
+
                         <table class="i-grid">
                             <colgroup>
-                                <col class="i-col-type"/><col class="i-col-date"/><col class="i-col-desc"/>
+                                <col class="i-col-type"/>
+                                <col class="i-col-date"/>
+                                <col class="i-col-desc"/>
                             </colgroup>
+
                             <thead>
                                 <tr class="i-header">
-                                    <th>TIPO DE ACTIVIDAD</th><th>FECHA (aaaa/mm/dd)</th><th>DESCRIPCIÓN</th>
+                                    <th>TIPO DE ACTIVIDAD</th>
+                                    <th>FECHA (aaaa/mm/dd)</th>
+                                    <th>DESCRIPCIÓN</th>
                                 </tr>
                             </thead>
+
                             <tbody>
-                                <ui:repeat value="#{actividades}" var="a">
+                                <ui:repeat value="#{actividades}" var="a" varStatus="st">
                                     <tr>
-                                        <td><p:inputText id="tipoAct_#{a}" styleClass="cell-input" placeholder="Tipo #{a}"/></td>
-                                        <td class="i-date">
-                                            <p:calendar id="fechaAct_#{a}" pattern="yyyy/MM/dd" mask="true" navigator="true" showOn="button"/>
+
+                                        <!-- TIPO DE ACTIVIDAD -->
+                                        <td>
+                                            <p:inputText id="tipoAct_#{st.index}"
+                                                         value="#{centroMedicoCtrl.tipoAct[st.index]}"
+                                                         styleClass="cell-input"
+                                                         placeholder="Tipo #{st.index+1}"/>
                                         </td>
-                                        <td><p:inputTextarea id="descAct_#{a}" rows="2" autoResize="true" styleClass="cell-textarea" placeholder="Descripción #{a}"/></td>
+
+                                        <!-- FECHA -->
+                                        <td class="i-date">
+                                            <p:calendar id="fechaAct_#{st.index}"
+                                                        value="#{centroMedicoCtrl.fechaAct[st.index]}"
+                                                        pattern="yyyy/MM/dd"
+                                                        navigator="true"
+                                                        showOn="button"/>
+                                        </td>
+
+                                        <!-- DESCRIPCIÓN -->
+                                        <td>
+                                            <p:inputTextarea id="descAct_#{st.index}"
+                                                             value="#{centroMedicoCtrl.descAct[st.index]}"
+                                                             rows="2"
+                                                             autoResize="true"
+                                                             styleClass="cell-textarea"
+                                                             placeholder="Descripción #{st.index+1}"/>
+                                        </td>
+
                                     </tr>
                                 </ui:repeat>
                             </tbody>
                         </table>
+
                     </h:panelGroup>
                 </p:fieldset>
 
+
                 <!-- J -->
-                <p:fieldset legend="J. Resultados de exámenes generales y específicos según riesgo/puesto" toggleable="true" collapsed="true">
+                <p:fieldset legend="J. Resultados de exámenes generales y específicos según riesgo/puesto"
+                            toggleable="true" collapsed="true">
                     <h:panelGroup layout="block" styleClass="ui-fluid panel-scroll">
+
                         <ui:param name="rowsJ" value="#{['1','2','3','4','5']}" />
+
                         <table class="j-grid">
-                            <colgroup><col class="j-col-exam"/><col class="j-col-date"/><col class="j-col-res"/></colgroup>
+                            <colgroup>
+                                <col class="j-col-exam"/>
+                                <col class="j-col-date"/>
+                                <col class="j-col-res"/>
+                            </colgroup>
+
                             <thead>
                                 <tr class="j-header">
-                                    <th>NOMBRE DEL EXAMEN</th><th>FECHA (aaaa/mm/dd)</th><th>RESULTADOS</th>
+                                    <th>NOMBRE DEL EXAMEN</th>
+                                    <th>FECHA (aaaa/mm/dd)</th>
+                                    <th>RESULTADOS</th>
                                 </tr>
                             </thead>
+
                             <tbody>
-                                <ui:repeat value="#{rowsJ}" var="r">
+                                <ui:repeat value="#{rowsJ}" var="r" varStatus="st">
                                     <tr>
-                                        <td><p:inputText id="examNombre_#{r}" styleClass="cell-input" placeholder="Examen #{r}"/></td>
-                                        <td class="j-date"><p:calendar id="examFecha_#{r}" pattern="yyyy/MM/dd" mask="true" navigator="true" showOn="button"/></td>
-                                        <td><p:inputText id="examResultado_#{r}" styleClass="cell-input" placeholder="Resultado #{r}"/></td>
+
+                                        <!-- NOMBRE DEL EXAMEN -->
+                                        <td>
+                                            <p:inputText id="examNombre_#{st.index}"
+                                                         value="#{centroMedicoCtrl.examNombre[st.index]}"
+                                                         styleClass="cell-input"
+                                                         placeholder="Examen #{st.index+1}"/>
+                                        </td>
+
+                                        <!-- FECHA -->
+                                        <td class="j-date">
+                                            <p:calendar id="examFecha_#{st.index}"
+                                                        value="#{centroMedicoCtrl.examFecha[st.index]}"
+                                                        pattern="yyyy/MM/dd"
+                                                        navigator="true"
+                                                        showOn="button"/>
+                                        </td>
+
+                                        <!-- RESULTADOS -->
+                                        <td>
+                                            <p:inputText id="examResultado_#{st.index}"
+                                                         value="#{centroMedicoCtrl.examResultado[st.index]}"
+                                                         styleClass="cell-input"
+                                                         placeholder="Resultado #{st.index+1}"/>
+                                        </td>
+
                                     </tr>
                                 </ui:repeat>
                             </tbody>
@@ -1237,8 +1367,11 @@
 
                         <!-- Observaciones generales -->
                         <h:panelGrid columns="1" style="margin-top:10px; width:100%;" styleClass="ui-fluid">
-                            <h:outputLabel for="obsJ" value="OBSERVACIONES:" style="font-weight:bold; display:block; margin-bottom:4px;"/>
+                            <h:outputLabel for="obsJ"
+                                           value="OBSERVACIONES:"
+                                           style="font-weight:bold; display:block; margin-bottom:4px;"/>
                             <p:inputTextarea id="obsJ"
+                                             value="#{centroMedicoCtrl.obsJ}"
                                              rows="4"
                                              autoResize="true"
                                              styleClass="cell-textarea j-observacion"
@@ -1247,6 +1380,7 @@
 
                     </h:panelGroup>
                 </p:fieldset>
+
 
                 <!-- K -->
                 <!-- K -->
@@ -1414,7 +1548,7 @@
                                             <f:selectItem itemLabel="APTO_LIMIT" itemValue="APTO_LIMIT"/>
                                             <f:selectItem itemLabel="NO_APTO" itemValue="NO_APTO"/>
                                         </p:selectOneRadio>
-                                        <p:radioButton for="aptitud" itemIndex="0"/>
+<!--                                        <p:radioButton for="aptitud" itemIndex="0"/>-->
                                     </td>
                                     <td class="l-cell-radio"><p:radioButton for="aptitud" itemIndex="0"/></td>
                                     <td class="l-cell-radio"><p:radioButton for="aptitud" itemIndex="1"/></td>
@@ -1557,13 +1691,18 @@
 
                 <p:spacer width="8"/>
 
-                <!-- SIGUIENTE: guarda el step actual y si todo va bien avanza     -->
-                <p:commandButton value="Siguiente" icon="pi pi-angle-right"
-                                 actionListener="#{centroMedicoCtrl.guardarStepActual}"
-                                 process=":layoutForm"
-                                 update=":layoutForm"
-                                 oncomplete="if (!args.validationFailed) PF('wiz').next();"/>
 
+
+<p:commandButton value="Siguiente" icon="pi pi-angle-right"
+                 action="#{centroMedicoCtrl.guardarStepActual}"
+                 process="@this @widgetVar(wiz)"
+                 update="@form"
+                 oncomplete="if(!args.validationFailed){ PF('wiz').next(); }"/>
+
+
+
+
+                
 
 
             </p:toolbarGroup>

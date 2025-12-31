@@ -9,8 +9,6 @@ package ec.gob.prueba.prueba_maven.modelo;
  *
  * @author GUERRA_KLEBER
  */
- 
-
 import lombok.*;
 import javax.persistence.*;
 import java.io.Serializable;
@@ -18,47 +16,61 @@ import java.util.Date;
 
 @Entity
 @Table(name = "FICHA_DIAGNOSTICO", schema = "CONSULTORIO",
-       uniqueConstraints = @UniqueConstraint(name="UK_FD_FICHA_CIE10", columnNames={"ID_FICHA","COD_CIE10"}))
-@Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
+        uniqueConstraints = @UniqueConstraint(name = "UK_FD_FICHA_CIE10", columnNames = {"ID_FICHA", "COD_CIE10"}))
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class FichaDiagnostico implements Serializable {
 
     @Id
-    @SequenceGenerator(name="FD_GEN", sequenceName="CONSULTORIO.SQ_FICHA_DIAG", allocationSize=1)
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator="FD_GEN")
-    @Column(name="ID_FICHA_DIAG", nullable=false)
+    @SequenceGenerator(name = "FD_GEN", sequenceName = "CONSULTORIO.SQ_FICHA_DIAG", allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "FD_GEN")
+    @Column(name = "ID_FICHA_DIAG", nullable = false)
     private Long idFichaDiag;
 
-    @ManyToOne(optional=false, fetch=FetchType.LAZY)
-    @JoinColumn(name="ID_FICHA", nullable=false)
+    @ManyToOne(optional = false, fetch = FetchType.LAZY)
+    @JoinColumn(name = "ID_FICHA", nullable = false)
     private FichaOcupacional ficha;
 
-    @Column(name="COD_CIE10", length=10, nullable=false)
+    @Column(name = "COD_CIE10", length = 10, nullable = false)
     private String codCie10;
 
-    @Column(name="DESCRIPCION", length=500)
+    @Column(name = "DESCRIPCION", length = 500)
     private String descripcion;
 
-    @Column(name="TIPO_DIAG", length=1, nullable=false)
+    @Column(name = "TIPO_DIAG", length = 1, nullable = false)
     private String tipoDiag; // P / S
 
-    @Column(name="ORDEN", nullable=false)
+    @Column(name = "ORDEN") // <-- quitar nullable=false
     private Integer orden;
 
-    @Column(name="ESTADO", length=20)
+    @Column(name = "ESTADO", length = 20, nullable = false)
     private String estado;
 
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(name="F_CREACION")
+    @Column(name = "F_CREACION", nullable = false)
     private Date fechaCreacion;
 
-    @Column(name="USR_CREACION", length=30)
+    @Column(name = "USR_CREACION", length = 30)
     private String usrCreacion;
 
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(name="F_ACTUALIZACION")
+    @Column(name = "F_ACTUALIZACION")
     private Date fechaActualizacion;
 
-    @Column(name="USR_ACTUALIZACION", length=30)
+    @Column(name = "USR_ACTUALIZACION", length = 30)
     private String usrActualizacion;
-}
 
+    @PrePersist
+    public void prePersist() {
+        if (estado == null || estado.trim().isEmpty()) {
+            estado = "A";
+        }
+        if (fechaCreacion == null) {
+            fechaCreacion = new Date();
+        }
+    }
+
+}
