@@ -1,8 +1,5 @@
 package ec.gob.prueba.prueba_maven.modelo;
-/**
- *
- * @author GUERRA_KLEBER
- */
+
 import lombok.*;
 import javax.persistence.*;
 import java.io.Serializable;
@@ -10,7 +7,7 @@ import java.util.Date;
 
 @Entity
 @Table(name = "FICHA_ACT_LABORAL", schema = "CONSULTORIO")
-@Access(AccessType.FIELD) // ✅ fuerza que JPA mapee por CAMPOS
+@Access(AccessType.FIELD) // ✅ JPA mapea SOLO por CAMPOS
 @Getter
 @Setter
 @NoArgsConstructor
@@ -22,9 +19,9 @@ public class FichaActLaboral implements Serializable {
 
     @Id
     @SequenceGenerator(
-        name = "SQ_FICHA_ACT_LAB_GEN",
-        sequenceName = "CONSULTORIO.SQ_FICHA_ACT_LAB",
-        allocationSize = 1
+            name = "SQ_FICHA_ACT_LAB_GEN",
+            sequenceName = "CONSULTORIO.SQ_FICHA_ACT_LAB",
+            allocationSize = 1
     )
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "SQ_FICHA_ACT_LAB_GEN")
     @Column(name = "ID_FICHA_ACT_LAB", nullable = false)
@@ -100,24 +97,19 @@ public class FichaActLaboral implements Serializable {
         fActualizacion = new Date();
     }
 
-    // ✅ Boolean para checkboxes (NO se persiste)
-    @Transient
+    // ✅ Helpers para JSF (sin anotaciones JPA en métodos)
     public boolean isAnteriorBool() { return "S".equalsIgnoreCase(esAnterior); }
     public void setAnteriorBool(boolean v) { this.esAnterior = v ? "S" : "N"; }
 
-    @Transient
     public boolean isActualBool() { return "S".equalsIgnoreCase(esActual); }
     public void setActualBool(boolean v) { this.esActual = v ? "S" : "N"; }
 
-    @Transient
     public boolean isIncidenteBool() { return "S".equalsIgnoreCase(incidente); }
     public void setIncidenteBool(boolean v) { this.incidente = v ? "S" : "N"; }
 
-    @Transient
     public boolean isAccidenteBool() { return "S".equalsIgnoreCase(accidente); }
     public void setAccidenteBool(boolean v) { this.accidente = v ? "S" : "N"; }
 
-    @Transient
     public boolean isEnfOcupacionalBool() { return "S".equalsIgnoreCase(enfOcupacional); }
     public void setEnfOcupacionalBool(boolean v) { this.enfOcupacional = v ? "S" : "N"; }
 }

@@ -45,6 +45,7 @@ import ec.gob.prueba.prueba_maven.modelo.FichaRiesgo;
 import ec.gob.prueba.prueba_maven.modelo.PersonaAux;
 import ec.gob.prueba.prueba_maven.modelo.SignosVitales;
 import ec.gob.prueba.prueba_maven.modelo.AuditoriaConsultorio;
+import ec.gob.prueba.prueba_maven.modelo.FichaActLaboral;
 import ec.gob.prueba.prueba_maven.servicio.Cie10Service;
 import ec.gob.prueba.prueba_maven.servicio.EmpleadoService;
 import ec.gob.prueba.prueba_maven.servicio.FichaOcupacionalService;
@@ -52,6 +53,7 @@ import ec.gob.prueba.prueba_maven.servicio.FichaRiesgoService;
 import ec.gob.prueba.prueba_maven.servicio.PersonaAuxService;
 import ec.gob.prueba.prueba_maven.servicio.SignosVitalesService;
 import ec.gob.prueba.prueba_maven.servicio.AuditoriaConsultorioService;
+import ec.gob.prueba.prueba_maven.servicio.FichaActLaboralService;
 import ec.gob.prueba.prueba_maven.servicio.FichaDiagnosticoService;
 import java.util.Arrays;
 import lombok.extern.slf4j.Slf4j;
@@ -211,6 +213,10 @@ public class CentroMedicoCtrl implements Serializable {
     private String recomendaciones;
     private String medicoNombre;
     private String medicoCodigo;
+    // N. RETIRO
+    private String nRealizaEvaluacion; // 'S' / 'N'
+    private String nRelacionTrabajo;   // 'S' / 'N'
+    private String nObsRetiro;         // texto
 
 // CIE10 principal (para PDF/UI)
     private String codCie10Ppal;
@@ -286,7 +292,7 @@ public class CentroMedicoCtrl implements Serializable {
     // J. Exámenes
     private List<String> examNombre;
     private List<String> examResultado;
-    
+
     private int stepIndex = 1;
 
 // -----------------------------
@@ -308,6 +314,8 @@ public class CentroMedicoCtrl implements Serializable {
     private PersonaAuxService personaAuxService;
     @EJB
     private AuditoriaConsultorioService auditoriaService;
+    @EJB
+    private FichaActLaboralService fichaActLaboralService;
 
     private void initExamenes(int n) {
         examNombre = new ArrayList<>(java.util.Collections.nCopies(n, ""));
@@ -473,6 +481,7 @@ public class CentroMedicoCtrl implements Serializable {
         actLabRows = Arrays.asList("1", "2", "3", "4", "5", "6", "7", "8");
         initActLab(H_ROWS); // o initActLab(8)
         ensureActLabSize();
+        initConsumoVidaCond();
 
     }
 
@@ -540,20 +549,63 @@ public class CentroMedicoCtrl implements Serializable {
     public void calcularEdad() {
         this.edad = calcularEdad(this.fechaNacimiento);
     }
+//
+//    private Integer calcularEdad(Date f) {
+//        if (f == null) {
+//            return null;
+//        }
+//        Calendar hoy = Calendar.getInstance();
+//        Calendar nac = Calendar.getInstance();
+//        nac.setTime(f);
+//        int years = hoy.get(Calendar.YEAR) - nac.get(Calendar.YEAR);
+//        int mh = hoy.get(Calendar.MONTH), mn = nac.get(Calendar.MONTH);
+//        if (mh < mn || (mh == mn && hoy.get(Calendar.DAY_OF_MONTH) < nac.get(Calendar.DAY_OF_MONTH))) {
+//            years--;
+//        }
+//        return Math.max(years, 0);
+//    }
 
-    private Integer calcularEdad(Date f) {
-        if (f == null) {
+    /**
+     * Calcula edad exacta (años cumplidos) en Java 1.7 usando Calendar. -
+     * Valida fecha futura (retorna null) - Normaliza horas para evitar errores
+     * por HH:mm:ss
+     */
+    private Integer calcularEdad(Date fechaNacimiento) {
+        if (fechaNacimiento == null) {
             return null;
         }
+
         Calendar hoy = Calendar.getInstance();
         Calendar nac = Calendar.getInstance();
-        nac.setTime(f);
+        nac.setTime(fechaNacimiento);
+
+        // Normalizar horas a medianoche (evita errores por hora/min/seg)
+        limpiarHora(hoy);
+        limpiarHora(nac);
+
+        // Fecha futura => inválida
+        if (nac.after(hoy)) {
+            return null;
+        }
+
         int years = hoy.get(Calendar.YEAR) - nac.get(Calendar.YEAR);
-        int mh = hoy.get(Calendar.MONTH), mn = nac.get(Calendar.MONTH);
-        if (mh < mn || (mh == mn && hoy.get(Calendar.DAY_OF_MONTH) < nac.get(Calendar.DAY_OF_MONTH))) {
+
+        // Si aún no ha pasado el cumpleaños este año, restar 1
+        int mesHoy = hoy.get(Calendar.MONTH);
+        int mesNac = nac.get(Calendar.MONTH);
+
+        if (mesHoy < mesNac || (mesHoy == mesNac && hoy.get(Calendar.DAY_OF_MONTH) < nac.get(Calendar.DAY_OF_MONTH))) {
             years--;
         }
-        return Math.max(years, 0);
+
+        return years;
+    }
+
+    private void limpiarHora(Calendar cal) {
+        cal.set(Calendar.HOUR_OF_DAY, 0);
+        cal.set(Calendar.MINUTE, 0);
+        cal.set(Calendar.SECOND, 0);
+        cal.set(Calendar.MILLISECOND, 0);
     }
 
     public Date getFechaMaximaNacimiento() {
@@ -616,39 +668,39 @@ public class CentroMedicoCtrl implements Serializable {
 // ===========================================================
 // WIZARD: GUARDAR POR STEP
 // ===========================================================
-public void guardarStepActual() {
-    FacesContext ctx = FacesContext.getCurrentInstance();
-    try {
-        if ("step1".equals(currentStep)) {
-            guardarStep1();
-            currentStep = "step2";
+    public void guardarStepActual() {
+        System.out.println("===============INGRESA A GUARDAR STEP ACTUAL =========");
+        FacesContext ctx = FacesContext.getCurrentInstance();
+        try {
+            if ("step1".equals(currentStep)) {
+                guardarStep1();
+                currentStep = "step2";
 
-        } else if ("step2".equals(currentStep)) {
-            if (!validarStep2()) {
-                ctx.validationFailed();
-                return;
-            }
-            guardarStep2();
-            currentStep = "step3";
+            } else if ("step2".equals(currentStep)) {
+                if (!validarStep2()) {
+                    ctx.validationFailed();
+                    return;
+                }
+                guardarStep2();
+                currentStep = "step3";
 
-        } else if ("step3".equals(currentStep)) {
-            // guardarStep3() ya hace: validar + ctx.validationFailed() + return
-            guardarStep3();
-            if (!ctx.isValidationFailed()) {
-                currentStep = "step4";
+            } else if ("step3".equals(currentStep)) {
+                System.out.println("ENTRA A GUARDAR STEP 3");
+                // guardarStep3() ya hace: validar + ctx.validationFailed() + return
+                guardarStep3();
+                if (!ctx.isValidationFailed()) {
+                    currentStep = "step4";
+                }
             }
+
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            ctx.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                    "Error",
+                    "Ocurrió un error al guardar la información del paso actual."));
+            ctx.validationFailed();
         }
-
-    } catch (Exception ex) {
-        ex.printStackTrace();
-        ctx.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR,
-                "Error",
-                "Ocurrió un error al guardar la información del paso actual."));
-        ctx.validationFailed();
     }
-}
-
-
 
     public void retrocederStep() {
         if ("step2".equals(currentStep)) {
@@ -1332,7 +1384,7 @@ public void guardarStepActual() {
                 return;
             }
 
-            // 1) Validaciones del Step3 (tu método existente)
+            // 1) Validaciones del Step3
             if (!validarStep3()) {
                 ctx.validationFailed();
                 return;
@@ -1357,9 +1409,8 @@ public void guardarStepActual() {
                 }
             }
 
-            // 3) L–M–O: Campos Step3 -> ficha
-            // (ajusta nombres según tu entidad real)
-            ficha.setAptitudSel(aptitudSel);                 // NOT NULL en BD (según tu comentario)
+            // 3) Campos Step3 -> ficha
+            ficha.setAptitudSel(aptitudSel);
             ficha.setDetalleObs(detalleObservaciones);
             ficha.setRecomendaciones(recomendaciones);
             ficha.setMedicoNombre(medicoNombre);
@@ -1374,58 +1425,72 @@ public void guardarStepActual() {
             ficha = fichaService.guardar(ficha);
 
             // ============================================================
-            // 5) H: ACTIVIDAD LABORAL (NO INSERTAR FILAS VACÍAS)
+            // 5) H: ACTIVIDAD LABORAL (FICHA_ACT_LABORAL) - GUARDA/ACTUALIZA
             // ============================================================
-            // Si tienes tabla hija para H, aquí debes:
-            //  a) eliminar lo anterior de esa ficha
-            //  b) insertar SOLO filas con datos
-            //
-            // IMPORTANTE: si aún no tienes entidad/servicio de H,
-            // deja este bloque como "preparación" (no inserta nada)
-            // y te lo conecto cuando me muestres la entidad/tabla.
-            if (actLabCentroTrabajo != null) {
+            // Asegurar tamaños (evita IndexOutOfBounds)
+            ensureActLabSize();
 
-                // EJEMPLO: si tienes un servicio tipo actLabService:
-                // actLabService.eliminarPorFicha(ficha.getIdFicha());
-                for (int i = 0; i < actLabCentroTrabajo.size(); i++) {
+            for (int i = 0; i < H_ROWS; i++) {
 
-                    boolean filaTieneDatos
-                            = !isBlank(getSafe(actLabCentroTrabajo, i))
-                            || !isBlank(getSafe(actLabActividad, i))
-                            || !isBlank(getSafe(actLabTiempo, i))
-                            || isTrue(getSafe(actLabTrabajoAnterior, i))
-                            || isTrue(getSafe(actLabTrabajoActual, i))
-                            || isTrue(getSafe(actLabIncidenteChk, i))
-                            || isTrue(getSafe(actLabAccidenteChk, i))
-                            || isTrue(getSafe(actLabEnfermedadChk, i))
-                            || isTrue(getSafe(iessSi, i))
-                            || isTrue(getSafe(iessNo, i))
-                            || getSafe(iessFecha, i) != null
-                            || !isBlank(getSafe(iessEspecificar, i))
-                            || !isBlank(getSafe(actLabObservaciones, i));
+                boolean filaTieneDatos
+                        = !isBlank(getSafe(actLabCentroTrabajo, i))
+                        || !isBlank(getSafe(actLabActividad, i))
+                        || !isBlank(getSafe(actLabTiempo, i))
+                        || isTrue(getSafe(actLabTrabajoAnterior, i))
+                        || isTrue(getSafe(actLabTrabajoActual, i))
+                        || isTrue(getSafe(actLabIncidenteChk, i))
+                        || isTrue(getSafe(actLabAccidenteChk, i))
+                        || isTrue(getSafe(actLabEnfermedadChk, i))
+                        || getSafe(iessFecha, i) != null
+                        || !isBlank(getSafe(iessEspecificar, i))
+                        || !isBlank(getSafe(actLabObservaciones, i));
 
-                    if (!filaTieneDatos) {
-                        continue; // ✅ fila vacía => NO insertar
-                    }
+                int nroFila = i + 1; // BD: NRO_FILA (1..8)
 
-                    // AQUÍ construirías la entidad hija y la guardarías:
-                    // FichaActLaboral h = new FichaActLaboral();
-                    // h.setFichaId(ficha.getIdFicha());
-                    // h.setCentroTrabajo(getSafe(actLabCentroTrabajo,i));
-                    // ...
-                    // h.setFechaCreacion(ahora);
-                    // h.setUsrCreacion(usuario);
-                    // actLabService.guardar(h);
+                if (!filaTieneDatos) {
+                    // Si existía en BD y ahora está vacía -> eliminar (opcional pero recomendado)
+                    fichaActLaboralService.eliminarPorFichaYFila(ficha.getIdFicha(), nroFila);
+                    continue;
                 }
+
+                // UPSERT por (ID_FICHA, NRO_FILA)
+                FichaActLaboral fal = fichaActLaboralService.buscarPorFichaYFila(ficha.getIdFicha(), nroFila);
+
+                if (fal == null) {
+                    fal = new FichaActLaboral();
+                    fal.setFicha(ficha);      // FK: ID_FICHA
+                    fal.setNroFila(nroFila);  // NOT NULL
+                    fal.setFCreacion(ahora);
+                    fal.setUsrCreacion(usuario);
+                } else {
+                    fal.setFActualizacion(ahora);
+                    fal.setUsrActualizacion(usuario);
+                }
+
+                fal.setCentroTrabajo(getSafe(actLabCentroTrabajo, i));
+                fal.setActividad(getSafe(actLabActividad, i));
+                fal.setTiempo(getSafe(actLabTiempo, i));
+
+                // CHAR(1) 'S'/'N'
+                fal.setEsAnterior(sn(getSafe(actLabTrabajoAnterior, i)));
+                fal.setEsActual(sn(getSafe(actLabTrabajoActual, i)));
+                fal.setIncidente(sn(getSafe(actLabIncidenteChk, i)));
+                fal.setAccidente(sn(getSafe(actLabAccidenteChk, i)));
+                fal.setEnfOcupacional(sn(getSafe(actLabEnfermedadChk, i)));
+
+                // En tu UI lo estás usando como iessFecha / iessEspecificar:
+                // En BD se llama FECHA_EVENTO y ESPECIFICAR.
+                fal.setFechaEvento(getSafe(iessFecha, i));
+                fal.setEspecificar(getSafe(iessEspecificar, i));
+                fal.setObservaciones(getSafe(actLabObservaciones, i));
+
+                fichaActLaboralService.guardar(fal);
             }
 
             // ============================================================
             // 6) I: ACTIVIDADES EXTRALABORALES (NO INSERTAR VACÍAS)
             // ============================================================
             if (tipoAct != null) {
-
-                // Ejemplo:
-                // extraLabService.eliminarPorFicha(ficha.getIdFicha());
                 for (int i = 0; i < tipoAct.size(); i++) {
                     boolean filaTieneDatos
                             = !isBlank(getSafe(tipoAct, i))
@@ -1435,12 +1500,7 @@ public void guardarStepActual() {
                     if (!filaTieneDatos) {
                         continue;
                     }
-
-                    // Guardar entidad hija si existe:
-                    // FichaExtraLab x = new FichaExtraLab();
-                    // x.setIdFicha(ficha.getIdFicha());
-                    // ...
-                    // extraLabService.guardar(x);
+                    // Aquí guardas si ya tienes entidad/tabla/servicio
                 }
             }
 
@@ -1448,9 +1508,6 @@ public void guardarStepActual() {
             // 7) J: EXÁMENES (NO INSERTAR VACÍOS)
             // ============================================================
             if (examNombre != null) {
-
-                // Ejemplo:
-                // examenService.eliminarPorFicha(ficha.getIdFicha());
                 for (int i = 0; i < examNombre.size(); i++) {
                     boolean filaTieneDatos
                             = !isBlank(getSafe(examNombre, i))
@@ -1460,11 +1517,7 @@ public void guardarStepActual() {
                     if (!filaTieneDatos) {
                         continue;
                     }
-
-                    // Guardar entidad hija si existe
-                    // FichaExamen e = new FichaExamen();
-                    // ...
-                    // examenService.guardar(e);
+                    // Aquí guardas si ya tienes entidad/tabla/servicio
                 }
             }
 
@@ -1472,9 +1525,6 @@ public void guardarStepActual() {
             // 8) K: DIAGNÓSTICOS (guardar SOLO filas con datos)
             // ============================================================
             if (listaDiag != null && !listaDiag.isEmpty()) {
-
-                // Si tu servicio lo permite:
-                // fichaDiagService.eliminarPorFicha(ficha.getIdFicha());
                 for (ConsultaDiagnostico cd : listaDiag) {
                     if (cd == null) {
                         continue;
@@ -1486,17 +1536,10 @@ public void guardarStepActual() {
 
                     boolean tieneDatos = !isBlank(cod) || !isBlank(desc) || !isBlank(tipo);
                     if (!tieneDatos) {
-                        continue; // ✅ fila vacía => NO insertar
+                        continue;
                     }
-                    // Si tu entidad diagnóstica es otra, aquí mapeas:
-                    // FichaDiagnostico fd = new FichaDiagnostico();
-                    // fd.setFichaId(ficha.getIdFicha());
-                    // fd.setCodigo(cod);
-                    // fd.setDescripcion(desc);
-                    // fd.setTipo(tipo);
-                    // fd.setFechaCreacion(ahora);
-                    // fd.setUsrCreacion(usuario);
-                    // fichaDiagService.guardar(fd);
+
+                    // Aquí guardas si ya tienes entidad/tabla/servicio real (FichaDiagnostico)
                 }
             }
 
@@ -1506,7 +1549,7 @@ public void guardarStepActual() {
             ctx.addMessage(null, new FacesMessage(
                     FacesMessage.SEVERITY_INFO,
                     "OK",
-                    "Step 3 guardado correctamente."
+                    "Step 3 guardado correctamente (incluye Actividades Laborales)."
             ));
 
         } catch (Exception e) {
@@ -2283,10 +2326,10 @@ public void guardarStepActual() {
             mostrarDialogoAux = false;
             mostrarDlgCedula = false;
             permitirIngresoManual = false;
-            PrimeFaces.current().ajax().update("layoutForm:noHistoria");
+            PrimeFaces.current().ajax().update("layoutForm:noHistoriaClinica");
             PrimeFaces.current().ajax().addCallbackParam("validationFailed", false);
             PrimeFaces.current().executeScript(
-                    "PF('dlgPersonaAux').hide(); PF('dlgBuscarCedula').hide();"
+                    "PF('dlgPersonaAux').hide(); PF('dlgCedula').hide();"
             );
 
             ctx.addMessage(null, new FacesMessage(
@@ -2417,9 +2460,8 @@ public void guardarStepActual() {
 
             // ✅ Actualiza lo correcto: el campo que muestra historia clínica y los datos visibles
             PrimeFaces.current().ajax().update(
-                    "layoutForm:noHistoria", // asegúrate que ESTE sea el id real en tu xhtml
-                    "layoutForm:panelPaciente", // si tienes panel de nombres/sexo/fecha
-                    "layoutForm:panelStep1" // si tu step1 está dentro
+                    "layoutForm:wiz",
+                    "layoutForm:noHistoriaClinica"
             );
 
         } catch (Exception e) {
@@ -2755,8 +2797,7 @@ public void guardarStepActual() {
         return false;
     }
 
-     // 1..4
-
+    // 1..4
     public int getStepIndex() {
         return stepIndex;
     }
@@ -2764,9 +2805,64 @@ public void guardarStepActual() {
     public void setStepIndex(int stepIndex) {
         this.stepIndex = stepIndex;
     }
+
     public String getProcessStepId() {
-    // Ajusta el id del form si NO es layoutForm
-    return ":layoutForm:wiz:" + currentStep;
+        // Ajusta el id del form si NO es layoutForm
+        return ":layoutForm:wiz:" + currentStep;
+    }
+
+    
+
+    private static final int CONS_ROWS = 3; // 0=Tabaco,1=Alcohol,2=Otras
+
+private void initConsumoVidaCond() {
+
+    final int N = CONS_ROWS;
+
+    if (consTiempoConsumoMeses == null)      consTiempoConsumoMeses = new Integer[N];
+    if (consExConsumidor == null)            consExConsumidor       = new Boolean[N];
+    if (consTiempoAbstinenciaMeses == null)  consTiempoAbstinenciaMeses = new Integer[N];
+    if (consNoConsume == null)               consNoConsume          = new Boolean[N];
+
+    if (afCual == null)   afCual = new String[N];
+    if (afTiempo == null) afTiempo = new String[N];
+
+    if (medCual == null)  medCual = new String[N];
+    if (medCant == null)  medCant = new Integer[N];
+
+    // Defaults para evitar null en checkboxes
+    for (int i = 0; i < N; i++) {
+        if (consExConsumidor[i] == null) consExConsumidor[i] = Boolean.FALSE;
+        if (consNoConsume[i] == null)    consNoConsume[i] = Boolean.FALSE;
+    }
+
+    // Observación (evitar null)
+    if (consumoVidaCondObs == null) consumoVidaCondObs = "";
+}
+
+
+    // ===============================
+// ALIASES para que el XHTML funcione
+// ===============================
+public Integer[] getConsTiempoConsumo() {
+    return consTiempoConsumoMeses;
+}
+public void setConsTiempoConsumo(Integer[] v) {
+    this.consTiempoConsumoMeses = v;
+}
+
+public Integer[] getConsTiempoAbstinencia() {
+    return consTiempoAbstinenciaMeses;
+}
+public void setConsTiempoAbstinencia(Integer[] v) {
+    this.consTiempoAbstinenciaMeses = v;
+}
+
+public String getConsObservacion() {
+    return consumoVidaCondObs;
+}
+public void setConsObservacion(String v) {
+    this.consumoVidaCondObs = v;
 }
 
 
