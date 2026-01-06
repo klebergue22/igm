@@ -5,7 +5,7 @@ package ec.gob.prueba.prueba_maven.modelo;
  */
  
 
- 
+
 
 import lombok.*;
 import javax.persistence.*;
@@ -14,7 +14,7 @@ import java.util.Date;
 
 @Entity
 @Table(name = "FICHA_OCUPACIONAL", schema = "CONSULTORIO")
-@Access(AccessType.FIELD) // <-- fuerza FIELD access y elimina inconsistencia
+@Access(AccessType.FIELD) // fuerza FIELD access
 @Getter
 @Setter
 @NoArgsConstructor
@@ -242,7 +242,9 @@ public class FichaOcupacional implements Serializable {
     @Column(name = "ESTADO", length = 20)
     private String estado; // BORRADOR, EMITIDA, ANULADA, etc.
 
-    // Auditoría
+    // =====================================================
+    // Auditoría  ✅ (AQUÍ estaba tu error)
+    // =====================================================
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "F_CREACION")
     private Date fechaCreacion;
@@ -384,19 +386,13 @@ public class FichaOcupacional implements Serializable {
     @Transient private Boolean exfNeuroMarchaBool;
 
     // =====================================================
-    // Conversión S/N <-> Boolean (solo lógica, sin anotaciones)
+    // Conversión S/N <-> Boolean
     // =====================================================
-    private static boolean snToBool(String v) {
-        return "S".equalsIgnoreCase(v);
-    }
-
-    private static String boolToSn(Boolean b) {
-        return (b != null && b) ? "S" : "N";
-    }
+    private static boolean snToBool(String v) { return "S".equalsIgnoreCase(v); }
+    private static String boolToSn(Boolean b) { return (b != null && b) ? "S" : "N"; }
 
     // =====================================================
     // PROPIEDADES ...Bool para campos S/N persistentes
-    // (sin @Transient en método, porque FIELD access ya ignora)
     // =====================================================
     public Boolean getExfPielCicatricesBool() { return snToBool(exfPielCicatrices); }
     public void setExfPielCicatricesBool(Boolean v) { this.exfPielCicatrices = boolToSn(v); }

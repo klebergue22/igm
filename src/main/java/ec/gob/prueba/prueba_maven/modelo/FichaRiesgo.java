@@ -5,11 +5,6 @@
  */
 package ec.gob.prueba.prueba_maven.modelo;
 
-/**
- * Ficha de riesgos laborales (Step 2)
- *
- * Tabla: CONSULTORIO.FICHA_RIESGO
- */
 import lombok.*;
 import javax.persistence.*;
 import java.io.Serializable;
@@ -23,7 +18,10 @@ import java.util.Date;
 @AllArgsConstructor
 @Builder(toBuilder = true)
 @ToString(exclude = {"ficha"})
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class FichaRiesgo implements Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     @Id
     @SequenceGenerator(
@@ -33,11 +31,12 @@ public class FichaRiesgo implements Serializable {
     )
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "FICHA_RIESGO_GEN")
     @Column(name = "ID_FICHA_RIESGO", nullable = false)
+    @EqualsAndHashCode.Include
     private Long idFichaRiesgo;
 
     // ===== Relación con FICHA_OCUPACIONAL =====
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "ID_FICHA", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "ID_FICHA", referencedColumnName = "ID_FICHA", nullable = false)
     private FichaOcupacional ficha;
 
     // ===== Datos generales del puesto / actividades =====
@@ -65,7 +64,7 @@ public class FichaRiesgo implements Serializable {
     @Column(name = "ACTIVIDAD_7", length = 500)
     private String actividad7;
 
-    // ===== Resumen de factores de riesgo por bloque =====
+    // ===== Resumen por bloque =====
     @Column(name = "RIESGOS_FISICOS", length = 2000)
     private String riesgosFisicos;
 
@@ -87,40 +86,40 @@ public class FichaRiesgo implements Serializable {
     @Column(name = "OBSERVACIONES", length = 2000)
     private String observaciones;
 
+    @Column(name = "MEDIDAS_PREVENTIVAS", length = 2000)
+    private String medidasPreventivas;
+
     // ===== Auditoría =====
     @Column(name = "ESTADO", length = 20)
-    private String estado; // p.ej. ACTIVO / INACTIVO / BORRADOR
+    private String estado;
 
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "F_CREACION")
-    private Date fechaCreacion;
+    private Date fCreacion;
 
     @Column(name = "USR_CREACION", length = 30)
     private String usrCreacion;
 
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "F_ACTUALIZACION")
-    private Date fechaActualizacion;
+    private Date fActualizacion;
 
     @Column(name = "USR_ACTUALIZACION", length = 30)
     private String usrActualizacion;
 
-    @Column(name = "MEDIDAS_PREVENTIVAS", length = 2000)
-    private String medidasPreventivas;
-
-    // ===== Hooks de auditoría =====
     @PrePersist
     public void prePersist() {
         if (estado == null || estado.trim().isEmpty()) {
-            estado = "ACTIVO";   // o el valor que decidan manejar como default
+            // En tu DDL no hay default, así que define uno consistente
+            estado = "ACTIVO";
         }
-        if (fechaCreacion == null) {
-            fechaCreacion = new Date();
+        if (fCreacion == null) {
+            fCreacion = new Date();
         }
     }
 
     @PreUpdate
     public void preUpdate() {
-        fechaActualizacion = new Date();
+        fActualizacion = new Date();
     }
 }
