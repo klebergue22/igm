@@ -6,7 +6,7 @@
                 xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
 
     <ui:define name="content"> Evaluación Médica Ocupacional
-        
+
         <!-- DIALOGO BUSCAR CEDULA -->
         <p:dialog id="dlgCedula"
                   widgetVar="dlgCedula"
@@ -626,14 +626,22 @@
 
                         <h:outputText value="Peso (kg)"/>
                         <p:inputNumber id="peso" value="#{centroMedicoCtrl.peso}" decimalPlaces="2"
-                                       oninput="calcIMC()" onkeyup="calcIMC()" onchange="calcIMC()"/>
+                                       oninput="calcIMC()" onkeyup="calcIMC()" onchange="calcIMC()">
+                            <p:ajax event="blur" listener="#{centroMedicoCtrl.recalcularIMC}" update="imc"/>
+                        </p:inputNumber>
 
-                        <h:outputText value="Talla (cm)"/>
                         <p:inputNumber id="talla" value="#{centroMedicoCtrl.tallaCm}" decimalPlaces="2"
-                                       oninput="calcIMC()" onkeyup="calcIMC()" onchange="calcIMC()"/>
+                                       oninput="calcIMC()" onkeyup="calcIMC()" onchange="calcIMC()">
+                            <p:ajax event="blur" listener="#{centroMedicoCtrl.recalcularIMC}" update="imc"/>
+                        </p:inputNumber>
+
 
                         <h:outputText value="IMC"/>
-                        <p:inputNumber id="imc" value="#{centroMedicoCtrl.imc}" decimalPlaces="2" disabled="true"/>
+                        <p:inputNumber id="imc"
+                                       value="#{centroMedicoCtrl.imc}"
+                                       decimalPlaces="2"
+                                       readonly="true"/>
+
 
                         <h:outputText value="Perímetro abd (cm)"/>
                         <p:inputNumber id="perimetroAbd" value="#{centroMedicoCtrl.perimetroAbd}" decimalPlaces="1"/>
@@ -830,391 +838,391 @@
             <!-- ===================================================== -->
             <!-- STEP 2: G. FACTORES DE RIESGO DEL TRABAJO ACTUAL       -->
             <!-- ===================================================== -->
-        <p:tab id="step2" title="Riesgos (G)">
+            <p:tab id="step2" title="Riesgos (G)">
 
-    <p:panel header="Matriz de Identificación de Riesgos Laborales"
-             toggleable="true" toggleSpeed="150" styleClass="panel-scroll">
-        <h:panelGroup layout="block" styleClass="ui-fluid">
+                <p:panel header="Matriz de Identificación de Riesgos Laborales"
+                         toggleable="true" toggleSpeed="150" styleClass="panel-scroll">
+                    <h:panelGroup layout="block" styleClass="ui-fluid">
 
-            <ui:param name="cols" value="#{['1','2','3','4','5','6','7']}" />
+                        <ui:param name="cols" value="#{['1','2','3','4','5','6','7']}" />
 
-            <!-- ===================== -->
-            <!-- PUESTO + ACTIVIDADES  -->
-            <!-- ===================== -->
-            <table class="risk-grid">
-                <colgroup>
-                    <col class="risk-col-label"/>
-                    <col class="risk-col"/><col class="risk-col"/><col class="risk-col"/>
-                    <col class="risk-col"/><col class="risk-col"/><col class="risk-col"/><col class="risk-col"/>
-                </colgroup>
+                        <!-- ===================== -->
+                        <!-- PUESTO + ACTIVIDADES  -->
+                        <!-- ===================== -->
+                        <table class="risk-grid">
+                            <colgroup>
+                                <col class="risk-col-label"/>
+                                <col class="risk-col"/><col class="risk-col"/><col class="risk-col"/>
+                                <col class="risk-col"/><col class="risk-col"/><col class="risk-col"/><col class="risk-col"/>
+                            </colgroup>
 
-                <thead>
-                    <tr>
-                        <th colspan="8" style="text-align:left; background:#f5f5f5;">
-                            <h:outputText value="PUESTO DE TRABAJO"/>
-                            <p:inputText id="puestoTrabajo"
-                                         value="#{centroMedicoCtrl.fichaRiesgo.puestoTrabajo}"
-                                         style="width:60%; margin-left:10px"/>
-                        </th>
-                    </tr>
-                    <tr class="risk-header">
-                        <th>ACTIVIDADES IMPORTANTES DENTRO DE LA JORNADA LABORAL</th>
-                        <th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th><th>7</th>
-                    </tr>
-                </thead>
+                            <thead>
+                                <tr>
+                                    <th colspan="8" style="text-align:left; background:#f5f5f5;">
+                                        <h:outputText value="PUESTO DE TRABAJO"/>
+                                        <p:inputText id="puestoTrabajo"
+                                                     value="#{centroMedicoCtrl.fichaRiesgo.puestoTrabajo}"
+                                                     style="width:60%; margin-left:10px"/>
+                                    </th>
+                                </tr>
+                                <tr class="risk-header">
+                                    <th>ACTIVIDADES IMPORTANTES DENTRO DE LA JORNADA LABORAL</th>
+                                    <th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th><th>7</th>
+                                </tr>
+                            </thead>
 
-                <tbody>
-                    <tr>
-                        <td><strong>ACTIVIDAD LABORAL</strong></td>
-                        <td><p:inputTextarea id="act1" value="#{centroMedicoCtrl.actividadesLab[0]}" styleClass="cell-input" placeholder="Actividad 1"/></td>
-                        <td><p:inputTextarea id="act2" value="#{centroMedicoCtrl.actividadesLab[1]}" styleClass="cell-input" placeholder="Actividad 2"/></td>
-                        <td><p:inputTextarea id="act3" value="#{centroMedicoCtrl.actividadesLab[2]}" styleClass="cell-input" placeholder="Actividad 3"/></td>
-                        <td><p:inputTextarea id="act4" value="#{centroMedicoCtrl.actividadesLab[3]}" styleClass="cell-input" placeholder="Actividad 4"/></td>
-                        <td><p:inputTextarea id="act5" value="#{centroMedicoCtrl.actividadesLab[4]}" styleClass="cell-input" placeholder="Actividad 5"/></td>
-                        <td><p:inputTextarea id="act6" value="#{centroMedicoCtrl.actividadesLab[5]}" styleClass="cell-input" placeholder="Actividad 6"/></td>
-                        <td><p:inputTextarea id="act7" value="#{centroMedicoCtrl.actividadesLab[6]}" styleClass="cell-input" placeholder="Actividad 7"/></td>
-                    </tr>
-                </tbody>
-            </table>
+                            <tbody>
+                                <tr>
+                                    <td><strong>ACTIVIDAD LABORAL</strong></td>
+                                    <td><p:inputTextarea id="act1" value="#{centroMedicoCtrl.actividadesLab[0]}" styleClass="cell-input" placeholder="Actividad 1"/></td>
+                                    <td><p:inputTextarea id="act2" value="#{centroMedicoCtrl.actividadesLab[1]}" styleClass="cell-input" placeholder="Actividad 2"/></td>
+                                    <td><p:inputTextarea id="act3" value="#{centroMedicoCtrl.actividadesLab[2]}" styleClass="cell-input" placeholder="Actividad 3"/></td>
+                                    <td><p:inputTextarea id="act4" value="#{centroMedicoCtrl.actividadesLab[3]}" styleClass="cell-input" placeholder="Actividad 4"/></td>
+                                    <td><p:inputTextarea id="act5" value="#{centroMedicoCtrl.actividadesLab[4]}" styleClass="cell-input" placeholder="Actividad 5"/></td>
+                                    <td><p:inputTextarea id="act6" value="#{centroMedicoCtrl.actividadesLab[5]}" styleClass="cell-input" placeholder="Actividad 6"/></td>
+                                    <td><p:inputTextarea id="act7" value="#{centroMedicoCtrl.actividadesLab[6]}" styleClass="cell-input" placeholder="Actividad 7"/></td>
+                                </tr>
+                            </tbody>
+                        </table>
 
-            <!-- ========== -->
-            <!-- BLOQUE FÍSICO -->
-            <!-- ========== -->
-            <p:fieldset legend="FÍSICO" toggleable="true" collapsed="false" style="margin-top:10px;">
-                <table class="risk-grid">
-                    <colgroup>
-                        <col class="risk-col-label"/>
-                        <col class="risk-col"/><col class="risk-col"/><col class="risk-col"/>
-                        <col class="risk-col"/><col class="risk-col"/><col class="risk-col"/><col class="risk-col"/>
-                    </colgroup>
+                        <!-- ========== -->
+                        <!-- BLOQUE FÍSICO -->
+                        <!-- ========== -->
+                        <p:fieldset legend="FÍSICO" toggleable="true" collapsed="false" style="margin-top:10px;">
+                            <table class="risk-grid">
+                                <colgroup>
+                                    <col class="risk-col-label"/>
+                                    <col class="risk-col"/><col class="risk-col"/><col class="risk-col"/>
+                                    <col class="risk-col"/><col class="risk-col"/><col class="risk-col"/><col class="risk-col"/>
+                                </colgroup>
 
-                    <tbody>
-                        <tr>
-                            <td>Temperaturas altas</td>
-                            <ui:repeat value="#{cols}" var="c">
-                                <td><p:selectBooleanCheckbox value="#{centroMedicoCtrl.riesgos['FIS_TEMP_ALTAS_'.concat(c)]}"/></td>
-                            </ui:repeat>
-                        </tr>
-                        <tr>
-                            <td>Temperaturas bajas</td>
-                            <ui:repeat value="#{cols}" var="c">
-                                <td><p:selectBooleanCheckbox value="#{centroMedicoCtrl.riesgos['FIS_TEMP_BAJAS_'.concat(c)]}"/></td>
-                            </ui:repeat>
-                        </tr>
-                        <tr>
-                            <td>Radiación ionizante</td>
-                            <ui:repeat value="#{cols}" var="c">
-                                <td><p:selectBooleanCheckbox value="#{centroMedicoCtrl.riesgos['FIS_RAD_ION_'.concat(c)]}"/></td>
-                            </ui:repeat>
-                        </tr>
-                        <tr>
-                            <td>Radiación no ionizante</td>
-                            <ui:repeat value="#{cols}" var="c">
-                                <td><p:selectBooleanCheckbox value="#{centroMedicoCtrl.riesgos['FIS_RAD_NOION_'.concat(c)]}"/></td>
-                            </ui:repeat>
-                        </tr>
-                        <tr>
-                            <td>Ruido</td>
-                            <ui:repeat value="#{cols}" var="c">
-                                <td><p:selectBooleanCheckbox value="#{centroMedicoCtrl.riesgos['FIS_RUIDO_'.concat(c)]}"/></td>
-                            </ui:repeat>
-                        </tr>
-                        <tr>
-                            <td>Vibración</td>
-                            <ui:repeat value="#{cols}" var="c">
-                                <td><p:selectBooleanCheckbox value="#{centroMedicoCtrl.riesgos['FIS_VIBRACION_'.concat(c)]}"/></td>
-                            </ui:repeat>
-                        </tr>
-                        <tr>
-                            <td>Iluminación</td>
-                            <ui:repeat value="#{cols}" var="c">
-                                <td><p:selectBooleanCheckbox value="#{centroMedicoCtrl.riesgos['FIS_ILUMINACION_'.concat(c)]}"/></td>
-                            </ui:repeat>
-                        </tr>
-                        <tr>
-                            <td>Ventilación</td>
-                            <ui:repeat value="#{cols}" var="c">
-                                <td><p:selectBooleanCheckbox value="#{centroMedicoCtrl.riesgos['FIS_VENTILACION_'.concat(c)]}"/></td>
-                            </ui:repeat>
-                        </tr>
-                        <tr>
-                            <td>Fluido eléctrico</td>
-                            <ui:repeat value="#{cols}" var="c">
-                                <td><p:selectBooleanCheckbox value="#{centroMedicoCtrl.riesgos['FIS_FLUIDO_ELECT_'.concat(c)]}"/></td>
-                            </ui:repeat>
-                        </tr>
+                                <tbody>
+                                    <tr>
+                                        <td>Temperaturas altas</td>
+                                        <ui:repeat value="#{cols}" var="c">
+                                            <td><p:selectBooleanCheckbox value="#{centroMedicoCtrl.riesgos['FIS_TEMP_ALTAS_'.concat(c)]}"/></td>
+                                        </ui:repeat>
+                                    </tr>
+                                    <tr>
+                                        <td>Temperaturas bajas</td>
+                                        <ui:repeat value="#{cols}" var="c">
+                                            <td><p:selectBooleanCheckbox value="#{centroMedicoCtrl.riesgos['FIS_TEMP_BAJAS_'.concat(c)]}"/></td>
+                                        </ui:repeat>
+                                    </tr>
+                                    <tr>
+                                        <td>Radiación ionizante</td>
+                                        <ui:repeat value="#{cols}" var="c">
+                                            <td><p:selectBooleanCheckbox value="#{centroMedicoCtrl.riesgos['FIS_RAD_ION_'.concat(c)]}"/></td>
+                                        </ui:repeat>
+                                    </tr>
+                                    <tr>
+                                        <td>Radiación no ionizante</td>
+                                        <ui:repeat value="#{cols}" var="c">
+                                            <td><p:selectBooleanCheckbox value="#{centroMedicoCtrl.riesgos['FIS_RAD_NOION_'.concat(c)]}"/></td>
+                                        </ui:repeat>
+                                    </tr>
+                                    <tr>
+                                        <td>Ruido</td>
+                                        <ui:repeat value="#{cols}" var="c">
+                                            <td><p:selectBooleanCheckbox value="#{centroMedicoCtrl.riesgos['FIS_RUIDO_'.concat(c)]}"/></td>
+                                        </ui:repeat>
+                                    </tr>
+                                    <tr>
+                                        <td>Vibración</td>
+                                        <ui:repeat value="#{cols}" var="c">
+                                            <td><p:selectBooleanCheckbox value="#{centroMedicoCtrl.riesgos['FIS_VIBRACION_'.concat(c)]}"/></td>
+                                        </ui:repeat>
+                                    </tr>
+                                    <tr>
+                                        <td>Iluminación</td>
+                                        <ui:repeat value="#{cols}" var="c">
+                                            <td><p:selectBooleanCheckbox value="#{centroMedicoCtrl.riesgos['FIS_ILUMINACION_'.concat(c)]}"/></td>
+                                        </ui:repeat>
+                                    </tr>
+                                    <tr>
+                                        <td>Ventilación</td>
+                                        <ui:repeat value="#{cols}" var="c">
+                                            <td><p:selectBooleanCheckbox value="#{centroMedicoCtrl.riesgos['FIS_VENTILACION_'.concat(c)]}"/></td>
+                                        </ui:repeat>
+                                    </tr>
+                                    <tr>
+                                        <td>Fluido eléctrico</td>
+                                        <ui:repeat value="#{cols}" var="c">
+                                            <td><p:selectBooleanCheckbox value="#{centroMedicoCtrl.riesgos['FIS_FLUIDO_ELECT_'.concat(c)]}"/></td>
+                                        </ui:repeat>
+                                    </tr>
 
-                        <tr>
-                            <td><em>Otros (Físico)</em></td>
-                            <ui:repeat value="#{cols}" var="c">
-                                <td>
-                                    <p:inputText value="#{centroMedicoCtrl.otrosRiesgos['FIS_OTROS_'.concat(c)]}"
-                                                 styleClass="cell-input" placeholder="Otro #{c}"/>
-                                </td>
-                            </ui:repeat>
-                        </tr>
-                    </tbody>
-                </table>
-            </p:fieldset>
+                                    <tr>
+                                        <td><em>Otros (Físico)</em></td>
+                                        <ui:repeat value="#{cols}" var="c">
+                                            <td>
+                                                <p:inputText value="#{centroMedicoCtrl.otrosRiesgos['FIS_OTROS_'.concat(c)]}"
+                                                             styleClass="cell-input" placeholder="Otro #{c}"/>
+                                            </td>
+                                        </ui:repeat>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </p:fieldset>
 
-            <!-- ================= -->
-            <!-- BLOQUE: DE SEGURIDAD -->
-            <!-- ================= -->
-            <p:fieldset legend="DE SEGURIDAD" toggleable="true" collapsed="true" style="margin-top:10px;">
-                <table class="risk-grid">
-                    <colgroup>
-                        <col class="risk-col-label"/>
-                        <col class="risk-col"/><col class="risk-col"/><col class="risk-col"/>
-                        <col class="risk-col"/><col class="risk-col"/><col class="risk-col"/><col class="risk-col"/>
-                    </colgroup>
+                        <!-- ================= -->
+                        <!-- BLOQUE: DE SEGURIDAD -->
+                        <!-- ================= -->
+                        <p:fieldset legend="DE SEGURIDAD" toggleable="true" collapsed="true" style="margin-top:10px;">
+                            <table class="risk-grid">
+                                <colgroup>
+                                    <col class="risk-col-label"/>
+                                    <col class="risk-col"/><col class="risk-col"/><col class="risk-col"/>
+                                    <col class="risk-col"/><col class="risk-col"/><col class="risk-col"/><col class="risk-col"/>
+                                </colgroup>
 
-                    <tbody>
-                        <tr>
-                            <td><strong>LOCATIVOS</strong> — Falta de señalización, aseo, desorden</td>
-                            <ui:repeat value="#{cols}" var="c">
-                                <td><p:selectBooleanCheckbox value="#{centroMedicoCtrl.riesgos['SEG_LOCAT_'.concat(c)]}"/></td>
-                            </ui:repeat>
-                        </tr>
+                                <tbody>
+                                    <tr>
+                                        <td><strong>LOCATIVOS</strong> — Falta de señalización, aseo, desorden</td>
+                                        <ui:repeat value="#{cols}" var="c">
+                                            <td><p:selectBooleanCheckbox value="#{centroMedicoCtrl.riesgos['SEG_LOCAT_'.concat(c)]}"/></td>
+                                        </ui:repeat>
+                                    </tr>
 
-                        <tr>
-                            <td><strong>MECÁNICOS</strong> — Atrapamiento entre máquinas y/o superficies</td>
-                            <ui:repeat value="#{cols}" var="c">
-                                <td><p:selectBooleanCheckbox value="#{centroMedicoCtrl.riesgos['SEG_MEC_ATRAP_MAQ_'.concat(c)]}"/></td>
-                            </ui:repeat>
-                        </tr>
+                                    <tr>
+                                        <td><strong>MECÁNICOS</strong> — Atrapamiento entre máquinas y/o superficies</td>
+                                        <ui:repeat value="#{cols}" var="c">
+                                            <td><p:selectBooleanCheckbox value="#{centroMedicoCtrl.riesgos['SEG_MEC_ATRAP_MAQ_'.concat(c)]}"/></td>
+                                        </ui:repeat>
+                                    </tr>
 
-                        <tr>
-                            <td>Atrapamiento entre objetos</td>
-                            <ui:repeat value="#{cols}" var="c">
-                                <td><p:selectBooleanCheckbox value="#{centroMedicoCtrl.riesgos['SEG_MEC_ATRAP_OBJ_'.concat(c)]}"/></td>
-                            </ui:repeat>
-                        </tr>
-                        <tr>
-                            <td>Caída de objetos</td>
-                            <ui:repeat value="#{cols}" var="c">
-                                <td><p:selectBooleanCheckbox value="#{centroMedicoCtrl.riesgos['SEG_MEC_CAIDA_OBJ_'.concat(c)]}"/></td>
-                            </ui:repeat>
-                        </tr>
-                        <tr>
-                            <td>Caídas al mismo nivel</td>
-                            <ui:repeat value="#{cols}" var="c">
-                                <td><p:selectBooleanCheckbox value="#{centroMedicoCtrl.riesgos['SEG_MEC_CAIDA_MISMO_'.concat(c)]}"/></td>
-                            </ui:repeat>
-                        </tr>
-                        <tr>
-                            <td>Caídas a diferente nivel</td>
-                            <ui:repeat value="#{cols}" var="c">
-                                <td><p:selectBooleanCheckbox value="#{centroMedicoCtrl.riesgos['SEG_MEC_CAIDA_DIF_'.concat(c)]}"/></td>
-                            </ui:repeat>
-                        </tr>
-                        <tr>
-                            <td>Pinchazos</td>
-                            <ui:repeat value="#{cols}" var="c">
-                                <td><p:selectBooleanCheckbox value="#{centroMedicoCtrl.riesgos['SEG_MEC_PINCHAZOS_'.concat(c)]}"/></td>
-                            </ui:repeat>
-                        </tr>
-                        <tr>
-                            <td>Cortes</td>
-                            <ui:repeat value="#{cols}" var="c">
-                                <td><p:selectBooleanCheckbox value="#{centroMedicoCtrl.riesgos['SEG_MEC_CORTES_'.concat(c)]}"/></td>
-                            </ui:repeat>
-                        </tr>
-                        <tr>
-                            <td>Choques / colisión vehicular</td>
-                            <ui:repeat value="#{cols}" var="c">
-                                <td><p:selectBooleanCheckbox value="#{centroMedicoCtrl.riesgos['SEG_MEC_COLISION_'.concat(c)]}"/></td>
-                            </ui:repeat>
-                        </tr>
-                        <tr>
-                            <td>Atropellamientos por vehículos</td>
-                            <ui:repeat value="#{cols}" var="c">
-                                <td><p:selectBooleanCheckbox value="#{centroMedicoCtrl.riesgos['SEG_MEC_ATROPELLO_'.concat(c)]}"/></td>
-                            </ui:repeat>
-                        </tr>
-                        <tr>
-                            <td>Proyección de fluidos</td>
-                            <ui:repeat value="#{cols}" var="c">
-                                <td><p:selectBooleanCheckbox value="#{centroMedicoCtrl.riesgos['SEG_MEC_PROY_FLUIDOS_'.concat(c)]}"/></td>
-                            </ui:repeat>
-                        </tr>
-                        <tr>
-                            <td>Proyección de partículas – fragmentos</td>
-                            <ui:repeat value="#{cols}" var="c">
-                                <td><p:selectBooleanCheckbox value="#{centroMedicoCtrl.riesgos['SEG_MEC_PROY_PART_'.concat(c)]}"/></td>
-                            </ui:repeat>
-                        </tr>
-                        <tr>
-                            <td>Contacto con superficies de trabajo</td>
-                            <ui:repeat value="#{cols}" var="c">
-                                <td><p:selectBooleanCheckbox value="#{centroMedicoCtrl.riesgos['SEG_MEC_SUPERFICIES_'.concat(c)]}"/></td>
-                            </ui:repeat>
-                        </tr>
+                                    <tr>
+                                        <td>Atrapamiento entre objetos</td>
+                                        <ui:repeat value="#{cols}" var="c">
+                                            <td><p:selectBooleanCheckbox value="#{centroMedicoCtrl.riesgos['SEG_MEC_ATRAP_OBJ_'.concat(c)]}"/></td>
+                                        </ui:repeat>
+                                    </tr>
+                                    <tr>
+                                        <td>Caída de objetos</td>
+                                        <ui:repeat value="#{cols}" var="c">
+                                            <td><p:selectBooleanCheckbox value="#{centroMedicoCtrl.riesgos['SEG_MEC_CAIDA_OBJ_'.concat(c)]}"/></td>
+                                        </ui:repeat>
+                                    </tr>
+                                    <tr>
+                                        <td>Caídas al mismo nivel</td>
+                                        <ui:repeat value="#{cols}" var="c">
+                                            <td><p:selectBooleanCheckbox value="#{centroMedicoCtrl.riesgos['SEG_MEC_CAIDA_MISMO_'.concat(c)]}"/></td>
+                                        </ui:repeat>
+                                    </tr>
+                                    <tr>
+                                        <td>Caídas a diferente nivel</td>
+                                        <ui:repeat value="#{cols}" var="c">
+                                            <td><p:selectBooleanCheckbox value="#{centroMedicoCtrl.riesgos['SEG_MEC_CAIDA_DIF_'.concat(c)]}"/></td>
+                                        </ui:repeat>
+                                    </tr>
+                                    <tr>
+                                        <td>Pinchazos</td>
+                                        <ui:repeat value="#{cols}" var="c">
+                                            <td><p:selectBooleanCheckbox value="#{centroMedicoCtrl.riesgos['SEG_MEC_PINCHAZOS_'.concat(c)]}"/></td>
+                                        </ui:repeat>
+                                    </tr>
+                                    <tr>
+                                        <td>Cortes</td>
+                                        <ui:repeat value="#{cols}" var="c">
+                                            <td><p:selectBooleanCheckbox value="#{centroMedicoCtrl.riesgos['SEG_MEC_CORTES_'.concat(c)]}"/></td>
+                                        </ui:repeat>
+                                    </tr>
+                                    <tr>
+                                        <td>Choques / colisión vehicular</td>
+                                        <ui:repeat value="#{cols}" var="c">
+                                            <td><p:selectBooleanCheckbox value="#{centroMedicoCtrl.riesgos['SEG_MEC_COLISION_'.concat(c)]}"/></td>
+                                        </ui:repeat>
+                                    </tr>
+                                    <tr>
+                                        <td>Atropellamientos por vehículos</td>
+                                        <ui:repeat value="#{cols}" var="c">
+                                            <td><p:selectBooleanCheckbox value="#{centroMedicoCtrl.riesgos['SEG_MEC_ATROPELLO_'.concat(c)]}"/></td>
+                                        </ui:repeat>
+                                    </tr>
+                                    <tr>
+                                        <td>Proyección de fluidos</td>
+                                        <ui:repeat value="#{cols}" var="c">
+                                            <td><p:selectBooleanCheckbox value="#{centroMedicoCtrl.riesgos['SEG_MEC_PROY_FLUIDOS_'.concat(c)]}"/></td>
+                                        </ui:repeat>
+                                    </tr>
+                                    <tr>
+                                        <td>Proyección de partículas – fragmentos</td>
+                                        <ui:repeat value="#{cols}" var="c">
+                                            <td><p:selectBooleanCheckbox value="#{centroMedicoCtrl.riesgos['SEG_MEC_PROY_PART_'.concat(c)]}"/></td>
+                                        </ui:repeat>
+                                    </tr>
+                                    <tr>
+                                        <td>Contacto con superficies de trabajo</td>
+                                        <ui:repeat value="#{cols}" var="c">
+                                            <td><p:selectBooleanCheckbox value="#{centroMedicoCtrl.riesgos['SEG_MEC_SUPERFICIES_'.concat(c)]}"/></td>
+                                        </ui:repeat>
+                                    </tr>
 
-                        <tr>
-                            <td><strong>ELÉCTRICOS</strong> — Contacto eléctrico</td>
-                            <ui:repeat value="#{cols}" var="c">
-                                <td><p:selectBooleanCheckbox value="#{centroMedicoCtrl.riesgos['SEG_ELEC_CONTACTO_'.concat(c)]}"/></td>
-                            </ui:repeat>
-                        </tr>
+                                    <tr>
+                                        <td><strong>ELÉCTRICOS</strong> — Contacto eléctrico</td>
+                                        <ui:repeat value="#{cols}" var="c">
+                                            <td><p:selectBooleanCheckbox value="#{centroMedicoCtrl.riesgos['SEG_ELEC_CONTACTO_'.concat(c)]}"/></td>
+                                        </ui:repeat>
+                                    </tr>
 
-                        <tr>
-                            <td><em>Otros (Seguridad)</em></td>
-                            <ui:repeat value="#{cols}" var="c">
-                                <td>
-                                    <p:inputText value="#{centroMedicoCtrl.otrosRiesgos['SEG_OTROS_'.concat(c)]}"
-                                                 styleClass="cell-input" placeholder="Otro #{c}"/>
-                                </td>
-                            </ui:repeat>
-                        </tr>
-                    </tbody>
-                </table>
-            </p:fieldset>
+                                    <tr>
+                                        <td><em>Otros (Seguridad)</em></td>
+                                        <ui:repeat value="#{cols}" var="c">
+                                            <td>
+                                                <p:inputText value="#{centroMedicoCtrl.otrosRiesgos['SEG_OTROS_'.concat(c)]}"
+                                                             styleClass="cell-input" placeholder="Otro #{c}"/>
+                                            </td>
+                                        </ui:repeat>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </p:fieldset>
 
-            <!-- =================== -->
-            <!-- BLOQUE QUÍMICO -->
-            <!-- =================== -->
-            <p:fieldset legend="QUÍMICO" toggleable="true" collapsed="true" style="margin-top:10px;">
-                <table class="risk-grid">
-                    <colgroup>
-                        <col class="risk-col-label"/>
-                        <col class="risk-col"/><col class="risk-col"/><col class="risk-col"/>
-                        <col class="risk-col"/><col class="risk-col"/><col class="risk-col"/><col class="risk-col"/>
-                    </colgroup>
-                    <tbody>
-                        <tr><td>Polvos</td>    <ui:repeat value="#{cols}" var="c"><td><p:selectBooleanCheckbox value="#{centroMedicoCtrl.riesgos['QUI_POLVOS_'.concat(c)]}"/></td></ui:repeat></tr>
-                        <tr><td>Sólidos</td>   <ui:repeat value="#{cols}" var="c"><td><p:selectBooleanCheckbox value="#{centroMedicoCtrl.riesgos['QUI_SOLIDOS_'.concat(c)]}"/></td></ui:repeat></tr>
-                        <tr><td>Humos</td>     <ui:repeat value="#{cols}" var="c"><td><p:selectBooleanCheckbox value="#{centroMedicoCtrl.riesgos['QUI_HUMOS_'.concat(c)]}"/></td></ui:repeat></tr>
-                        <tr><td>Líquidos</td>  <ui:repeat value="#{cols}" var="c"><td><p:selectBooleanCheckbox value="#{centroMedicoCtrl.riesgos['QUI_LIQUIDOS_'.concat(c)]}"/></td></ui:repeat></tr>
-                        <tr><td>Vapores</td>   <ui:repeat value="#{cols}" var="c"><td><p:selectBooleanCheckbox value="#{centroMedicoCtrl.riesgos['QUI_VAPORES_'.concat(c)]}"/></td></ui:repeat></tr>
-                        <tr><td>Aerosoles</td> <ui:repeat value="#{cols}" var="c"><td><p:selectBooleanCheckbox value="#{centroMedicoCtrl.riesgos['QUI_AEROSOLES_'.concat(c)]}"/></td></ui:repeat></tr>
-                        <tr><td>Neblinas</td>  <ui:repeat value="#{cols}" var="c"><td><p:selectBooleanCheckbox value="#{centroMedicoCtrl.riesgos['QUI_NEBLINAS_'.concat(c)]}"/></td></ui:repeat></tr>
-                        <tr><td>Gaseosos</td>  <ui:repeat value="#{cols}" var="c"><td><p:selectBooleanCheckbox value="#{centroMedicoCtrl.riesgos['QUI_GASES_'.concat(c)]}"/></td></ui:repeat></tr>
+                        <!-- =================== -->
+                        <!-- BLOQUE QUÍMICO -->
+                        <!-- =================== -->
+                        <p:fieldset legend="QUÍMICO" toggleable="true" collapsed="true" style="margin-top:10px;">
+                            <table class="risk-grid">
+                                <colgroup>
+                                    <col class="risk-col-label"/>
+                                    <col class="risk-col"/><col class="risk-col"/><col class="risk-col"/>
+                                    <col class="risk-col"/><col class="risk-col"/><col class="risk-col"/><col class="risk-col"/>
+                                </colgroup>
+                                <tbody>
+                                    <tr><td>Polvos</td>    <ui:repeat value="#{cols}" var="c"><td><p:selectBooleanCheckbox value="#{centroMedicoCtrl.riesgos['QUI_POLVOS_'.concat(c)]}"/></td></ui:repeat></tr>
+                                    <tr><td>Sólidos</td>   <ui:repeat value="#{cols}" var="c"><td><p:selectBooleanCheckbox value="#{centroMedicoCtrl.riesgos['QUI_SOLIDOS_'.concat(c)]}"/></td></ui:repeat></tr>
+                                    <tr><td>Humos</td>     <ui:repeat value="#{cols}" var="c"><td><p:selectBooleanCheckbox value="#{centroMedicoCtrl.riesgos['QUI_HUMOS_'.concat(c)]}"/></td></ui:repeat></tr>
+                                    <tr><td>Líquidos</td>  <ui:repeat value="#{cols}" var="c"><td><p:selectBooleanCheckbox value="#{centroMedicoCtrl.riesgos['QUI_LIQUIDOS_'.concat(c)]}"/></td></ui:repeat></tr>
+                                    <tr><td>Vapores</td>   <ui:repeat value="#{cols}" var="c"><td><p:selectBooleanCheckbox value="#{centroMedicoCtrl.riesgos['QUI_VAPORES_'.concat(c)]}"/></td></ui:repeat></tr>
+                                    <tr><td>Aerosoles</td> <ui:repeat value="#{cols}" var="c"><td><p:selectBooleanCheckbox value="#{centroMedicoCtrl.riesgos['QUI_AEROSOLES_'.concat(c)]}"/></td></ui:repeat></tr>
+                                    <tr><td>Neblinas</td>  <ui:repeat value="#{cols}" var="c"><td><p:selectBooleanCheckbox value="#{centroMedicoCtrl.riesgos['QUI_NEBLINAS_'.concat(c)]}"/></td></ui:repeat></tr>
+                                    <tr><td>Gaseosos</td>  <ui:repeat value="#{cols}" var="c"><td><p:selectBooleanCheckbox value="#{centroMedicoCtrl.riesgos['QUI_GASES_'.concat(c)]}"/></td></ui:repeat></tr>
 
-                        <tr>
-                            <td><em>Otros (Químico)</em></td>
-                            <ui:repeat value="#{cols}" var="c">
-                                <td><p:inputText value="#{centroMedicoCtrl.otrosRiesgos['QUI_OTROS_'.concat(c)]}" styleClass="cell-input" placeholder="Otro #{c}"/></td>
-                            </ui:repeat>
-                        </tr>
-                    </tbody>
-                </table>
-            </p:fieldset>
+                                    <tr>
+                                        <td><em>Otros (Químico)</em></td>
+                                        <ui:repeat value="#{cols}" var="c">
+                                            <td><p:inputText value="#{centroMedicoCtrl.otrosRiesgos['QUI_OTROS_'.concat(c)]}" styleClass="cell-input" placeholder="Otro #{c}"/></td>
+                                        </ui:repeat>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </p:fieldset>
 
-            <!-- =================== -->
-            <!-- BLOQUE BIOLÓGICO -->
-            <!-- =================== -->
-            <p:fieldset legend="BIOLÓGICO" toggleable="true" collapsed="true" style="margin-top:10px;">
-                <table class="risk-grid">
-                    <colgroup>
-                        <col class="risk-col-label"/>
-                        <col class="risk-col"/><col class="risk-col"/><col class="risk-col"/>
-                        <col class="risk-col"/><col class="risk-col"/><col class="risk-col"/><col class="risk-col"/>
-                    </colgroup>
-                    <tbody>
-                        <tr><td>Virus</td>        <ui:repeat value="#{cols}" var="c"><td><p:selectBooleanCheckbox value="#{centroMedicoCtrl.riesgos['BIO_VIRUS_'.concat(c)]}"/></td></ui:repeat></tr>
-                        <tr><td>Hongos</td>       <ui:repeat value="#{cols}" var="c"><td><p:selectBooleanCheckbox value="#{centroMedicoCtrl.riesgos['BIO_HONGOS_'.concat(c)]}"/></td></ui:repeat></tr>
-                        <tr><td>Bacterias</td>    <ui:repeat value="#{cols}" var="c"><td><p:selectBooleanCheckbox value="#{centroMedicoCtrl.riesgos['BIO_BACTERIAS_'.concat(c)]}"/></td></ui:repeat></tr>
-                        <tr><td>Parásitos</td>    <ui:repeat value="#{cols}" var="c"><td><p:selectBooleanCheckbox value="#{centroMedicoCtrl.riesgos['BIO_PARASITOS_'.concat(c)]}"/></td></ui:repeat></tr>
-                        <tr><td>Vectores</td>     <ui:repeat value="#{cols}" var="c"><td><p:selectBooleanCheckbox value="#{centroMedicoCtrl.riesgos['BIO_VECTORES_'.concat(c)]}"/></td></ui:repeat></tr>
-                        <tr>
-                            <td>Animales selváticos</td>
-                            <ui:repeat value="#{cols}" var="c"><td><p:selectBooleanCheckbox value="#{centroMedicoCtrl.riesgos['BIO_SELVATICOS_'.concat(c)]}"/></td></ui:repeat>
-                        </tr>
+                        <!-- =================== -->
+                        <!-- BLOQUE BIOLÓGICO -->
+                        <!-- =================== -->
+                        <p:fieldset legend="BIOLÓGICO" toggleable="true" collapsed="true" style="margin-top:10px;">
+                            <table class="risk-grid">
+                                <colgroup>
+                                    <col class="risk-col-label"/>
+                                    <col class="risk-col"/><col class="risk-col"/><col class="risk-col"/>
+                                    <col class="risk-col"/><col class="risk-col"/><col class="risk-col"/><col class="risk-col"/>
+                                </colgroup>
+                                <tbody>
+                                    <tr><td>Virus</td>        <ui:repeat value="#{cols}" var="c"><td><p:selectBooleanCheckbox value="#{centroMedicoCtrl.riesgos['BIO_VIRUS_'.concat(c)]}"/></td></ui:repeat></tr>
+                                    <tr><td>Hongos</td>       <ui:repeat value="#{cols}" var="c"><td><p:selectBooleanCheckbox value="#{centroMedicoCtrl.riesgos['BIO_HONGOS_'.concat(c)]}"/></td></ui:repeat></tr>
+                                    <tr><td>Bacterias</td>    <ui:repeat value="#{cols}" var="c"><td><p:selectBooleanCheckbox value="#{centroMedicoCtrl.riesgos['BIO_BACTERIAS_'.concat(c)]}"/></td></ui:repeat></tr>
+                                    <tr><td>Parásitos</td>    <ui:repeat value="#{cols}" var="c"><td><p:selectBooleanCheckbox value="#{centroMedicoCtrl.riesgos['BIO_PARASITOS_'.concat(c)]}"/></td></ui:repeat></tr>
+                                    <tr><td>Vectores</td>     <ui:repeat value="#{cols}" var="c"><td><p:selectBooleanCheckbox value="#{centroMedicoCtrl.riesgos['BIO_VECTORES_'.concat(c)]}"/></td></ui:repeat></tr>
+                                    <tr>
+                                        <td>Animales selváticos</td>
+                                        <ui:repeat value="#{cols}" var="c"><td><p:selectBooleanCheckbox value="#{centroMedicoCtrl.riesgos['BIO_SELVATICOS_'.concat(c)]}"/></td></ui:repeat>
+                                    </tr>
 
-                        <tr>
-                            <td><em>Otros (Biológico)</em></td>
-                            <ui:repeat value="#{cols}" var="c">
-                                <td><p:inputText value="#{centroMedicoCtrl.otrosRiesgos['BIO_OTROS_'.concat(c)]}" styleClass="cell-input" placeholder="Otro #{c}"/></td>
-                            </ui:repeat>
-                        </tr>
-                    </tbody>
-                </table>
-            </p:fieldset>
+                                    <tr>
+                                        <td><em>Otros (Biológico)</em></td>
+                                        <ui:repeat value="#{cols}" var="c">
+                                            <td><p:inputText value="#{centroMedicoCtrl.otrosRiesgos['BIO_OTROS_'.concat(c)]}" styleClass="cell-input" placeholder="Otro #{c}"/></td>
+                                        </ui:repeat>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </p:fieldset>
 
-            <!-- =================== -->
-            <!-- BLOQUE ERGONÓMICO -->
-            <!-- =================== -->
-            <p:fieldset legend="ERGONÓMICO" toggleable="true" collapsed="true" style="margin-top:10px;">
-                <table class="risk-grid">
-                    <colgroup>
-                        <col class="risk-col-label"/>
-                        <col class="risk-col"/><col class="risk-col"/><col class="risk-col"/>
-                        <col class="risk-col"/><col class="risk-col"/><col class="risk-col"/><col class="risk-col"/>
-                    </colgroup>
-                    <tbody>
-                        <tr><td>Manejo manual de cargas</td>     <ui:repeat value="#{cols}" var="c"><td><p:selectBooleanCheckbox value="#{centroMedicoCtrl.riesgos['ERG_CARGAS_'.concat(c)]}"/></td></ui:repeat></tr>
-                        <tr><td>Movimientos repetitivos</td>     <ui:repeat value="#{cols}" var="c"><td><p:selectBooleanCheckbox value="#{centroMedicoCtrl.riesgos['ERG_REPETITIVOS_'.concat(c)]}"/></td></ui:repeat></tr>
-                        <tr><td>Posturas forzadas</td>           <ui:repeat value="#{cols}" var="c"><td><p:selectBooleanCheckbox value="#{centroMedicoCtrl.riesgos['ERG_POSTURAS_'.concat(c)]}"/></td></ui:repeat></tr>
-                        <tr><td>Trabajos con PVD</td>            <ui:repeat value="#{cols}" var="c"><td><p:selectBooleanCheckbox value="#{centroMedicoCtrl.riesgos['ERG_PVD_'.concat(c)]}"/></td></ui:repeat></tr>
-                        <tr><td>Diseño inadecuado del puesto</td><ui:repeat value="#{cols}" var="c"><td><p:selectBooleanCheckbox value="#{centroMedicoCtrl.riesgos['ERG_PUESTO_'.concat(c)]}"/></td></ui:repeat></tr>
+                        <!-- =================== -->
+                        <!-- BLOQUE ERGONÓMICO -->
+                        <!-- =================== -->
+                        <p:fieldset legend="ERGONÓMICO" toggleable="true" collapsed="true" style="margin-top:10px;">
+                            <table class="risk-grid">
+                                <colgroup>
+                                    <col class="risk-col-label"/>
+                                    <col class="risk-col"/><col class="risk-col"/><col class="risk-col"/>
+                                    <col class="risk-col"/><col class="risk-col"/><col class="risk-col"/><col class="risk-col"/>
+                                </colgroup>
+                                <tbody>
+                                    <tr><td>Manejo manual de cargas</td>     <ui:repeat value="#{cols}" var="c"><td><p:selectBooleanCheckbox value="#{centroMedicoCtrl.riesgos['ERG_CARGAS_'.concat(c)]}"/></td></ui:repeat></tr>
+                                    <tr><td>Movimientos repetitivos</td>     <ui:repeat value="#{cols}" var="c"><td><p:selectBooleanCheckbox value="#{centroMedicoCtrl.riesgos['ERG_REPETITIVOS_'.concat(c)]}"/></td></ui:repeat></tr>
+                                    <tr><td>Posturas forzadas</td>           <ui:repeat value="#{cols}" var="c"><td><p:selectBooleanCheckbox value="#{centroMedicoCtrl.riesgos['ERG_POSTURAS_'.concat(c)]}"/></td></ui:repeat></tr>
+                                    <tr><td>Trabajos con PVD</td>            <ui:repeat value="#{cols}" var="c"><td><p:selectBooleanCheckbox value="#{centroMedicoCtrl.riesgos['ERG_PVD_'.concat(c)]}"/></td></ui:repeat></tr>
+                                    <tr><td>Diseño inadecuado del puesto</td><ui:repeat value="#{cols}" var="c"><td><p:selectBooleanCheckbox value="#{centroMedicoCtrl.riesgos['ERG_PUESTO_'.concat(c)]}"/></td></ui:repeat></tr>
 
-                        <tr>
-                            <td><em>Otros (Ergonómico)</em></td>
-                            <ui:repeat value="#{cols}" var="c">
-                                <td><p:inputText value="#{centroMedicoCtrl.otrosRiesgos['ERG_OTROS_'.concat(c)]}" styleClass="cell-input" placeholder="Otro #{c}"/></td>
-                            </ui:repeat>
-                        </tr>
-                    </tbody>
-                </table>
-            </p:fieldset>
+                                    <tr>
+                                        <td><em>Otros (Ergonómico)</em></td>
+                                        <ui:repeat value="#{cols}" var="c">
+                                            <td><p:inputText value="#{centroMedicoCtrl.otrosRiesgos['ERG_OTROS_'.concat(c)]}" styleClass="cell-input" placeholder="Otro #{c}"/></td>
+                                        </ui:repeat>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </p:fieldset>
 
-            <!-- =================== -->
-            <!-- BLOQUE PSICOSOCIAL -->
-            <!-- =================== -->
-            <p:fieldset legend="PSICOSOCIAL" toggleable="true" collapsed="true" style="margin-top:10px;">
-                <table class="risk-grid">
-                    <colgroup>
-                        <col class="risk-col-label"/>
-                        <col class="risk-col"/><col class="risk-col"/><col class="risk-col"/>
-                        <col class="risk-col"/><col class="risk-col"/><col class="risk-col"/><col class="risk-col"/>
-                    </colgroup>
-                    <tbody>
-                        <tr><td>Monotonía del trabajo</td>       <ui:repeat value="#{cols}" var="c"><td><p:selectBooleanCheckbox value="#{centroMedicoCtrl.riesgos['PSI_MONOTONIA_'.concat(c)]}"/></td></ui:repeat></tr>
-                        <tr><td>Sobrecarga laboral</td>          <ui:repeat value="#{cols}" var="c"><td><p:selectBooleanCheckbox value="#{centroMedicoCtrl.riesgos['PSI_SOBRECARGA_'.concat(c)]}"/></td></ui:repeat></tr>
-                        <tr><td>Alta responsabilidad</td>        <ui:repeat value="#{cols}" var="c"><td><p:selectBooleanCheckbox value="#{centroMedicoCtrl.riesgos['PSI_RESPONSABILIDAD_'.concat(c)]}"/></td></ui:repeat></tr>
-                        <tr><td>Autonomía en decisiones</td>     <ui:repeat value="#{cols}" var="c"><td><p:selectBooleanCheckbox value="#{centroMedicoCtrl.riesgos['PSI_AUTONOMIA_'.concat(c)]}"/></td></ui:repeat></tr>
-                        <tr><td>Relaciones interpersonales</td>  <ui:repeat value="#{cols}" var="c"><td><p:selectBooleanCheckbox value="#{centroMedicoCtrl.riesgos['PSI_RELACIONES_'.concat(c)]}"/></td></ui:repeat></tr>
-                        <tr><td>Inestabilidad laboral</td>       <ui:repeat value="#{cols}" var="c"><td><p:selectBooleanCheckbox value="#{centroMedicoCtrl.riesgos['PSI_INESTABILIDAD_'.concat(c)]}"/></td></ui:repeat></tr>
-                        <tr><td>Amenaza delincuencial</td>       <ui:repeat value="#{cols}" var="c"><td><p:selectBooleanCheckbox value="#{centroMedicoCtrl.riesgos['PSI_AMENAZA_'.concat(c)]}"/></td></ui:repeat></tr>
+                        <!-- =================== -->
+                        <!-- BLOQUE PSICOSOCIAL -->
+                        <!-- =================== -->
+                        <p:fieldset legend="PSICOSOCIAL" toggleable="true" collapsed="true" style="margin-top:10px;">
+                            <table class="risk-grid">
+                                <colgroup>
+                                    <col class="risk-col-label"/>
+                                    <col class="risk-col"/><col class="risk-col"/><col class="risk-col"/>
+                                    <col class="risk-col"/><col class="risk-col"/><col class="risk-col"/><col class="risk-col"/>
+                                </colgroup>
+                                <tbody>
+                                    <tr><td>Monotonía del trabajo</td>       <ui:repeat value="#{cols}" var="c"><td><p:selectBooleanCheckbox value="#{centroMedicoCtrl.riesgos['PSI_MONOTONIA_'.concat(c)]}"/></td></ui:repeat></tr>
+                                    <tr><td>Sobrecarga laboral</td>          <ui:repeat value="#{cols}" var="c"><td><p:selectBooleanCheckbox value="#{centroMedicoCtrl.riesgos['PSI_SOBRECARGA_'.concat(c)]}"/></td></ui:repeat></tr>
+                                    <tr><td>Alta responsabilidad</td>        <ui:repeat value="#{cols}" var="c"><td><p:selectBooleanCheckbox value="#{centroMedicoCtrl.riesgos['PSI_RESPONSABILIDAD_'.concat(c)]}"/></td></ui:repeat></tr>
+                                    <tr><td>Autonomía en decisiones</td>     <ui:repeat value="#{cols}" var="c"><td><p:selectBooleanCheckbox value="#{centroMedicoCtrl.riesgos['PSI_AUTONOMIA_'.concat(c)]}"/></td></ui:repeat></tr>
+                                    <tr><td>Relaciones interpersonales</td>  <ui:repeat value="#{cols}" var="c"><td><p:selectBooleanCheckbox value="#{centroMedicoCtrl.riesgos['PSI_RELACIONES_'.concat(c)]}"/></td></ui:repeat></tr>
+                                    <tr><td>Inestabilidad laboral</td>       <ui:repeat value="#{cols}" var="c"><td><p:selectBooleanCheckbox value="#{centroMedicoCtrl.riesgos['PSI_INESTABILIDAD_'.concat(c)]}"/></td></ui:repeat></tr>
+                                    <tr><td>Amenaza delincuencial</td>       <ui:repeat value="#{cols}" var="c"><td><p:selectBooleanCheckbox value="#{centroMedicoCtrl.riesgos['PSI_AMENAZA_'.concat(c)]}"/></td></ui:repeat></tr>
 
-                        <tr>
-                            <td><em>Otros (Psicosocial)</em></td>
-                            <ui:repeat value="#{cols}" var="c">
-                                <td><p:inputText value="#{centroMedicoCtrl.otrosRiesgos['PSI_OTROS_'.concat(c)]}" styleClass="cell-input" placeholder="Otro #{c}"/></td>
-                            </ui:repeat>
-                        </tr>
-                    </tbody>
-                </table>
-            </p:fieldset>
+                                    <tr>
+                                        <td><em>Otros (Psicosocial)</em></td>
+                                        <ui:repeat value="#{cols}" var="c">
+                                            <td><p:inputText value="#{centroMedicoCtrl.otrosRiesgos['PSI_OTROS_'.concat(c)]}" styleClass="cell-input" placeholder="Otro #{c}"/></td>
+                                        </ui:repeat>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </p:fieldset>
 
-            <!-- ===================== -->
-            <!-- MEDIDAS PREVENTIVAS   -->
-            <!-- ===================== -->
-            <table class="risk-grid" style="margin-top:10px;">
-                <colgroup>
-                    <col class="risk-col-label"/>
-                    <col class="risk-col"/><col class="risk-col"/><col class="risk-col"/>
-                    <col class="risk-col"/><col class="risk-col"/><col class="risk-col"/><col class="risk-col"/>
-                </colgroup>
+                        <!-- ===================== -->
+                        <!-- MEDIDAS PREVENTIVAS   -->
+                        <!-- ===================== -->
+                        <table class="risk-grid" style="margin-top:10px;">
+                            <colgroup>
+                                <col class="risk-col-label"/>
+                                <col class="risk-col"/><col class="risk-col"/><col class="risk-col"/>
+                                <col class="risk-col"/><col class="risk-col"/><col class="risk-col"/><col class="risk-col"/>
+                            </colgroup>
 
-                <tbody>
-                    <tr>
-                        <td><strong>MEDIDAS PREVENTIVAS</strong></td>
-                        <td><p:inputText id="med1" value="#{centroMedicoCtrl.medidasPreventivas[0]}" styleClass="cell-input" placeholder="Medida 1"/></td>
-                        <td><p:inputText id="med2" value="#{centroMedicoCtrl.medidasPreventivas[1]}" styleClass="cell-input" placeholder="Medida 2"/></td>
-                        <td><p:inputText id="med3" value="#{centroMedicoCtrl.medidasPreventivas[2]}" styleClass="cell-input" placeholder="Medida 3"/></td>
-                        <td><p:inputText id="med4" value="#{centroMedicoCtrl.medidasPreventivas[3]}" styleClass="cell-input" placeholder="Medida 4"/></td>
-                        <td><p:inputText id="med5" value="#{centroMedicoCtrl.medidasPreventivas[4]}" styleClass="cell-input" placeholder="Medida 5"/></td>
-                        <td><p:inputText id="med6" value="#{centroMedicoCtrl.medidasPreventivas[5]}" styleClass="cell-input" placeholder="Medida 6"/></td>
-                        <td><p:inputText id="med7" value="#{centroMedicoCtrl.medidasPreventivas[6]}" styleClass="cell-input" placeholder="Medida 7"/></td>
-                    </tr>
-                </tbody>
-            </table>
+                            <tbody>
+                                <tr>
+                                    <td><strong>MEDIDAS PREVENTIVAS</strong></td>
+                                    <td><p:inputText id="med1" value="#{centroMedicoCtrl.medidasPreventivas[0]}" styleClass="cell-input" placeholder="Medida 1"/></td>
+                                    <td><p:inputText id="med2" value="#{centroMedicoCtrl.medidasPreventivas[1]}" styleClass="cell-input" placeholder="Medida 2"/></td>
+                                    <td><p:inputText id="med3" value="#{centroMedicoCtrl.medidasPreventivas[2]}" styleClass="cell-input" placeholder="Medida 3"/></td>
+                                    <td><p:inputText id="med4" value="#{centroMedicoCtrl.medidasPreventivas[3]}" styleClass="cell-input" placeholder="Medida 4"/></td>
+                                    <td><p:inputText id="med5" value="#{centroMedicoCtrl.medidasPreventivas[4]}" styleClass="cell-input" placeholder="Medida 5"/></td>
+                                    <td><p:inputText id="med6" value="#{centroMedicoCtrl.medidasPreventivas[5]}" styleClass="cell-input" placeholder="Medida 6"/></td>
+                                    <td><p:inputText id="med7" value="#{centroMedicoCtrl.medidasPreventivas[6]}" styleClass="cell-input" placeholder="Medida 7"/></td>
+                                </tr>
+                            </tbody>
+                        </table>
 
-        </h:panelGroup>
-    </p:panel>
+                    </h:panelGroup>
+                </p:panel>
 
-</p:tab>
+            </p:tab>
 
 
             <!-- ===================================================== -->
@@ -1555,7 +1563,7 @@
                                                             listener="#{centroMedicoCtrl.onKCieCodigoSelect}"
                                                             process="@this"
                                                             update=":layoutForm:kPanel"/>
-/>
+
 
                                                     <!-- escribe y sale (TAB/CLICK/ENTER->blur) -->
                                                     <p:ajax event="blur"
@@ -1840,11 +1848,13 @@
 
                 <p:spacer width="8"/>
 
-                <p:commandButton value="Siguiente" icon="pi pi-angle-right"
-                                 action="#{centroMedicoCtrl.guardarStepActual}"
-                                 process="@this @widgetVar(wiz)"
-                                 update="@form"
-                                 oncomplete="if(!args.validationFailed){ PF('wiz').next(); }"/>
+  <p:commandButton value="Siguiente" icon="pi pi-angle-right"
+                 action="#{centroMedicoCtrl.guardarStepActual}"
+                 process="@this wiz"
+                 update="@form"
+                 oncomplete="if(!args.validationFailed){ PF('wiz').next(); }"/>
+
+
 
             </p:toolbarGroup>
         </p:toolbar>
@@ -1856,85 +1866,86 @@
             }
             });
         </h:outputScript>
-        
+
         <!-- ============ DIÁLOGO DE INGRESO MANUAL PERSONA AUX ============ -->
-        <p:outputPanel id="dialogPersonaAuxZone" layout="block">
-            <!-- DIALOGO PERSONA AUXILIAR -->
-            <p:dialog id="dlgPersonaAux"
-                      widgetVar="dlgPersonaAux"
-                      header="Ingreso manual de datos"
-                      modal="true"
-                      closable="true"
-                      resizable="false"
-                      appendTo="@(body)">
+<p:outputPanel id="dialogPersonaAuxZone" layout="block">
+    <!-- DIALOGO PERSONA AUXILIAR -->
+    <p:dialog id="dlgPersonaAux"
+              widgetVar="dlgPersonaAux"
+              header="Ingreso manual de datos"
+              modal="true"
+              closable="true"
+              resizable="false"
+              appendTo="@(body)">
 
-                <!-- OJO: form propio, porque appendTo mueve el diálogo FUERA de layoutForm -->
-                <h:form id="frmPersonaAux">
+        <!-- IMPORTANTE:
+             NO pongas <h:form> aquí si ya existe :layoutForm envolviendo la página,
+             para evitar FORM dentro de FORM (causa NPE en Wizard.processDecodes) -->
 
-                    <p:messages id="msgPersonaAux" autoUpdate="true" closable="true"/>
+        <p:messages id="msgPersonaAux" autoUpdate="true" closable="true"/>
 
-                    <h:panelGrid id="gridManual"
-                                 columns="2"
-                                 columnClasses="col-label-man,col-field-man"
-                                 styleClass="grid-manual">
+        <h:panelGrid id="gridManual"
+                     columns="2"
+                     columnClasses="col-label-man,col-field-man"
+                     styleClass="grid-manual">
 
-                        <h:outputLabel for="cedManual" value="Cédula * *"/>
-                        <p:inputText id="cedManual"
-                                     value="#{centroMedicoCtrl.personaAux.cedula}"
-                                     maxlength="10"
-                                     styleClass="w100"
-                                     readonly="true"/>
+            <h:outputLabel for="cedManual" value="Cédula * *"/>
+            <p:inputText id="cedManual"
+                         value="#{centroMedicoCtrl.personaAux.cedula}"
+                         maxlength="10"
+                         styleClass="w100"
+                         readonly="true"/>
 
-                        <h:outputLabel for="ap1" value="Primer apellido * *"/>
-                        <p:inputText id="ap1"
-                                     value="#{centroMedicoCtrl.personaAux.apellido1}"
-                                     styleClass="w100"/>
+            <h:outputLabel for="ap1" value="Primer apellido * *"/>
+            <p:inputText id="ap1"
+                         value="#{centroMedicoCtrl.personaAux.apellido1}"
+                         styleClass="w100"/>
 
-                        <h:outputLabel for="ap2" value="Segundo apellido"/>
-                        <p:inputText id="ap2"
-                                     value="#{centroMedicoCtrl.personaAux.apellido2}"
-                                     styleClass="w100"/>
+            <h:outputLabel for="ap2" value="Segundo apellido"/>
+            <p:inputText id="ap2"
+                         value="#{centroMedicoCtrl.personaAux.apellido2}"
+                         styleClass="w100"/>
 
-                        <h:outputLabel for="nom1" value="Primer nombre * *"/>
-                        <p:inputText id="nom1"
-                                     value="#{centroMedicoCtrl.personaAux.nombre1}"
-                                     styleClass="w100"/>
+            <h:outputLabel for="nom1" value="Primer nombre * *"/>
+            <p:inputText id="nom1"
+                         value="#{centroMedicoCtrl.personaAux.nombre1}"
+                         styleClass="w100"/>
 
-                        <h:outputLabel for="nom2" value="Segundo nombre"/>
-                        <p:inputText id="nom2"
-                                     value="#{centroMedicoCtrl.personaAux.nombre2}"
-                                     styleClass="w100"/>
+            <h:outputLabel for="nom2" value="Segundo nombre"/>
+            <p:inputText id="nom2"
+                         value="#{centroMedicoCtrl.personaAux.nombre2}"
+                         styleClass="w100"/>
 
-                        <h:outputLabel for="sexoManual" value="Sexo * *"/>
-                        <p:selectOneMenu id="sexoManual"
-                                         value="#{centroMedicoCtrl.personaAux.sexo}"
-                                         styleClass="w100">
-                            <f:selectItem itemLabel="-- Seleccione --" itemValue="#{null}"/>
-                            <f:selectItem itemLabel="Masculino" itemValue="M"/>
-                            <f:selectItem itemLabel="Femenino" itemValue="F"/>
-                        </p:selectOneMenu>
+            <h:outputLabel for="sexoManual" value="Sexo * *"/>
+            <p:selectOneMenu id="sexoManual"
+                             value="#{centroMedicoCtrl.personaAux.sexo}"
+                             styleClass="w100">
+                <f:selectItem itemLabel="-- Seleccione --" itemValue="#{null}"/>
+                <f:selectItem itemLabel="Masculino" itemValue="M"/>
+                <f:selectItem itemLabel="Femenino" itemValue="F"/>
+            </p:selectOneMenu>
 
-                        <h:outputLabel for="fnManual" value="Fecha nacimiento * *"/>
-                        <p:calendar id="fnManual"
-                                    value="#{centroMedicoCtrl.personaAux.fechaNac}"
-                                    pattern="dd/MM/yyyy"
-                                    navigator="true"
-                                    yearRange="1924:2007"
-                                    styleClass="w100"/>
-                    </h:panelGrid>
+            <h:outputLabel for="fnManual" value="Fecha nacimiento * *"/>
+            <p:calendar id="fnManual"
+                        value="#{centroMedicoCtrl.personaAux.fechaNac}"
+                        pattern="dd/MM/yyyy"
+                        navigator="true"
+                        yearRange="1924:2007"
+                        styleClass="w100"/>
+        </h:panelGrid>
 
-                    <p:separator/>
+        <p:separator/>
 
-                    <!-- BOTÓN GUARDAR -->
-                    <p:commandButton value="GUARDAR Y USAR EN FICHA"
-                                     action="#{centroMedicoCtrl.guardarPersonaAuxYUsar}"
-                                     process="@form"
-                                     update=":layoutForm"
-                                     style="width:100%;"/>
+        <!-- BOTÓN GUARDAR -->
+        <p:commandButton value="GUARDAR Y USAR EN FICHA"
+                         action="#{centroMedicoCtrl.guardarPersonaAuxYUsar}"
+                         process=":layoutForm:dlgPersonaAux"
+                         update=":layoutForm"
+                         style="width:100%;"/>
 
-                </h:form>
-            </p:dialog>
-        </p:outputPanel>
+    </p:dialog>
+</p:outputPanel>
+
         <!-- ============ FIN DIÁLOGO PERSONA AUX ============ -->
 
     </ui:define>

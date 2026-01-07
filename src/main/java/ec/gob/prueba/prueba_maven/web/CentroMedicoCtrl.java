@@ -46,6 +46,7 @@ import ec.gob.prueba.prueba_maven.modelo.PersonaAux;
 import ec.gob.prueba.prueba_maven.modelo.SignosVitales;
 import ec.gob.prueba.prueba_maven.modelo.AuditoriaConsultorio;
 import ec.gob.prueba.prueba_maven.modelo.FichaActLaboral;
+import ec.gob.prueba.prueba_maven.modelo.FichaExamenComp;
 import ec.gob.prueba.prueba_maven.modelo.FichaRiesgoDet;
 import ec.gob.prueba.prueba_maven.servicio.Cie10Service;
 import ec.gob.prueba.prueba_maven.servicio.EmpleadoService;
@@ -56,6 +57,7 @@ import ec.gob.prueba.prueba_maven.servicio.SignosVitalesService;
 import ec.gob.prueba.prueba_maven.servicio.AuditoriaConsultorioService;
 import ec.gob.prueba.prueba_maven.servicio.FichaActLaboralService;
 import ec.gob.prueba.prueba_maven.servicio.FichaDiagnosticoService;
+import ec.gob.prueba.prueba_maven.servicio.FichaExamenCompService;
 import ec.gob.prueba.prueba_maven.servicio.FichaRiesgoDetService;
 import java.util.Arrays;
 import lombok.extern.slf4j.Slf4j;
@@ -314,6 +316,9 @@ public class CentroMedicoCtrl implements Serializable {
     private FichaActLaboralService fichaActLaboralService;
     @EJB
     private FichaRiesgoDetService fichaRiesgoDetService;
+
+    @EJB
+    private FichaExamenCompService fichaExamenCompService;
 
     private void initExamenes(int n) {
         examNombre = new ArrayList<>(java.util.Collections.nCopies(n, ""));
@@ -634,78 +639,82 @@ public class CentroMedicoCtrl implements Serializable {
      * ahora el usuario se maneja como literal "USR_APP" hasta que exista login
      * real.
      */
-private void registrarAuditoria(String accion, String tabla, String campo, String observaciones) {
-    s3("registrarAuditoria() accion=" + accion + " tabla=" + tabla + " campo=" + campo);
+    private void registrarAuditoria(String accion, String tabla, String campo, String observaciones) {
+        s3("registrarAuditoria() accion=" + accion + " tabla=" + tabla + " campo=" + campo);
 
-    try {
-        AuditoriaConsultorio aud = new AuditoriaConsultorio();
-        aud.setModulo("CENTRO_MEDICO");
-        aud.setUsuario("USR_APP");
-        aud.setFecha(new Date());
-        aud.setAccion(accion);
-        aud.setTablaAfecta(tabla);
-        aud.setCampoAfecta(campo);
-        aud.setObservaciones(observaciones);
+        try {
+            AuditoriaConsultorio aud = new AuditoriaConsultorio();
+            aud.setModulo("CENTRO_MEDICO");
+            aud.setUsuario("USR_APP");
+            aud.setFecha(new Date());
+            aud.setAccion(accion);
+            aud.setTablaAfecta(tabla);
+            aud.setCampoAfecta(campo);
+            aud.setObservaciones(observaciones);
 
-        auditoriaService.guardar(aud);
+            auditoriaService.guardar(aud);
 
-        s3("registrarAuditoria() OK");
-    } catch (Exception e) {
-        // No romper flujo, pero LOGEAR BIEN
-        s3e("registrarAuditoria() FALLÓ", e);
+            s3("registrarAuditoria() OK");
+        } catch (Exception e) {
+            // No romper flujo, pero LOGEAR BIEN
+            s3e("registrarAuditoria() FALLÓ", e);
+        }
     }
-}
-
 
     // ===========================================================
     // WIZARD: GUARDAR POR STEP
     // ===========================================================
     public void guardarStepActual() {
-    FacesContext ctx = FacesContext.getCurrentInstance();
-    s3("guardarStepActual() INICIO - currentStep=" + currentStep);
+        FacesContext ctx = FacesContext.getCurrentInstance();
+        s3("guardarStepActual() INICIO - currentStep=" + currentStep);
 
-    try {
-        if ("step1".equals(currentStep)) {
-            s3("Ejecutando guardarStep1()");
-            guardarStep1();
-            s3("Fin guardarStep1() validationFailed=" + ctx.isValidationFailed());
-            if (!ctx.isValidationFailed()) currentStep = "step2";
-            return;
-        }
-
-        if ("step2".equals(currentStep)) {
-            s3("Validando Step2...");
-            if (!validarStep2()) {
-                s3("validarStep2()=false -> NO avanza");
-                ctx.validationFailed();
+        try {
+            if ("step1".equals(currentStep)) {
+                s3("Ejecutando guardarStep1()");
+                guardarStep1();
+                s3("Fin guardarStep1() validationFailed=" + ctx.isValidationFailed());
+                if (!ctx.isValidationFailed()) {
+                    currentStep = "step2";
+                }
                 return;
             }
-            s3("Ejecutando guardarStep2()");
-            guardarStep2();
-            s3("Fin guardarStep2() validationFailed=" + ctx.isValidationFailed());
-            if (!ctx.isValidationFailed()) currentStep = "step3";
-            return;
+
+            if ("step2".equals(currentStep)) {
+                s3("Validando Step2...");
+                if (!validarStep2()) {
+                    s3("validarStep2()=false -> NO avanza");
+                    ctx.validationFailed();
+                    return;
+                }
+                s3("Ejecutando guardarStep2()");
+                guardarStep2();
+                s3("Fin guardarStep2() validationFailed=" + ctx.isValidationFailed());
+                if (!ctx.isValidationFailed()) {
+                    currentStep = "step3";
+                }
+                return;
+            }
+
+            if ("step3".equals(currentStep)) {
+                s3("Ejecutando guardarStep3()");
+                guardarStep3();
+                s3("Fin guardarStep3() validationFailed=" + ctx.isValidationFailed());
+                if (!ctx.isValidationFailed()) {
+                    currentStep = "step4";
+                }
+                return;
+            }
+
+            s3("No hay acción para currentStep=" + currentStep);
+
+        } catch (Exception ex) {
+            s3e("Excepción en guardarStepActual()", ex);
+            ctx.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                    "Error",
+                    "Ocurrió un error al guardar la información del paso actual."));
+            ctx.validationFailed();
         }
-
-        if ("step3".equals(currentStep)) {
-            s3("Ejecutando guardarStep3()");
-            guardarStep3();
-            s3("Fin guardarStep3() validationFailed=" + ctx.isValidationFailed());
-            if (!ctx.isValidationFailed()) currentStep = "step4";
-            return;
-        }
-
-        s3("No hay acción para currentStep=" + currentStep);
-
-    } catch (Exception ex) {
-        s3e("Excepción en guardarStepActual()", ex);
-        ctx.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR,
-                "Error",
-                "Ocurrió un error al guardar la información del paso actual."));
-        ctx.validationFailed();
     }
-}
-
 
     public void retrocederStep() {
         if ("step2".equals(currentStep)) {
@@ -1297,319 +1306,346 @@ private void registrarAuditoria(String accion, String tabla, String campo, Strin
      * para dejar registro de que se pasó por este paso. Cuando tengas la tabla
      * de riesgos, aquí se mapea y persiste.
      */
-   public void guardarStep2() {
-    FacesContext ctx = FacesContext.getCurrentInstance();
+    public void guardarStep2() {
+        FacesContext ctx = FacesContext.getCurrentInstance();
 
-    if (!validarStep2()) {
-        ctx.validationFailed();
-        return;
-    }
-
-    final Date ahora = new Date();
-    final String usr = "USR_APP"; // luego lo cambiamos por el usuario logueado
-
-    if (ficha == null || ficha.getIdFicha() == null) {
-        ctx.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR,
-                "Step 2", "Primero debe existir y estar guardada la ficha (ID_FICHA)."));
-        ctx.validationFailed();
-        return;
-    }
-
-    // =========================
-    // 1) ENCABEZADO: FICHA_RIESGO
-    // =========================
-    if (fichaRiesgo == null) {
-        fichaRiesgo = new FichaRiesgo();
-    }
-    fichaRiesgo.setFicha(ficha);
-
-    // Actividades
-    fichaRiesgo.setActividad1(getSafe(actividadesLab, 0));
-    fichaRiesgo.setActividad2(getSafe(actividadesLab, 1));
-    fichaRiesgo.setActividad3(getSafe(actividadesLab, 2));
-    fichaRiesgo.setActividad4(getSafe(actividadesLab, 3));
-    fichaRiesgo.setActividad5(getSafe(actividadesLab, 4));
-    fichaRiesgo.setActividad6(getSafe(actividadesLab, 5));
-    fichaRiesgo.setActividad7(getSafe(actividadesLab, 6));
-
-    // Medidas
-    fichaRiesgo.setMedidasPreventivas(construirMedidas(medidasPreventivas));
-
-    // Auditoría (ENCABEZADO)
-    if (fichaRiesgo.getIdFichaRiesgo() == null) {
-        fichaRiesgo.setEstado("BORRADOR");
-        fichaRiesgo.setFCreacion(ahora);
-        fichaRiesgo.setUsrCreacion(usr);
-    } else {
-        fichaRiesgo.setFActualizacion(ahora);
-        fichaRiesgo.setUsrActualizacion(usr);
-    }
-
-    fichaRiesgo = fichaRiesgoService.guardar(fichaRiesgo);
-
-    // =========================
-    // 2) DETALLE: FICHA_RIESGO_DET
-    //    estrategia: REEMPLAZAR todo (delete + insert)
-    // =========================
-    fichaRiesgoDetService.eliminarPorFicha(ficha.getIdFicha());
-
-    // 2.1) checks marcados
-    if (riesgos != null && !riesgos.isEmpty()) {
-        int orden = 1;
-
-        for (Map.Entry<String, Boolean> e : riesgos.entrySet()) {
-            if (!Boolean.TRUE.equals(e.getValue())) continue;
-
-            RiskKey rk = parseRiskKey(e.getKey()); // ej: FIS_TEMP_ALTAS_1
-            if (rk == null) continue;
-
-            FichaRiesgoDet det = new FichaRiesgoDet();
-            det.setFicha(ficha);
-            det.setGrupo(rk.grupo);
-            det.setItem(rk.item);
-            det.setActividadNro(rk.actividad);
-            det.setMarcado("S");
-            det.setOrden(orden++);
-
-            // ✅ IMPORTANTE: pasar usuario (auditoría en servicio)
-            fichaRiesgoDetService.guardar(det, usr);
+        if (!validarStep2()) {
+            ctx.validationFailed();
+            return;
         }
-    }
 
-    // 2.2) “otros”
-    if (otrosRiesgos != null && !otrosRiesgos.isEmpty()) {
-        int ordenOtros = 10000;
+        final Date ahora = new Date();
+        final String usr = "USR_APP"; // luego lo cambiamos por el usuario logueado
 
-        for (Map.Entry<String, String> e : otrosRiesgos.entrySet()) {
-            String val = e.getValue();
-            if (isBlank(val)) continue;
-
-            RiskKey rk = parseRiskKeyOtros(e.getKey()); // ej: FIS_OTROS_1
-            if (rk == null) continue;
-
-            FichaRiesgoDet det = new FichaRiesgoDet();
-            det.setFicha(ficha);
-            det.setGrupo(rk.grupo);
-            det.setItem("OTROS: " + val.trim());
-            det.setActividadNro(rk.actividad);
-            det.setMarcado("S");
-            det.setOrden(ordenOtros++);
-
-            // ✅ IMPORTANTE: pasar usuario
-            fichaRiesgoDetService.guardar(det, usr);
+        if (ficha == null || ficha.getIdFicha() == null) {
+            ctx.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                    "Step 2", "Primero debe existir y estar guardada la ficha (ID_FICHA)."));
+            ctx.validationFailed();
+            return;
         }
+
+        // =========================
+        // 1) ENCABEZADO: FICHA_RIESGO
+        // =========================
+        if (fichaRiesgo == null) {
+            fichaRiesgo = new FichaRiesgo();
+        }
+        fichaRiesgo.setFicha(ficha);
+
+        // Actividades
+        fichaRiesgo.setActividad1(getSafe(actividadesLab, 0));
+        fichaRiesgo.setActividad2(getSafe(actividadesLab, 1));
+        fichaRiesgo.setActividad3(getSafe(actividadesLab, 2));
+        fichaRiesgo.setActividad4(getSafe(actividadesLab, 3));
+        fichaRiesgo.setActividad5(getSafe(actividadesLab, 4));
+        fichaRiesgo.setActividad6(getSafe(actividadesLab, 5));
+        fichaRiesgo.setActividad7(getSafe(actividadesLab, 6));
+
+        // Medidas
+        fichaRiesgo.setMedidasPreventivas(construirMedidas(medidasPreventivas));
+
+        // Auditoría (ENCABEZADO)
+        if (fichaRiesgo.getIdFichaRiesgo() == null) {
+            fichaRiesgo.setEstado("BORRADOR");
+            fichaRiesgo.setFCreacion(ahora);
+            fichaRiesgo.setUsrCreacion(usr);
+        } else {
+            fichaRiesgo.setFActualizacion(ahora);
+            fichaRiesgo.setUsrActualizacion(usr);
+        }
+
+        fichaRiesgo = fichaRiesgoService.guardar(fichaRiesgo);
+
+        // =========================
+        // 2) DETALLE: FICHA_RIESGO_DET
+        //    estrategia: REEMPLAZAR todo (delete + insert)
+        // =========================
+        fichaRiesgoDetService.eliminarPorFicha(ficha.getIdFicha());
+
+        // 2.1) checks marcados
+        if (riesgos != null && !riesgos.isEmpty()) {
+            int orden = 1;
+
+            for (Map.Entry<String, Boolean> e : riesgos.entrySet()) {
+                if (!Boolean.TRUE.equals(e.getValue())) {
+                    continue;
+                }
+
+                RiskKey rk = parseRiskKey(e.getKey()); // ej: FIS_TEMP_ALTAS_1
+                if (rk == null) {
+                    continue;
+                }
+
+                FichaRiesgoDet det = new FichaRiesgoDet();
+                det.setFicha(ficha);
+                det.setGrupo(rk.grupo);
+                det.setItem(rk.item);
+                det.setActividadNro(rk.actividad);
+                det.setMarcado("S");
+                det.setOrden(orden++);
+
+                // ✅ IMPORTANTE: pasar usuario (auditoría en servicio)
+                fichaRiesgoDetService.guardar(det, usr);
+            }
+        }
+
+        // 2.2) “otros”
+        if (otrosRiesgos != null && !otrosRiesgos.isEmpty()) {
+            int ordenOtros = 10000;
+
+            for (Map.Entry<String, String> e : otrosRiesgos.entrySet()) {
+                String val = e.getValue();
+                if (isBlank(val)) {
+                    continue;
+                }
+
+                RiskKey rk = parseRiskKeyOtros(e.getKey()); // ej: FIS_OTROS_1
+                if (rk == null) {
+                    continue;
+                }
+
+                FichaRiesgoDet det = new FichaRiesgoDet();
+                det.setFicha(ficha);
+                det.setGrupo(rk.grupo);
+                det.setItem("OTROS: " + val.trim());
+                det.setActividadNro(rk.actividad);
+                det.setMarcado("S");
+                det.setOrden(ordenOtros++);
+
+                // ✅ IMPORTANTE: pasar usuario
+                fichaRiesgoDetService.guardar(det, usr);
+            }
+        }
+
+        registrarAuditoria("GUARDAR_STEP2", "FICHA_RIESGO / FICHA_RIESGO_DET", "*",
+                "Step 2 guardado. ID_FICHA=" + ficha.getIdFicha());
+
+        ctx.addMessage(null, new FacesMessage(
+                FacesMessage.SEVERITY_INFO, "Step 2",
+                "Riesgos laborales guardados correctamente (encabezado + detalle)."));
     }
-
-    registrarAuditoria("GUARDAR_STEP2", "FICHA_RIESGO / FICHA_RIESGO_DET", "*",
-            "Step 2 guardado. ID_FICHA=" + ficha.getIdFicha());
-
-    ctx.addMessage(null, new FacesMessage(
-            FacesMessage.SEVERITY_INFO, "Step 2",
-            "Riesgos laborales guardados correctamente (encabezado + detalle)."));
-}
-
 
     /**
      * Validaciones del STEP 3: - Al menos 1 diagnóstico - Aptitud seleccionada
      * - Al menos 1 recomendación - Nombre del profesional - Código del médico
      */
-   private boolean validarStep3() {
-    FacesContext ctx = FacesContext.getCurrentInstance();
-    s3("validarStep3() INICIO");
+    private boolean validarStep3() {
+        FacesContext ctx = FacesContext.getCurrentInstance();
+        s3("validarStep3() INICIO");
 
-    boolean valido = true;
+        boolean valido = true;
 
-    // 1) Diagnóstico
-    boolean hayDiagnostico = false;
-    if (listaDiag != null) {
-        for (int i = 0; i < listaDiag.size(); i++) {
-            ConsultaDiagnostico d = listaDiag.get(i);
-            if (d == null) continue;
+        // 1) Diagnóstico
+        boolean hayDiagnostico = false;
+        if (listaDiag != null) {
+            for (int i = 0; i < listaDiag.size(); i++) {
+                ConsultaDiagnostico d = listaDiag.get(i);
+                if (d == null) {
+                    continue;
+                }
 
-            boolean tiene = !isBlank(d.getCodigo()) || !isBlank(d.getDescripcion()) || d.getCie10() != null;
-            if (tiene) {
-                hayDiagnostico = true;
-                s3("validarStep3(): diagnóstico encontrado en fila " + (i + 1)
-                        + " codigo=" + d.getCodigo() + " cie=" + (d.getCie10() != null));
-                break;
+                boolean tiene = !isBlank(d.getCodigo()) || !isBlank(d.getDescripcion()) || d.getCie10() != null;
+                if (tiene) {
+                    hayDiagnostico = true;
+                    s3("validarStep3(): diagnóstico encontrado en fila " + (i + 1)
+                            + " codigo=" + d.getCodigo() + " cie=" + (d.getCie10() != null));
+                    break;
+                }
             }
         }
-    }
-    if (!hayDiagnostico) {
-        s3("validarStep3() FAIL: no hay diagnósticos");
-        ctx.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR,
-                "Step 3", "Debe registrar al menos un diagnóstico (CIE10)."));
-        valido = false;
-    }
+        if (!hayDiagnostico) {
+            s3("validarStep3() FAIL: no hay diagnósticos");
+            ctx.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                    "Step 3", "Debe registrar al menos un diagnóstico (CIE10)."));
+            valido = false;
+        }
 
-    if (isBlank(aptitudSel)) {
-        s3("validarStep3() FAIL: aptitudSel vacío");
-        ctx.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR,
-                "Step 3", "Debe seleccionar la aptitud médica."));
-        valido = false;
+        if (isBlank(aptitudSel)) {
+            s3("validarStep3() FAIL: aptitudSel vacío");
+            ctx.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                    "Step 3", "Debe seleccionar la aptitud médica."));
+            valido = false;
+        }
+
+        if (isBlank(recomendaciones)) {
+            s3("validarStep3() FAIL: recomendaciones vacío");
+            ctx.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                    "Step 3", "Debe ingresar al menos una recomendación."));
+            valido = false;
+        }
+
+        if (isBlank(medicoNombre)) {
+            s3("validarStep3() FAIL: medicoNombre vacío");
+            ctx.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                    "Step 3", "Debe ingresar el nombre del profesional."));
+            valido = false;
+        }
+
+        if (isBlank(medicoCodigo)) {
+            s3("validarStep3() FAIL: medicoCodigo vacío");
+            ctx.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                    "Step 3", "Debe ingresar el código del médico."));
+            valido = false;
+        }
+
+        s3("validarStep3() FIN -> " + valido);
+        return valido;
     }
-
-    if (isBlank(recomendaciones)) {
-        s3("validarStep3() FAIL: recomendaciones vacío");
-        ctx.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR,
-                "Step 3", "Debe ingresar al menos una recomendación."));
-        valido = false;
-    }
-
-    if (isBlank(medicoNombre)) {
-        s3("validarStep3() FAIL: medicoNombre vacío");
-        ctx.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR,
-                "Step 3", "Debe ingresar el nombre del profesional."));
-        valido = false;
-    }
-
-    if (isBlank(medicoCodigo)) {
-        s3("validarStep3() FAIL: medicoCodigo vacío");
-        ctx.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR,
-                "Step 3", "Debe ingresar el código del médico."));
-        valido = false;
-    }
-
-    s3("validarStep3() FIN -> " + valido);
-    return valido;
-}
-
 
     /**
      * STEP 3: - Signos vitales básicos (peso, talla) - Aptitud, observaciones,
      * recomendaciones - CIE10 principal, médico, fechas Aquí SÍ se persiste la
      * FICHA_OCUPACIONAL (y SIGNOS_VITALES).
      */
-public void guardarStep3() {
+    public void guardarStep3() {
 
-    System.out.println("===== [STEP3] INICIO guardarStep3 =====");
+        System.out.println("===== [STEP3] INICIO guardarStep3 =====");
 
-    FacesContext ctx = FacesContext.getCurrentInstance();
+        FacesContext ctx = FacesContext.getCurrentInstance();
 
-    try {
+        try {
 
-        // =========================================================
-        // 0) VALIDAR EXISTENCIA DE FICHA
-        // =========================================================
-        System.out.println("STEP3-0: Validando existencia de ficha");
+            // =========================================================
+            // 0) VALIDAR EXISTENCIA DE FICHA
+            // =========================================================
+            if (ficha == null || ficha.getIdFicha() == null) {
+                ctx.addMessage(null, new FacesMessage(
+                        FacesMessage.SEVERITY_WARN,
+                        "Atención",
+                        "Primero debe guardar el Step 1 para generar la ficha."
+                ));
+                ctx.validationFailed();
+                return;
+            }
 
-        if (ficha == null || ficha.getIdFicha() == null) {
-            System.out.println("STEP3-0-ERROR: ficha es null o no tiene ID");
+            // =========================================================
+            // 1) VALIDACIONES STEP 3
+            // =========================================================
+            if (!validarStep3()) {
+                ctx.validationFailed();
+                return;
+            }
+
+            final Date ahora = new Date();
+            final String usuario = "USR_APP";
+
+            // =========================================================
+            // 2) GUARDAR BLOQUES UNO POR UNO (SEGUIMIENTO)
+            // =========================================================
+            guardarStep3_FichaGeneral(ctx, ahora, usuario);    // CIE10 Ppal + L/M/N/O + update FICHA
+            guardarStep3_H_ActividadLaboral(ahora, usuario);   // H
+            guardarStep3_I_Extralaborales(ahora, usuario);     // I (serializa en FICHA_OCUPACIONAL)
+            guardarStep3_J_Examenes(ahora, usuario);           // J (FICHA_EXAMEN_COMP)
+            guardarStep3_K_Diagnosticos(ahora, usuario);       // K (si tu service/tabla existe)
+
+            // =========================================================
+            // 3) AUDITORÍA
+            // =========================================================
+            registrarAuditoria(
+                    "GUARDAR_STEP3",
+                    "FICHA_OCUPACIONAL / H / I / J / K",
+                    "*",
+                    "Step 3 guardado. ID_FICHA=" + ficha.getIdFicha()
+            );
 
             ctx.addMessage(null, new FacesMessage(
-                    FacesMessage.SEVERITY_WARN,
-                    "Atención",
-                    "Primero debe guardar el Step 1 para generar la ficha."
+                    FacesMessage.SEVERITY_INFO,
+                    "OK",
+                    "Step 3 guardado correctamente."
             ));
+
+            System.out.println("===== [STEP3] FIN OK =====");
+
+        } catch (Exception e) {
+
+            System.out.println("===== [STEP3] ERROR EXCEPCIÓN =====");
+            e.printStackTrace();
+
+            ctx.addMessage(null, new FacesMessage(
+                    FacesMessage.SEVERITY_ERROR,
+                    "Error",
+                    "Ocurrió un error al guardar el Step 3. Revise consola."
+            ));
+
             ctx.validationFailed();
-            return;
         }
+    }
 
-        System.out.println("STEP3-0-OK: ID_FICHA=" + ficha.getIdFicha());
+    private void guardarStep3_FichaGeneral(FacesContext ctx, Date ahora, String usuario) {
 
-        // =========================================================
-        // 1) VALIDACIONES STEP 3
-        // =========================================================
-        System.out.println("STEP3-1: Ejecutando validarStep3()");
+        System.out.println("STEP3-A: Guardando datos generales en FICHA_OCUPACIONAL");
 
-        if (!validarStep3()) {
-            System.out.println("STEP3-1-ERROR: validarStep3() devolvió false");
-            ctx.validationFailed();
-            return;
-        }
-
-        System.out.println("STEP3-1-OK");
-
-        final Date ahora = new Date();
-        final String usuario = "USR_APP";
-
-        // =========================================================
-        // 2) CIE10 PRINCIPAL
-        // =========================================================
-        System.out.println("STEP3-2: Procesando CIE10 principal");
-
+        // 1) CIE10 PRINCIPAL
         if (!isBlank(codCie10Ppal)) {
-
-            System.out.println("STEP3-2: Buscando CIE10 = " + codCie10Ppal);
-
             Cie10 cie = cie10Service.buscarPorCodigo(codCie10Ppal.trim());
-
             if (cie == null) {
-                System.out.println("STEP3-2-ERROR: CIE10 no existe");
-
                 ctx.addMessage(null, new FacesMessage(
                         FacesMessage.SEVERITY_WARN,
                         "Validación",
                         "El código CIE10 principal no existe: " + codCie10Ppal
                 ));
                 ctx.validationFailed();
-                return;
+                throw new IllegalStateException("CIE10 principal no existe: " + codCie10Ppal);
             }
-
             ficha.setCie10Principal(cie);
-            System.out.println("STEP3-2-OK: CIE10 asignado");
+        } else {
+            ficha.setCie10Principal(null);
         }
 
-        // =========================================================
-        // 3) DATOS GENERALES STEP 3
-        // =========================================================
-        System.out.println("STEP3-3: Asignando campos Step3 a ficha");
-
+        // 2) L / M / N / O
         ficha.setAptitudSel(aptitudSel);
         ficha.setDetalleObs(detalleObservaciones);
         ficha.setRecomendaciones(recomendaciones);
+
+        ficha.setNRetEval(nRealizaEvaluacion);    // 'S'/'N'
+        ficha.setNRetRelTrab(nRelacionTrabajo);   // 'S'/'N'
+        ficha.setNRetObs(nObsRetiro);
+
         ficha.setMedicoNombre(medicoNombre);
         ficha.setMedicoCodigo(medicoCodigo);
+
         ficha.setFechaEmision(fechaEmision != null ? fechaEmision : ahora);
 
+        // Auditoría FICHA
         ficha.setFechaActualizacion(ahora);
         ficha.setUsrActualizacion(usuario);
 
-        System.out.println("STEP3-3-OK");
-
-        // =========================================================
-        // 4) GUARDAR FICHA (UPDATE)
-        // =========================================================
-        System.out.println("STEP3-4: Guardando ficha (update)");
-
+        // Update
         ficha = fichaService.guardar(ficha);
 
-        System.out.println("STEP3-4-OK: ficha guardada");
+        System.out.println("STEP3-A-OK: FICHA_OCUPACIONAL actualizada. ID_FICHA=" + ficha.getIdFicha());
+    }
 
-        // =========================================================
-        // 5) ACTIVIDAD LABORAL (H)
-        // =========================================================
-        System.out.println("STEP3-5: Procesando Actividad Laboral");
+    private void guardarStep3_H_ActividadLaboral(Date ahora, String usuario) {
 
-        ensureActLabSize();
+        System.out.println("STEP3-H: Procesando Actividad Laboral (FICHA_ACT_LABORAL)");
+
+        ensureActLabSize(); // tu método actual
 
         for (int i = 0; i < H_ROWS; i++) {
 
-            System.out.println("STEP3-5-FILA " + (i + 1));
-
-            boolean filaTieneDatos =
-                    !isBlank(getSafe(actLabCentroTrabajo, i)) ||
-                    !isBlank(getSafe(actLabActividad, i)) ||
-                    !isBlank(getSafe(actLabTiempo, i)) ||
-                    isTrue(getSafe(actLabTrabajoAnterior, i)) ||
-                    isTrue(getSafe(actLabTrabajoActual, i)) ||
-                    isTrue(getSafe(actLabIncidenteChk, i)) ||
-                    isTrue(getSafe(actLabAccidenteChk, i)) ||
-                    isTrue(getSafe(actLabEnfermedadChk, i)) ||
-                    getSafe(iessFecha, i) != null ||
-                    !isBlank(getSafe(iessEspecificar, i)) ||
-                    !isBlank(getSafe(actLabObservaciones, i));
-
             int nroFila = i + 1;
 
+            boolean filaTieneDatos
+                    = !isBlank(getSafe(actLabCentroTrabajo, i))
+                    || !isBlank(getSafe(actLabActividad, i))
+                    || !isBlank(getSafe(actLabTiempo, i))
+                    || isTrue(getSafe(actLabTrabajoAnterior, i))
+                    || isTrue(getSafe(actLabTrabajoActual, i))
+                    || isTrue(getSafe(actLabIncidenteChk, i))
+                    || isTrue(getSafe(actLabAccidenteChk, i))
+                    || isTrue(getSafe(actLabEnfermedadChk, i))
+                    || getSafe(iessFecha, i) != null
+                    || !isBlank(getSafe(iessEspecificar, i))
+                    || !isBlank(getSafe(actLabObservaciones, i));
+
             if (!filaTieneDatos) {
-                System.out.println("STEP3-5-FILA " + nroFila + ": sin datos → eliminar si existe");
+                // Si está vacía, elimino el registro de esa fila si existe
                 fichaActLaboralService.eliminarPorFichaYFila(ficha.getIdFicha(), nroFila);
                 continue;
             }
 
-            FichaActLaboral fal =
-                    fichaActLaboralService.buscarPorFichaYFila(ficha.getIdFicha(), nroFila);
+            FichaActLaboral fal = fichaActLaboralService.buscarPorFichaYFila(ficha.getIdFicha(), nroFila);
 
             if (fal == null) {
                 fal = new FichaActLaboral();
@@ -1617,11 +1653,9 @@ public void guardarStep3() {
                 fal.setNroFila(nroFila);
                 fal.setFCreacion(ahora);
                 fal.setUsrCreacion(usuario);
-                System.out.println("STEP3-5-FILA " + nroFila + ": creando nuevo registro");
             } else {
                 fal.setFActualizacion(ahora);
                 fal.setUsrActualizacion(usuario);
-                System.out.println("STEP3-5-FILA " + nroFila + ": actualizando registro");
             }
 
             fal.setCentroTrabajo(getSafe(actLabCentroTrabajo, i));
@@ -1634,6 +1668,7 @@ public void guardarStep3() {
             fal.setAccidente(sn(getSafe(actLabAccidenteChk, i)));
             fal.setEnfOcupacional(sn(getSafe(actLabEnfermedadChk, i)));
 
+            // En tu UI esto es IESS: fecha y especificar
             fal.setFechaEvento(getSafe(iessFecha, i));
             fal.setEspecificar(getSafe(iessEspecificar, i));
             fal.setObservaciones(getSafe(actLabObservaciones, i));
@@ -1641,59 +1676,158 @@ public void guardarStep3() {
             fichaActLaboralService.guardar(fal);
         }
 
-        // =========================================================
-        // 6) AUDITORÍA
-        // =========================================================
-        System.out.println("STEP3-6: Registrando auditoría");
-
-        registrarAuditoria(
-                "GUARDAR_STEP3",
-                "FICHA_OCUPACIONAL / FICHA_ACT_LABORAL",
-                "*",
-                "Step 3 guardado. ID_FICHA=" + ficha.getIdFicha()
-        );
-
-        System.out.println("STEP3-6-OK");
-
-        ctx.addMessage(null, new FacesMessage(
-                FacesMessage.SEVERITY_INFO,
-                "OK",
-                "Step 3 guardado correctamente."
-        ));
-
-        System.out.println("===== [STEP3] FIN OK =====");
-
-    } catch (Exception e) {
-
-        System.out.println("===== [STEP3] ERROR EXCEPCIÓN =====");
-        e.printStackTrace();
-
-        ctx.addMessage(null, new FacesMessage(
-                FacesMessage.SEVERITY_ERROR,
-                "Error",
-                "Ocurrió un error al guardar el Step 3. Revise consola."
-        ));
-
-        ctx.validationFailed();
+        System.out.println("STEP3-H-OK");
     }
-}
 
+    private void guardarStep3_I_Extralaborales(Date ahora, String usuario) {
+
+        System.out.println("STEP3-I: Procesando Actividades Extralaborales (SERIALIZADO EN FICHA)");
+
+        // Si no hay listas, no reviento
+        if (tipoAct == null || fechaAct == null || descAct == null) {
+            System.out.println("STEP3-I: Listas I null -> no se guarda (no rompe)");
+            return;
+        }
+
+        StringBuilder sb = new StringBuilder();
+        Date ultimaFecha = null;
+
+        for (int i = 0; i < tipoAct.size(); i++) {
+
+            String t = getSafe(tipoAct, i);
+            Date f = getSafe(fechaAct, i);
+            String d = getSafe(descAct, i);
+
+            boolean filaTieneDatos = !isBlank(t) || f != null || !isBlank(d);
+            if (!filaTieneDatos) {
+                continue;
+            }
+
+            // formato simple (para seguimiento)
+            sb.append(i + 1).append(") ")
+                    .append(nullToDash(t)).append(" | ")
+                    .append(f != null ? new java.text.SimpleDateFormat("yyyy/MM/dd").format(f) : "----/--/--")
+                    .append(" | ")
+                    .append(nullToDash(d))
+                    .append("\n");
+
+            if (f != null) {
+                ultimaFecha = f; // te guardo la última fecha con dato
+            }
+        }
+
+        ficha.setExtraLabDesc(sb.length() == 0 ? null : sb.toString().trim());
+        ficha.setExtraLabFecha(ultimaFecha);
+
+        ficha.setFechaActualizacion(ahora);
+        ficha.setUsrActualizacion(usuario);
+
+        ficha = fichaService.guardar(ficha);
+
+        System.out.println("STEP3-I-OK");
+    }
+
+    private void guardarStep3_J_Examenes(Date ahora, String usuario) {
+
+        System.out.println("STEP3-J: Procesando Exámenes (FICHA_EXAMEN_COMP)");
+
+        // Seguridad: si las listas no existen, no rompo el Step3
+        if (examNombre == null || examFecha == null || examResultado == null) {
+            System.out.println("STEP3-J: Listas J null -> no se guarda J");
+            return;
+        }
+
+        // filas = tamaño mínimo (por si una lista viene más corta)
+        int filas = Math.min(examNombre.size(), Math.min(examFecha.size(), examResultado.size()));
+
+        for (int i = 0; i < filas; i++) {
+
+            int nroFila = i + 1;
+
+            String nombre = getSafe(examNombre, i);
+            Date fecha = getSafe(examFecha, i);
+            String resultado = getSafe(examResultado, i);
+
+            boolean filaTieneDatos
+                    = !isBlank(nombre)
+                    || fecha != null
+                    || !isBlank(resultado);
+
+            if (!filaTieneDatos) {
+                // Si está vacía => elimino si existía
+                int del = fichaExamenCompService.eliminarPorFichaYFila(ficha.getIdFicha(), nroFila);
+                System.out.println("STEP3-J-FILA " + nroFila + ": vacía -> delete=" + del);
+                continue;
+            }
+
+            // Buscar si existe esa fila
+            FichaExamenComp ex = fichaExamenCompService.buscarPorFichaYFila(ficha.getIdFicha(), nroFila);
+
+            if (ex == null) {
+                ex = new FichaExamenComp();
+                ex.setFicha(ficha);
+                ex.setNroFila(nroFila);
+                // fCreacion/usrCreacion los pone tu service cuando idFichaExamen es null
+                System.out.println("STEP3-J-FILA " + nroFila + ": INSERT");
+            } else {
+                System.out.println("STEP3-J-FILA " + nroFila + ": UPDATE id=" + ex.getIdFichaExamen());
+            }
+
+            ex.setNombreExamen(nombre);
+            ex.setFechaExamen(fecha);
+            ex.setResultado(resultado);
+
+            fichaExamenCompService.guardar(ex, usuario);
+        }
+
+        System.out.println("STEP3-J-OK");
+    }
+
+    private void guardarStep3_K_Diagnosticos(Date ahora, String usuario) {
+
+        System.out.println("STEP3-K: Procesando Diagnósticos");
+
+        if (listaDiag == null || listaDiag.isEmpty()) {
+            System.out.println("STEP3-K: listaDiag vacía -> OK");
+            return;
+        }
+
+        // si tu service no tiene nada implementado, no rompo:
+        if (fichaDiagnosticoService == null) {
+            System.out.println("STEP3-K: fichaDiagnosticoService null -> no se guarda K");
+            return;
+        }
+
+        // ✅ OPCIÓN RECOMENDADA:
+        // Implementa en tu service un método tipo:
+        // guardarDiagnosticosDeFicha(Long idFicha, List<ConsultaDiagnostico> lista, Date ahora, String usuario)
+        try {
+            fichaDiagnosticoService.guardarDiagnosticosDeFicha(ficha.getIdFicha(), listaDiag, ahora, usuario);
+            System.out.println("STEP3-K-OK (service)");
+        } catch (NoSuchMethodError | RuntimeException ex) {
+            System.out.println("STEP3-K: Tu service no tiene guardarDiagnosticosDeFicha(...) -> no se guarda K");
+            // NO lanzo excepción para que puedas seguir guardando lo demás.
+        }
+    }
+
+    private String nullToDash(String s) {
+        return (s == null || s.trim().isEmpty()) ? "-" : s.trim();
+    }
 
     /**
      * Helpers seguros (para no reventar por índices)
      */
-   private <T> T getSafe(List<T> list, int idx) {
-    if (list == null) {
-        s3("getSafe() list=null idx=" + idx);
-        return null;
+    private <T> T getSafe(List<T> list, int idx) {
+        if (list == null) {
+            s3("getSafe() list=null idx=" + idx);
+            return null;
+        }
+        if (idx < 0 || idx >= list.size()) {
+            s3("getSafe() idx fuera de rango idx=" + idx + " size=" + list.size());
+            return null;
+        }
+        return list.get(idx);
     }
-    if (idx < 0 || idx >= list.size()) {
-        s3("getSafe() idx fuera de rango idx=" + idx + " size=" + list.size());
-        return null;
-    }
-    return list.get(idx);
-}
-
 
     private boolean isTrue(Boolean b) {
         return b != null && b;
@@ -2757,158 +2891,209 @@ public void guardarStep3() {
     }
 
     private void ensureActLabSize() {
-    final int n = H_ROWS; // 8
+        final int n = H_ROWS; // 8
 
-    // ===== LOG INICIO =====
-    try {
-        log.info("[STEP3] ensureActLabSize() INICIO - H_ROWS={}", n);
-        log.info("[STEP3] ensureActLabSize() Estado inicial -> actLabRows={}, centro={}, act={}, tiempo={}, obs={}, "
-                        + "trabAnt={}, trabAct={}, inc={}, acc={}, enf={}, iessSi={}, iessNo={}, iessFecha={}, iessEsp={}",
-                (actLabRows == null ? "null" : actLabRows.size()),
-                (actLabCentroTrabajo == null ? "null" : actLabCentroTrabajo.size()),
-                (actLabActividad == null ? "null" : actLabActividad.size()),
-                (actLabTiempo == null ? "null" : actLabTiempo.size()),
-                (actLabObservaciones == null ? "null" : actLabObservaciones.size()),
-                (actLabTrabajoAnterior == null ? "null" : actLabTrabajoAnterior.size()),
-                (actLabTrabajoActual == null ? "null" : actLabTrabajoActual.size()),
-                (actLabIncidenteChk == null ? "null" : actLabIncidenteChk.size()),
-                (actLabAccidenteChk == null ? "null" : actLabAccidenteChk.size()),
-                (actLabEnfermedadChk == null ? "null" : actLabEnfermedadChk.size()),
-                (iessSi == null ? "null" : iessSi.size()),
-                (iessNo == null ? "null" : iessNo.size()),
-                (iessFecha == null ? "null" : iessFecha.size()),
-                (iessEspecificar == null ? "null" : iessEspecificar.size())
-        );
-    } catch (Exception ignore) {
-        // no romper flujo por logs
-    }
+        // ===== LOG INICIO =====
+        try {
+            log.info("[STEP3] ensureActLabSize() INICIO - H_ROWS={}", n);
+            log.info("[STEP3] ensureActLabSize() Estado inicial -> actLabRows={}, centro={}, act={}, tiempo={}, obs={}, "
+                    + "trabAnt={}, trabAct={}, inc={}, acc={}, enf={}, iessSi={}, iessNo={}, iessFecha={}, iessEsp={}",
+                    (actLabRows == null ? "null" : actLabRows.size()),
+                    (actLabCentroTrabajo == null ? "null" : actLabCentroTrabajo.size()),
+                    (actLabActividad == null ? "null" : actLabActividad.size()),
+                    (actLabTiempo == null ? "null" : actLabTiempo.size()),
+                    (actLabObservaciones == null ? "null" : actLabObservaciones.size()),
+                    (actLabTrabajoAnterior == null ? "null" : actLabTrabajoAnterior.size()),
+                    (actLabTrabajoActual == null ? "null" : actLabTrabajoActual.size()),
+                    (actLabIncidenteChk == null ? "null" : actLabIncidenteChk.size()),
+                    (actLabAccidenteChk == null ? "null" : actLabAccidenteChk.size()),
+                    (actLabEnfermedadChk == null ? "null" : actLabEnfermedadChk.size()),
+                    (iessSi == null ? "null" : iessSi.size()),
+                    (iessNo == null ? "null" : iessNo.size()),
+                    (iessFecha == null ? "null" : iessFecha.size()),
+                    (iessEspecificar == null ? "null" : iessEspecificar.size())
+            );
+        } catch (Exception ignore) {
+            // no romper flujo por logs
+        }
 
-    // ===== 1) Inicializar listas si vienen null =====
-    if (actLabRows == null) actLabRows = new ArrayList<>();
-    if (actLabCentroTrabajo == null) actLabCentroTrabajo = new ArrayList<>();
-    if (actLabActividad == null) actLabActividad = new ArrayList<>();
-    if (actLabTiempo == null) actLabTiempo = new ArrayList<>();
+        // ===== 1) Inicializar listas si vienen null =====
+        if (actLabRows == null) {
+            actLabRows = new ArrayList<>();
+        }
+        if (actLabCentroTrabajo == null) {
+            actLabCentroTrabajo = new ArrayList<>();
+        }
+        if (actLabActividad == null) {
+            actLabActividad = new ArrayList<>();
+        }
+        if (actLabTiempo == null) {
+            actLabTiempo = new ArrayList<>();
+        }
 
-    if (actLabTrabajoAnterior == null) actLabTrabajoAnterior = new ArrayList<>();
-    if (actLabTrabajoActual == null) actLabTrabajoActual = new ArrayList<>();
-    if (actLabIncidenteChk == null) actLabIncidenteChk = new ArrayList<>();
-    if (actLabAccidenteChk == null) actLabAccidenteChk = new ArrayList<>();
-    if (actLabEnfermedadChk == null) actLabEnfermedadChk = new ArrayList<>();
+        if (actLabTrabajoAnterior == null) {
+            actLabTrabajoAnterior = new ArrayList<>();
+        }
+        if (actLabTrabajoActual == null) {
+            actLabTrabajoActual = new ArrayList<>();
+        }
+        if (actLabIncidenteChk == null) {
+            actLabIncidenteChk = new ArrayList<>();
+        }
+        if (actLabAccidenteChk == null) {
+            actLabAccidenteChk = new ArrayList<>();
+        }
+        if (actLabEnfermedadChk == null) {
+            actLabEnfermedadChk = new ArrayList<>();
+        }
 
-    if (actLabObservaciones == null) actLabObservaciones = new ArrayList<>();
+        if (actLabObservaciones == null) {
+            actLabObservaciones = new ArrayList<>();
+        }
 
-    if (iessSi == null) iessSi = new ArrayList<>();
-    if (iessNo == null) iessNo = new ArrayList<>();
-    if (iessFecha == null) iessFecha = new ArrayList<>();
-    if (iessEspecificar == null) iessEspecificar = new ArrayList<>();
+        if (iessSi == null) {
+            iessSi = new ArrayList<>();
+        }
+        if (iessNo == null) {
+            iessNo = new ArrayList<>();
+        }
+        if (iessFecha == null) {
+            iessFecha = new ArrayList<>();
+        }
+        if (iessEspecificar == null) {
+            iessEspecificar = new ArrayList<>();
+        }
 
-    // ===== 2) Crecer a tamaño n =====
-    // rows 1..n
-    while (actLabRows.size() < n) {
-        String val = String.valueOf(actLabRows.size() + 1);
-        actLabRows.add(val);
-        log.info("[STEP3] ensureActLabSize(): +actLabRows -> {}", val);
-    }
+        // ===== 2) Crecer a tamaño n =====
+        // rows 1..n
+        while (actLabRows.size() < n) {
+            String val = String.valueOf(actLabRows.size() + 1);
+            actLabRows.add(val);
+            log.info("[STEP3] ensureActLabSize(): +actLabRows -> {}", val);
+        }
 
-    while (actLabCentroTrabajo.size() < n) {
-        actLabCentroTrabajo.add("");
-        log.info("[STEP3] ensureActLabSize(): +actLabCentroTrabajo (blank) idx={}", actLabCentroTrabajo.size() - 1);
-    }
-    while (actLabActividad.size() < n) {
-        actLabActividad.add("");
-        log.info("[STEP3] ensureActLabSize(): +actLabActividad (blank) idx={}", actLabActividad.size() - 1);
-    }
-    while (actLabTiempo.size() < n) {
-        actLabTiempo.add("");
-        log.info("[STEP3] ensureActLabSize(): +actLabTiempo (blank) idx={}", actLabTiempo.size() - 1);
-    }
+        while (actLabCentroTrabajo.size() < n) {
+            actLabCentroTrabajo.add("");
+            log.info("[STEP3] ensureActLabSize(): +actLabCentroTrabajo (blank) idx={}", actLabCentroTrabajo.size() - 1);
+        }
+        while (actLabActividad.size() < n) {
+            actLabActividad.add("");
+            log.info("[STEP3] ensureActLabSize(): +actLabActividad (blank) idx={}", actLabActividad.size() - 1);
+        }
+        while (actLabTiempo.size() < n) {
+            actLabTiempo.add("");
+            log.info("[STEP3] ensureActLabSize(): +actLabTiempo (blank) idx={}", actLabTiempo.size() - 1);
+        }
 
-    while (actLabTrabajoAnterior.size() < n) {
-        actLabTrabajoAnterior.add(Boolean.FALSE);
-        log.info("[STEP3] ensureActLabSize(): +actLabTrabajoAnterior=false idx={}", actLabTrabajoAnterior.size() - 1);
-    }
-    while (actLabTrabajoActual.size() < n) {
-        actLabTrabajoActual.add(Boolean.FALSE);
-        log.info("[STEP3] ensureActLabSize(): +actLabTrabajoActual=false idx={}", actLabTrabajoActual.size() - 1);
-    }
-    while (actLabIncidenteChk.size() < n) {
-        actLabIncidenteChk.add(Boolean.FALSE);
-        log.info("[STEP3] ensureActLabSize(): +actLabIncidenteChk=false idx={}", actLabIncidenteChk.size() - 1);
-    }
-    while (actLabAccidenteChk.size() < n) {
-        actLabAccidenteChk.add(Boolean.FALSE);
-        log.info("[STEP3] ensureActLabSize(): +actLabAccidenteChk=false idx={}", actLabAccidenteChk.size() - 1);
-    }
-    while (actLabEnfermedadChk.size() < n) {
-        actLabEnfermedadChk.add(Boolean.FALSE);
-        log.info("[STEP3] ensureActLabSize(): +actLabEnfermedadChk=false idx={}", actLabEnfermedadChk.size() - 1);
-    }
+        while (actLabTrabajoAnterior.size() < n) {
+            actLabTrabajoAnterior.add(Boolean.FALSE);
+            log.info("[STEP3] ensureActLabSize(): +actLabTrabajoAnterior=false idx={}", actLabTrabajoAnterior.size() - 1);
+        }
+        while (actLabTrabajoActual.size() < n) {
+            actLabTrabajoActual.add(Boolean.FALSE);
+            log.info("[STEP3] ensureActLabSize(): +actLabTrabajoActual=false idx={}", actLabTrabajoActual.size() - 1);
+        }
+        while (actLabIncidenteChk.size() < n) {
+            actLabIncidenteChk.add(Boolean.FALSE);
+            log.info("[STEP3] ensureActLabSize(): +actLabIncidenteChk=false idx={}", actLabIncidenteChk.size() - 1);
+        }
+        while (actLabAccidenteChk.size() < n) {
+            actLabAccidenteChk.add(Boolean.FALSE);
+            log.info("[STEP3] ensureActLabSize(): +actLabAccidenteChk=false idx={}", actLabAccidenteChk.size() - 1);
+        }
+        while (actLabEnfermedadChk.size() < n) {
+            actLabEnfermedadChk.add(Boolean.FALSE);
+            log.info("[STEP3] ensureActLabSize(): +actLabEnfermedadChk=false idx={}", actLabEnfermedadChk.size() - 1);
+        }
 
-    while (actLabObservaciones.size() < n) {
-        actLabObservaciones.add("");
-        log.info("[STEP3] ensureActLabSize(): +actLabObservaciones (blank) idx={}", actLabObservaciones.size() - 1);
-    }
+        while (actLabObservaciones.size() < n) {
+            actLabObservaciones.add("");
+            log.info("[STEP3] ensureActLabSize(): +actLabObservaciones (blank) idx={}", actLabObservaciones.size() - 1);
+        }
 
-    while (iessSi.size() < n) {
-        iessSi.add(Boolean.FALSE);
-        log.info("[STEP3] ensureActLabSize(): +iessSi=false idx={}", iessSi.size() - 1);
-    }
-    while (iessNo.size() < n) {
-        iessNo.add(Boolean.FALSE);
-        log.info("[STEP3] ensureActLabSize(): +iessNo=false idx={}", iessNo.size() - 1);
-    }
-    while (iessFecha.size() < n) {
-        iessFecha.add(null);
-        log.info("[STEP3] ensureActLabSize(): +iessFecha=null idx={}", iessFecha.size() - 1);
-    }
-    while (iessEspecificar.size() < n) {
-        iessEspecificar.add("");
-        log.info("[STEP3] ensureActLabSize(): +iessEspecificar (blank) idx={}", iessEspecificar.size() - 1);
-    }
+        while (iessSi.size() < n) {
+            iessSi.add(Boolean.FALSE);
+            log.info("[STEP3] ensureActLabSize(): +iessSi=false idx={}", iessSi.size() - 1);
+        }
+        while (iessNo.size() < n) {
+            iessNo.add(Boolean.FALSE);
+            log.info("[STEP3] ensureActLabSize(): +iessNo=false idx={}", iessNo.size() - 1);
+        }
+        while (iessFecha.size() < n) {
+            iessFecha.add(null);
+            log.info("[STEP3] ensureActLabSize(): +iessFecha=null idx={}", iessFecha.size() - 1);
+        }
+        while (iessEspecificar.size() < n) {
+            iessEspecificar.add("");
+            log.info("[STEP3] ensureActLabSize(): +iessEspecificar (blank) idx={}", iessEspecificar.size() - 1);
+        }
 
-    // ===== 3) Normalizar nulls internos (evita NPE en Step3) =====
-    for (int i = 0; i < n; i++) {
-        if (actLabCentroTrabajo.get(i) == null) actLabCentroTrabajo.set(i, "");
-        if (actLabActividad.get(i) == null) actLabActividad.set(i, "");
-        if (actLabTiempo.get(i) == null) actLabTiempo.set(i, "");
-        if (actLabObservaciones.get(i) == null) actLabObservaciones.set(i, "");
-        if (iessEspecificar.get(i) == null) iessEspecificar.set(i, "");
+        // ===== 3) Normalizar nulls internos (evita NPE en Step3) =====
+        for (int i = 0; i < n; i++) {
+            if (actLabCentroTrabajo.get(i) == null) {
+                actLabCentroTrabajo.set(i, "");
+            }
+            if (actLabActividad.get(i) == null) {
+                actLabActividad.set(i, "");
+            }
+            if (actLabTiempo.get(i) == null) {
+                actLabTiempo.set(i, "");
+            }
+            if (actLabObservaciones.get(i) == null) {
+                actLabObservaciones.set(i, "");
+            }
+            if (iessEspecificar.get(i) == null) {
+                iessEspecificar.set(i, "");
+            }
 
-        if (actLabTrabajoAnterior.get(i) == null) actLabTrabajoAnterior.set(i, Boolean.FALSE);
-        if (actLabTrabajoActual.get(i) == null) actLabTrabajoActual.set(i, Boolean.FALSE);
-        if (actLabIncidenteChk.get(i) == null) actLabIncidenteChk.set(i, Boolean.FALSE);
-        if (actLabAccidenteChk.get(i) == null) actLabAccidenteChk.set(i, Boolean.FALSE);
-        if (actLabEnfermedadChk.get(i) == null) actLabEnfermedadChk.set(i, Boolean.FALSE);
+            if (actLabTrabajoAnterior.get(i) == null) {
+                actLabTrabajoAnterior.set(i, Boolean.FALSE);
+            }
+            if (actLabTrabajoActual.get(i) == null) {
+                actLabTrabajoActual.set(i, Boolean.FALSE);
+            }
+            if (actLabIncidenteChk.get(i) == null) {
+                actLabIncidenteChk.set(i, Boolean.FALSE);
+            }
+            if (actLabAccidenteChk.get(i) == null) {
+                actLabAccidenteChk.set(i, Boolean.FALSE);
+            }
+            if (actLabEnfermedadChk.get(i) == null) {
+                actLabEnfermedadChk.set(i, Boolean.FALSE);
+            }
 
-        if (iessSi.get(i) == null) iessSi.set(i, Boolean.FALSE);
-        if (iessNo.get(i) == null) iessNo.set(i, Boolean.FALSE);
-        // iessFecha puede ser null (correcto)
+            if (iessSi.get(i) == null) {
+                iessSi.set(i, Boolean.FALSE);
+            }
+            if (iessNo.get(i) == null) {
+                iessNo.set(i, Boolean.FALSE);
+            }
+            // iessFecha puede ser null (correcto)
+        }
+
+        // ===== LOG FIN =====
+        try {
+            log.info("[STEP3] ensureActLabSize() FIN -> actLabRows={}, centro={}, act={}, tiempo={}, obs={}, "
+                    + "trabAnt={}, trabAct={}, inc={}, acc={}, enf={}, iessSi={}, iessNo={}, iessFecha={}, iessEsp={}",
+                    actLabRows.size(),
+                    actLabCentroTrabajo.size(),
+                    actLabActividad.size(),
+                    actLabTiempo.size(),
+                    actLabObservaciones.size(),
+                    actLabTrabajoAnterior.size(),
+                    actLabTrabajoActual.size(),
+                    actLabIncidenteChk.size(),
+                    actLabAccidenteChk.size(),
+                    actLabEnfermedadChk.size(),
+                    iessSi.size(),
+                    iessNo.size(),
+                    iessFecha.size(),
+                    iessEspecificar.size()
+            );
+        } catch (Exception ignore) {
+            // no romper flujo por logs
+        }
     }
-
-    // ===== LOG FIN =====
-    try {
-        log.info("[STEP3] ensureActLabSize() FIN -> actLabRows={}, centro={}, act={}, tiempo={}, obs={}, "
-                        + "trabAnt={}, trabAct={}, inc={}, acc={}, enf={}, iessSi={}, iessNo={}, iessFecha={}, iessEsp={}",
-                actLabRows.size(),
-                actLabCentroTrabajo.size(),
-                actLabActividad.size(),
-                actLabTiempo.size(),
-                actLabObservaciones.size(),
-                actLabTrabajoAnterior.size(),
-                actLabTrabajoActual.size(),
-                actLabIncidenteChk.size(),
-                actLabAccidenteChk.size(),
-                actLabEnfermedadChk.size(),
-                iessSi.size(),
-                iessNo.size(),
-                iessFecha.size(),
-                iessEspecificar.size()
-        );
-    } catch (Exception ignore) {
-        // no romper flujo por logs
-    }
-}
-
 
     private boolean filaActLabTieneAlgo(int i) {
         // texto clave
@@ -3089,20 +3274,21 @@ public void guardarStep3() {
         }
         return otrosRiesgos;
     }
+
     private void s3(String msg) {
-    // log al servidor (recomendado)
-    log.info("[STEP3] {}", msg);
+        // log al servidor (recomendado)
+        log.info("[STEP3] {}", msg);
 
-    // si quieres también consola:
-    System.out.println("[STEP3] " + msg);
-}
+        // si quieres también consola:
+        System.out.println("[STEP3] " + msg);
+    }
 
-private void s3e(String msg, Throwable t) {
-    log.error("[STEP3] " + msg, t);
-    System.out.println("[STEP3-ERROR] " + msg);
-    if (t != null) t.printStackTrace();
-}
-
-    
+    private void s3e(String msg, Throwable t) {
+        log.error("[STEP3] " + msg, t);
+        System.out.println("[STEP3-ERROR] " + msg);
+        if (t != null) {
+            t.printStackTrace();
+        }
+    }
 
 }

@@ -46,6 +46,7 @@ import ec.gob.prueba.prueba_maven.modelo.PersonaAux;
 import ec.gob.prueba.prueba_maven.modelo.SignosVitales;
 import ec.gob.prueba.prueba_maven.modelo.AuditoriaConsultorio;
 import ec.gob.prueba.prueba_maven.modelo.FichaActLaboral;
+import ec.gob.prueba.prueba_maven.modelo.FichaRiesgoDet;
 import ec.gob.prueba.prueba_maven.servicio.Cie10Service;
 import ec.gob.prueba.prueba_maven.servicio.EmpleadoService;
 import ec.gob.prueba.prueba_maven.servicio.FichaOcupacionalService;
@@ -55,6 +56,7 @@ import ec.gob.prueba.prueba_maven.servicio.SignosVitalesService;
 import ec.gob.prueba.prueba_maven.servicio.AuditoriaConsultorioService;
 import ec.gob.prueba.prueba_maven.servicio.FichaActLaboralService;
 import ec.gob.prueba.prueba_maven.servicio.FichaDiagnosticoService;
+import ec.gob.prueba.prueba_maven.servicio.FichaRiesgoDetService;
 import java.util.Arrays;
 import lombok.extern.slf4j.Slf4j;
 import org.primefaces.PrimeFaces;
@@ -72,31 +74,31 @@ public class CentroMedicoCtrl implements Serializable {
     private static final long serialVersionUID = 1L;
 
     // -----------------------------
-// CONSTANTES (filas fijas)
-// -----------------------------
+    // CONSTANTES (filas fijas)
+    // -----------------------------
     private static final int H_ROWS = 8;         // Step H (8 filas)
     private static final int CONSUMO_ROWS = 3;   // Tabaco/Alcohol/Otras
     private static final int DIAG_ROWS = 6;      // Diagnósticos
 
-// -----------------------------
-// WIZARD / NAVEGACIÓN
-// -----------------------------
+    // -----------------------------
+    // WIZARD / NAVEGACIÓN
+    // -----------------------------
     private String currentStep = "step1";
     private boolean mostrarDlgCedula = true;
     private boolean mostrarDialogoAux;
     private boolean permitirIngresoManual;
 
-// -----------------------------
-// BÚSQUEDA / PACIENTE
-// -----------------------------
+    // -----------------------------
+    // BÚSQUEDA / PACIENTE
+    // -----------------------------
     private String cedulaBusqueda;
     private Integer noPersonaSel;
     private DatEmpleado empleadoSel;
     private PersonaAux personaAux;
 
-// -----------------------------
-// A. DATOS ESTABLECIMIENTO / IDENTIFICACIÓN
-// -----------------------------
+    // -----------------------------
+    // A. DATOS ESTABLECIMIENTO / IDENTIFICACIÓN
+    // -----------------------------
     private String institucion;
     private String ruc;
     private String ciiu;
@@ -125,18 +127,18 @@ public class CentroMedicoCtrl implements Serializable {
     private String grupoSanguineo;
     private String lateralidad;
 
-// -----------------------------
-// ATENCIÓN PRIORITARIA
-// -----------------------------
+    // -----------------------------
+    // ATENCIÓN PRIORITARIA
+    // -----------------------------
     private boolean apEmbarazada;
     private boolean apDiscapacidad;
     private boolean apCatastrofica;
     private boolean apLactancia;
     private boolean apAdultoMayor;
 
-// -----------------------------
-// C. ANTECEDENTES / CONDICIÓN
-// -----------------------------
+    // -----------------------------
+    // C. ANTECEDENTES / CONDICIÓN
+    // -----------------------------
     private String antClinicoQuirurgico;
     private String antFamiliares;
     private String condicionEspecial;
@@ -145,11 +147,11 @@ public class CentroMedicoCtrl implements Serializable {
     private String tratamientoHormonal;
     private String tratamientoHormonalCual;
 
-// --- Solo hombres ---
+    // --- Solo hombres ---
     private String examenReproMasculino;
     private Integer tiempoReproMasculino;
 
-// --- Solo mujeres ---
+    // --- Solo mujeres ---
     private Date fum;
     private Integer gestas;
     private Integer partos;
@@ -158,17 +160,11 @@ public class CentroMedicoCtrl implements Serializable {
     private String planificacion;
     private String planificacionCual;
 
-// -----------------------------
-// SIGNOS VITALES (inputs Step1)
-// -----------------------------
+    // -----------------------------
+    // SIGNOS VITALES (inputs Step1)
+    // -----------------------------
     private Double peso;        // kg
-
-// ✅ IMPORTANTE: para que compile recalcularIMC() y el mapeo que ya tienes
-    private Double talla;       // cm (alias que usas en recalcularIMC si no cambias el método)
-
-// tu campo actual
     private Double tallaCm;     // cm
-
     private Double imc;         // calculado
     private Double temp;        // °C
     private String paStr;       // "120/80"
@@ -177,9 +173,9 @@ public class CentroMedicoCtrl implements Serializable {
     private Integer satO2;
     private Double perimetroAbd;
 
-// -----------------------------
-// STEP 1 - CONSUMO / AF / MED (arrays)
-// -----------------------------
+    // -----------------------------
+    // STEP 1 - CONSUMO / AF / MED (arrays)
+    // -----------------------------
     private Integer[] consTiempoConsumoMeses;
     private Boolean[] consExConsumidor;
     private Integer[] consTiempoAbstinenciaMeses;
@@ -195,18 +191,18 @@ public class CentroMedicoCtrl implements Serializable {
     private String consumoVidaCondObs;
     private String obsJ;
 
-// -----------------------------
-// STEP 2 - RIESGOS
-// -----------------------------
+    // -----------------------------
+    // STEP 2 - RIESGOS
+    // -----------------------------
     private FichaRiesgo fichaRiesgo;
     private List<String> actividadesLab = new ArrayList<>();
     private Map<String, Boolean> riesgos = new LinkedHashMap<>();
     private Map<String, String> otrosRiesgos = new LinkedHashMap<>();
     private List<String> medidasPreventivas = new ArrayList<>();
 
-// -----------------------------
-// STEP 3 - CERTIFICADO / APTITUD / MÉDICO
-// -----------------------------
+    // -----------------------------
+    // STEP 3 - CERTIFICADO / APTITUD / MÉDICO
+    // -----------------------------
     private Date fechaEmision;
     private String aptitudSel;
     private String detalleObservaciones;
@@ -218,16 +214,16 @@ public class CentroMedicoCtrl implements Serializable {
     private String nRelacionTrabajo;   // 'S' / 'N'
     private String nObsRetiro;         // texto
 
-// CIE10 principal (para PDF/UI)
+    // CIE10 principal (para PDF/UI)
     private String codCie10Ppal;
     private String descCie10Ppal;
 
-// Diagnósticos (filas)
+    // Diagnósticos (filas)
     private List<ConsultaDiagnostico> listaDiag = new ArrayList<>();
 
-// -----------------------------
-// STEP H (8 filas)
-// -----------------------------
+    // -----------------------------
+    // STEP H (8 filas)
+    // -----------------------------
     private String[] hCentroTrabajo;
     private String[] hActividad;
     private Boolean[] hIncidente;
@@ -242,9 +238,9 @@ public class CentroMedicoCtrl implements Serializable {
     private String[] hEspecificacion;
     private String[] hObservacion;
 
-// -----------------------------
-// FECHAS ADICIONALES
-// -----------------------------
+    // -----------------------------
+    // FECHAS ADICIONALES
+    // -----------------------------
     private List<Date> iessFecha;
     private List<Date> fechaAct;
 
@@ -255,16 +251,16 @@ public class CentroMedicoCtrl implements Serializable {
 
     private List<String> descAct;
 
-// -----------------------------
-// OBJETOS DOMINIO PARA BD
-// -----------------------------
+    // -----------------------------
+    // OBJETOS DOMINIO PARA BD
+    // -----------------------------
     private FichaOcupacional ficha;
     private SignosVitales signos;
     private ConsultaMedica consulta;
 
-// -----------------------------
-// PDF (Step 4)
-// -----------------------------
+    // -----------------------------
+    // PDF (Step 4)
+    // -----------------------------
     private boolean certificadoListo;
     private String pdfObjectUrl;
     private String pdfToken;
@@ -283,7 +279,7 @@ public class CentroMedicoCtrl implements Serializable {
     private List<Boolean> actLabAccidenteChk;
     private List<Boolean> actLabEnfermedadChk;
 
-// === STEP H (IESS / Observaciones) ===
+    // === STEP H (IESS / Observaciones) ===
     private List<Boolean> iessSi;
     private List<Boolean> iessNo;
     private List<String> iessEspecificar;
@@ -295,9 +291,9 @@ public class CentroMedicoCtrl implements Serializable {
 
     private int stepIndex = 1;
 
-// -----------------------------
-// SERVICES (EJB)
-// -----------------------------
+    // -----------------------------
+    // SERVICES (EJB)
+    // -----------------------------
     @EJB
     private Cie10Service cie10Service;
     @EJB
@@ -316,6 +312,8 @@ public class CentroMedicoCtrl implements Serializable {
     private AuditoriaConsultorioService auditoriaService;
     @EJB
     private FichaActLaboralService fichaActLaboralService;
+    @EJB
+    private FichaRiesgoDetService fichaRiesgoDetService;
 
     private void initExamenes(int n) {
         examNombre = new ArrayList<>(java.util.Collections.nCopies(n, ""));
@@ -331,7 +329,7 @@ public class CentroMedicoCtrl implements Serializable {
 
         actLabCentroTrabajo = new ArrayList<>(java.util.Collections.nCopies(n, ""));
         actLabActividad = new ArrayList<>(java.util.Collections.nCopies(n, ""));
-        actLabIncidente = new ArrayList<>(java.util.Collections.nCopies(n, "")); // si lo sigues usando como texto
+        actLabIncidente = new ArrayList<>(java.util.Collections.nCopies(n, ""));
         actLabFecha = new ArrayList<>(java.util.Collections.nCopies(n, null));
         actLabTiempo = new ArrayList<>(java.util.Collections.nCopies(n, ""));
 
@@ -444,6 +442,9 @@ public class CentroMedicoCtrl implements Serializable {
         if (otrosRiesgos == null) {
             otrosRiesgos = new LinkedHashMap<>();
         }
+        if (fichaRiesgo == null) {
+            fichaRiesgo = new FichaRiesgo();
+        }
         // Step H – IESS (3 filas)
 
         // Si tienes otros calendarios similares:
@@ -549,21 +550,6 @@ public class CentroMedicoCtrl implements Serializable {
     public void calcularEdad() {
         this.edad = calcularEdad(this.fechaNacimiento);
     }
-//
-//    private Integer calcularEdad(Date f) {
-//        if (f == null) {
-//            return null;
-//        }
-//        Calendar hoy = Calendar.getInstance();
-//        Calendar nac = Calendar.getInstance();
-//        nac.setTime(f);
-//        int years = hoy.get(Calendar.YEAR) - nac.get(Calendar.YEAR);
-//        int mh = hoy.get(Calendar.MONTH), mn = nac.get(Calendar.MONTH);
-//        if (mh < mn || (mh == mn && hoy.get(Calendar.DAY_OF_MONTH) < nac.get(Calendar.DAY_OF_MONTH))) {
-//            years--;
-//        }
-//        return Math.max(years, 0);
-//    }
 
     /**
      * Calcula edad exacta (años cumplidos) en Java 1.7 usando Calendar. -
@@ -631,8 +617,8 @@ public class CentroMedicoCtrl implements Serializable {
     // CÁLCULO IMC
     // ===========================================================
     public void recalcularIMC() {
-        if (peso != null && talla != null && talla > 0) {
-            double m = talla / 100.0;
+        if (peso != null && tallaCm != null && tallaCm > 0) {
+            double m = tallaCm / 100.0;
             this.imc = Math.round((peso / (m * m)) * 100.0) / 100.0;
         } else {
             this.imc = null;
@@ -649,52 +635,75 @@ public class CentroMedicoCtrl implements Serializable {
      * real.
      */
     private void registrarAuditoria(String accion, String tabla, String campo, String observaciones) {
+        s3("registrarAuditoria() accion=" + accion + " tabla=" + tabla + " campo=" + campo);
+
         try {
             AuditoriaConsultorio aud = new AuditoriaConsultorio();
             aud.setModulo("CENTRO_MEDICO");
-            aud.setUsuario("USR_APP"); // TODO: reemplazar por usuario logueado cuando exista
+            aud.setUsuario("USR_APP");
             aud.setFecha(new Date());
             aud.setAccion(accion);
             aud.setTablaAfecta(tabla);
             aud.setCampoAfecta(campo);
             aud.setObservaciones(observaciones);
+
             auditoriaService.guardar(aud);
+
+            s3("registrarAuditoria() OK");
         } catch (Exception e) {
-            // No romper el flujo funcional si la auditoría falla
-            e.printStackTrace();
+            // No romper flujo, pero LOGEAR BIEN
+            s3e("registrarAuditoria() FALLÓ", e);
         }
     }
 
-// ===========================================================
-// WIZARD: GUARDAR POR STEP
-// ===========================================================
+    // ===========================================================
+    // WIZARD: GUARDAR POR STEP
+    // ===========================================================
     public void guardarStepActual() {
-        System.out.println("===============INGRESA A GUARDAR STEP ACTUAL =========");
         FacesContext ctx = FacesContext.getCurrentInstance();
+        s3("guardarStepActual() INICIO - currentStep=" + currentStep);
+
         try {
             if ("step1".equals(currentStep)) {
+                s3("Ejecutando guardarStep1()");
                 guardarStep1();
-                currentStep = "step2";
+                s3("Fin guardarStep1() validationFailed=" + ctx.isValidationFailed());
+                if (!ctx.isValidationFailed()) {
+                    currentStep = "step2";
+                }
+                return;
+            }
 
-            } else if ("step2".equals(currentStep)) {
+            if ("step2".equals(currentStep)) {
+                s3("Validando Step2...");
                 if (!validarStep2()) {
+                    s3("validarStep2()=false -> NO avanza");
                     ctx.validationFailed();
                     return;
                 }
+                s3("Ejecutando guardarStep2()");
                 guardarStep2();
-                currentStep = "step3";
+                s3("Fin guardarStep2() validationFailed=" + ctx.isValidationFailed());
+                if (!ctx.isValidationFailed()) {
+                    currentStep = "step3";
+                }
+                return;
+            }
 
-            } else if ("step3".equals(currentStep)) {
-                System.out.println("ENTRA A GUARDAR STEP 3");
-                // guardarStep3() ya hace: validar + ctx.validationFailed() + return
+            if ("step3".equals(currentStep)) {
+                s3("Ejecutando guardarStep3()");
                 guardarStep3();
+                s3("Fin guardarStep3() validationFailed=" + ctx.isValidationFailed());
                 if (!ctx.isValidationFailed()) {
                     currentStep = "step4";
                 }
+                return;
             }
 
+            s3("No hay acción para currentStep=" + currentStep);
+
         } catch (Exception ex) {
-            ex.printStackTrace();
+            s3e("Excepción en guardarStepActual()", ex);
             ctx.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR,
                     "Error",
                     "Ocurrió un error al guardar la información del paso actual."));
@@ -809,8 +818,8 @@ public class CentroMedicoCtrl implements Serializable {
     }
 
     // ==========================================================
-// Helpers para mensajes Faces (WARN, INFO, ERROR)
-// ==========================================================
+    // Helpers para mensajes Faces (WARN, INFO, ERROR)
+    // ==========================================================
     private void warn(String msg) {
         FacesContext.getCurrentInstance().addMessage(null,
                 new FacesMessage(FacesMessage.SEVERITY_WARN, "Step 1", msg));
@@ -826,7 +835,115 @@ public class CentroMedicoCtrl implements Serializable {
                 new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", msg));
     }
 
-// Helpers
+    private String construirMedidas(List<String> medidas) {
+        if (medidas == null || medidas.isEmpty()) {
+            return null;
+        }
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < medidas.size(); i++) {
+            String m = medidas.get(i);
+            if (!isBlank(m)) {
+                if (sb.length() > 0) {
+                    sb.append(" | ");
+                }
+                sb.append("M").append(i + 1).append(": ").append(m.trim());
+            }
+        }
+        return sb.length() == 0 ? null : sb.toString();
+    }
+
+// ===== parser para keys tipo: FIS_TEMP_ALTAS_1 =====
+    private RiskKey parseRiskKey(String key) {
+        if (isBlank(key)) {
+            return null;
+        }
+        String k = key.trim();
+
+        int last = k.lastIndexOf('_');
+        if (last < 0) {
+            return null;
+        }
+
+        String actStr = k.substring(last + 1);
+        Integer act;
+        try {
+            act = Integer.valueOf(actStr);
+        } catch (Exception ex) {
+            return null;
+        }
+
+        String pref = k.substring(0, 3); // FIS / SEG / QUI / BIO / ERG / PSI
+        String grupo = grupoFromPrefix(pref);
+
+        // item “normalizado” desde la key (sin el _N final)
+        String item = k.substring(0, last).replace('_', ' '); // FIS TEMP ALTAS
+        // opcional: quitar prefijo del item (FIS )
+        if (item.startsWith(pref + " ")) {
+            item = item.substring(4);
+        }
+
+        return new RiskKey(grupo, item, act);
+    }
+
+// ===== parser para OTROS: FIS_OTROS_1 =====
+    private RiskKey parseRiskKeyOtros(String key) {
+        if (isBlank(key)) {
+            return null;
+        }
+        String k = key.trim();
+
+        int last = k.lastIndexOf('_');
+        if (last < 0) {
+            return null;
+        }
+
+        String actStr = k.substring(last + 1);
+        Integer act;
+        try {
+            act = Integer.valueOf(actStr);
+        } catch (Exception ex) {
+            return null;
+        }
+
+        String pref = k.substring(0, 3);
+        String grupo = grupoFromPrefix(pref);
+
+        return new RiskKey(grupo, "OTROS", act);
+    }
+
+    private String grupoFromPrefix(String pref) {
+        switch (pref) {
+            case "FIS":
+                return "FISICO";
+            case "SEG":
+                return "SEGURIDAD";
+            case "QUI":
+                return "QUIMICO";
+            case "BIO":
+                return "BIOLOGICO";
+            case "ERG":
+                return "ERGONOMICO";
+            case "PSI":
+                return "PSICOSOCIAL";
+            default:
+                return "OTROS";
+        }
+    }
+
+    private static class RiskKey {
+
+        final String grupo;
+        final String item;
+        final Integer actividad;
+
+        RiskKey(String grupo, String item, Integer actividad) {
+            this.grupo = grupo;
+            this.item = item;
+            this.actividad = actividad;
+        }
+    }
+
+    // Helpers
     private boolean esVacio(String s) {
         return s == null || s.trim().isEmpty();
     }
@@ -987,10 +1104,7 @@ public class CentroMedicoCtrl implements Serializable {
                 return;
             }
 
-            if (tallaCm == null && talla != null) {
-                tallaCm = talla;
-            }
-            if (tallaCm == null || tallaCm <= 0) {
+            if (tallaCm == null) {
                 warn("Debe ingresar la talla (cm).");
                 return;
             }
@@ -1195,98 +1309,115 @@ public class CentroMedicoCtrl implements Serializable {
             return;
         }
 
-        Date ahora = new Date();
+        final Date ahora = new Date();
+        final String usr = "USR_APP"; // luego lo cambiamos por el usuario logueado
 
+        if (ficha == null || ficha.getIdFicha() == null) {
+            ctx.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                    "Step 2", "Primero debe existir y estar guardada la ficha (ID_FICHA)."));
+            ctx.validationFailed();
+            return;
+        }
+
+        // =========================
+        // 1) ENCABEZADO: FICHA_RIESGO
+        // =========================
         if (fichaRiesgo == null) {
             fichaRiesgo = new FichaRiesgo();
         }
         fichaRiesgo.setFicha(ficha);
 
-        // 1) Copiar actividadesLab -> campos actividad1..7 (si existen en tu entidad)
-        //    (si tu entidad NO tiene estos setters, me dices y lo adapto)
-        fichaRiesgo.setActividad1(actividadesLab.get(0));
-        fichaRiesgo.setActividad2(actividadesLab.get(1));
-        fichaRiesgo.setActividad3(actividadesLab.get(2));
-        fichaRiesgo.setActividad4(actividadesLab.get(3));
-        fichaRiesgo.setActividad5(actividadesLab.get(4));
-        fichaRiesgo.setActividad6(actividadesLab.get(5));
-        fichaRiesgo.setActividad7(actividadesLab.get(6));
+        // Actividades
+        fichaRiesgo.setActividad1(getSafe(actividadesLab, 0));
+        fichaRiesgo.setActividad2(getSafe(actividadesLab, 1));
+        fichaRiesgo.setActividad3(getSafe(actividadesLab, 2));
+        fichaRiesgo.setActividad4(getSafe(actividadesLab, 3));
+        fichaRiesgo.setActividad5(getSafe(actividadesLab, 4));
+        fichaRiesgo.setActividad6(getSafe(actividadesLab, 5));
+        fichaRiesgo.setActividad7(getSafe(actividadesLab, 6));
 
-        // 2) Armar resumen de medidas
-        StringBuilder med = new StringBuilder();
-        for (int i = 0; i < medidasPreventivas.size(); i++) {
-            String m = medidasPreventivas.get(i);
-            if (!isBlank(m)) {
-                if (med.length() > 0) {
-                    med.append(" | ");
-                }
-                med.append("M").append(i + 1).append(": ").append(m.trim());
-            }
-        }
+        // Medidas
+        fichaRiesgo.setMedidasPreventivas(construirMedidas(medidasPreventivas));
 
-        // 3) Armar resumen de checks marcados (riesgos)
-        StringBuilder r = new StringBuilder();
-        if (riesgos != null) {
-            for (Map.Entry<String, Boolean> e : riesgos.entrySet()) {
-                if (Boolean.TRUE.equals(e.getValue())) {
-                    if (r.length() > 0) {
-                        r.append(", ");
-                    }
-                    r.append(e.getKey());
-                }
-            }
-        }
-
-        // 4) Armar resumen de “otros”
-        StringBuilder o = new StringBuilder();
-        if (otrosRiesgos != null) {
-            for (Map.Entry<String, String> e : otrosRiesgos.entrySet()) {
-                if (!isBlank(e.getValue())) {
-                    if (o.length() > 0) {
-                        o.append(" | ");
-                    }
-                    o.append(e.getKey()).append(": ").append(e.getValue().trim());
-                }
-            }
-        }
-
-        // 5) Guardar todo en observaciones (sin perder nada)
-        StringBuilder obs = new StringBuilder();
-        if (med.length() > 0) {
-            obs.append("MEDIDAS: ").append(med);
-        }
-        if (r.length() > 0) {
-            if (obs.length() > 0) {
-                obs.append(" || ");
-            }
-            obs.append("RIESGOS: ").append(r);
-        }
-        if (o.length() > 0) {
-            if (obs.length() > 0) {
-                obs.append(" || ");
-            }
-            obs.append("OTROS: ").append(o);
-        }
-        fichaRiesgo.setObservaciones(obs.toString());
-
-        // Auditoría / estado
+        // Auditoría (ENCABEZADO)
         if (fichaRiesgo.getIdFichaRiesgo() == null) {
             fichaRiesgo.setEstado("BORRADOR");
-            fichaRiesgo.setFechaCreacion(ahora);
-            fichaRiesgo.setUsrCreacion("USR_APP");
+            fichaRiesgo.setFCreacion(ahora);
+            fichaRiesgo.setUsrCreacion(usr);
         } else {
-            fichaRiesgo.setFechaActualizacion(ahora);
-            fichaRiesgo.setUsrActualizacion("USR_APP");
+            fichaRiesgo.setFActualizacion(ahora);
+            fichaRiesgo.setUsrActualizacion(usr);
         }
 
         fichaRiesgo = fichaRiesgoService.guardar(fichaRiesgo);
 
-        registrarAuditoria("GUARDAR_STEP2", "FICHA_RIESGO", "*",
-                "Step 2 guardado. ID_FICHA=" + (ficha != null ? ficha.getIdFicha() : null));
+        // =========================
+        // 2) DETALLE: FICHA_RIESGO_DET
+        //    estrategia: REEMPLAZAR todo (delete + insert)
+        // =========================
+        fichaRiesgoDetService.eliminarPorFicha(ficha.getIdFicha());
+
+        // 2.1) checks marcados
+        if (riesgos != null && !riesgos.isEmpty()) {
+            int orden = 1;
+
+            for (Map.Entry<String, Boolean> e : riesgos.entrySet()) {
+                if (!Boolean.TRUE.equals(e.getValue())) {
+                    continue;
+                }
+
+                RiskKey rk = parseRiskKey(e.getKey()); // ej: FIS_TEMP_ALTAS_1
+                if (rk == null) {
+                    continue;
+                }
+
+                FichaRiesgoDet det = new FichaRiesgoDet();
+                det.setFicha(ficha);
+                det.setGrupo(rk.grupo);
+                det.setItem(rk.item);
+                det.setActividadNro(rk.actividad);
+                det.setMarcado("S");
+                det.setOrden(orden++);
+
+                // ✅ IMPORTANTE: pasar usuario (auditoría en servicio)
+                fichaRiesgoDetService.guardar(det, usr);
+            }
+        }
+
+        // 2.2) “otros”
+        if (otrosRiesgos != null && !otrosRiesgos.isEmpty()) {
+            int ordenOtros = 10000;
+
+            for (Map.Entry<String, String> e : otrosRiesgos.entrySet()) {
+                String val = e.getValue();
+                if (isBlank(val)) {
+                    continue;
+                }
+
+                RiskKey rk = parseRiskKeyOtros(e.getKey()); // ej: FIS_OTROS_1
+                if (rk == null) {
+                    continue;
+                }
+
+                FichaRiesgoDet det = new FichaRiesgoDet();
+                det.setFicha(ficha);
+                det.setGrupo(rk.grupo);
+                det.setItem("OTROS: " + val.trim());
+                det.setActividadNro(rk.actividad);
+                det.setMarcado("S");
+                det.setOrden(ordenOtros++);
+
+                // ✅ IMPORTANTE: pasar usuario
+                fichaRiesgoDetService.guardar(det, usr);
+            }
+        }
+
+        registrarAuditoria("GUARDAR_STEP2", "FICHA_RIESGO / FICHA_RIESGO_DET", "*",
+                "Step 2 guardado. ID_FICHA=" + ficha.getIdFicha());
 
         ctx.addMessage(null, new FacesMessage(
                 FacesMessage.SEVERITY_INFO, "Step 2",
-                "Riesgos laborales guardados correctamente."));
+                "Riesgos laborales guardados correctamente (encabezado + detalle)."));
     }
 
     /**
@@ -1294,72 +1425,65 @@ public class CentroMedicoCtrl implements Serializable {
      * - Al menos 1 recomendación - Nombre del profesional - Código del médico
      */
     private boolean validarStep3() {
-        System.out.println("INGRESA A VALIDAR STEP3");
         FacesContext ctx = FacesContext.getCurrentInstance();
+        s3("validarStep3() INICIO");
+
         boolean valido = true;
 
-        // 1) Al menos un diagnóstico en listaDiag
+        // 1) Diagnóstico
         boolean hayDiagnostico = false;
         if (listaDiag != null) {
-            for (ConsultaDiagnostico d : listaDiag) {
+            for (int i = 0; i < listaDiag.size(); i++) {
+                ConsultaDiagnostico d = listaDiag.get(i);
                 if (d == null) {
                     continue;
                 }
-                boolean tieneCodigo = !isBlank(d.getCodigo());
-                boolean tieneDescripcion = !isBlank(d.getDescripcion());
-                boolean tieneCie = d.getCie10() != null;
 
-                if (tieneCodigo || tieneDescripcion || tieneCie) {
+                boolean tiene = !isBlank(d.getCodigo()) || !isBlank(d.getDescripcion()) || d.getCie10() != null;
+                if (tiene) {
                     hayDiagnostico = true;
+                    s3("validarStep3(): diagnóstico encontrado en fila " + (i + 1)
+                            + " codigo=" + d.getCodigo() + " cie=" + (d.getCie10() != null));
                     break;
                 }
             }
         }
-
         if (!hayDiagnostico) {
-            ctx.addMessage(null, new FacesMessage(
-                    FacesMessage.SEVERITY_ERROR,
-                    "Step 3",
-                    "Debe registrar al menos un diagnóstico (CIE10) en la sección de diagnósticos."));
+            s3("validarStep3() FAIL: no hay diagnósticos");
+            ctx.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                    "Step 3", "Debe registrar al menos un diagnóstico (CIE10)."));
             valido = false;
         }
 
-        // 2) Aptitud
         if (isBlank(aptitudSel)) {
-            ctx.addMessage(null, new FacesMessage(
-                    FacesMessage.SEVERITY_ERROR,
-                    "Step 3",
-                    "Debe seleccionar la aptitud médica (APTO, APTO EN OBS, APTO CON LIMITACIONES o NO APTO)."));
+            s3("validarStep3() FAIL: aptitudSel vacío");
+            ctx.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                    "Step 3", "Debe seleccionar la aptitud médica."));
             valido = false;
         }
 
-        // 3) Al menos una recomendación
         if (isBlank(recomendaciones)) {
-            ctx.addMessage(null, new FacesMessage(
-                    FacesMessage.SEVERITY_ERROR,
-                    "Step 3",
-                    "Debe ingresar al menos una recomendación para el trabajador."));
+            s3("validarStep3() FAIL: recomendaciones vacío");
+            ctx.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                    "Step 3", "Debe ingresar al menos una recomendación."));
             valido = false;
         }
 
-        // 4) Nombre del profesional
         if (isBlank(medicoNombre)) {
-            ctx.addMessage(null, new FacesMessage(
-                    FacesMessage.SEVERITY_ERROR,
-                    "Step 3",
-                    "Debe ingresar el nombre del profesional que emite el certificado."));
+            s3("validarStep3() FAIL: medicoNombre vacío");
+            ctx.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                    "Step 3", "Debe ingresar el nombre del profesional."));
             valido = false;
         }
 
-        // 5) Código del médico
         if (isBlank(medicoCodigo)) {
-            ctx.addMessage(null, new FacesMessage(
-                    FacesMessage.SEVERITY_ERROR,
-                    "Step 3",
-                    "Debe ingresar el código del médico (registro profesional)."));
+            s3("validarStep3() FAIL: medicoCodigo vacío");
+            ctx.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                    "Step 3", "Debe ingresar el código del médico."));
             valido = false;
         }
 
+        s3("validarStep3() FIN -> " + valido);
         return valido;
     }
 
@@ -1369,12 +1493,21 @@ public class CentroMedicoCtrl implements Serializable {
      * FICHA_OCUPACIONAL (y SIGNOS_VITALES).
      */
     public void guardarStep3() {
-        System.out.println("INGRESA A GUARDAR METODO 3");
+
+        System.out.println("===== [STEP3] INICIO guardarStep3 =====");
+
         FacesContext ctx = FacesContext.getCurrentInstance();
 
         try {
-            // 0) Debe existir ficha guardada en Step1
+
+            // =========================================================
+            // 0) VALIDAR EXISTENCIA DE FICHA
+            // =========================================================
+            System.out.println("STEP3-0: Validando existencia de ficha");
+
             if (ficha == null || ficha.getIdFicha() == null) {
+                System.out.println("STEP3-0-ERROR: ficha es null o no tiene ID");
+
                 ctx.addMessage(null, new FacesMessage(
                         FacesMessage.SEVERITY_WARN,
                         "Atención",
@@ -1384,21 +1517,38 @@ public class CentroMedicoCtrl implements Serializable {
                 return;
             }
 
-            // 1) Validaciones del Step3
+            System.out.println("STEP3-0-OK: ID_FICHA=" + ficha.getIdFicha());
+
+            // =========================================================
+            // 1) VALIDACIONES STEP 3
+            // =========================================================
+            System.out.println("STEP3-1: Ejecutando validarStep3()");
+
             if (!validarStep3()) {
+                System.out.println("STEP3-1-ERROR: validarStep3() devolvió false");
                 ctx.validationFailed();
                 return;
             }
 
-            final Date ahora = new Date();
-            final String usuario = "USR_APP"; // TODO: usuario real
+            System.out.println("STEP3-1-OK");
 
-            // 2) CIE10 principal (si aplica)
+            final Date ahora = new Date();
+            final String usuario = "USR_APP";
+
+            // =========================================================
+            // 2) CIE10 PRINCIPAL
+            // =========================================================
+            System.out.println("STEP3-2: Procesando CIE10 principal");
+
             if (!isBlank(codCie10Ppal)) {
+
+                System.out.println("STEP3-2: Buscando CIE10 = " + codCie10Ppal);
+
                 Cie10 cie = cie10Service.buscarPorCodigo(codCie10Ppal.trim());
-                if (cie != null) {
-                    ficha.setCie10Principal(cie);
-                } else {
+
+                if (cie == null) {
+                    System.out.println("STEP3-2-ERROR: CIE10 no existe");
+
                     ctx.addMessage(null, new FacesMessage(
                             FacesMessage.SEVERITY_WARN,
                             "Validación",
@@ -1407,9 +1557,16 @@ public class CentroMedicoCtrl implements Serializable {
                     ctx.validationFailed();
                     return;
                 }
+
+                ficha.setCie10Principal(cie);
+                System.out.println("STEP3-2-OK: CIE10 asignado");
             }
 
-            // 3) Campos Step3 -> ficha
+            // =========================================================
+            // 3) DATOS GENERALES STEP 3
+            // =========================================================
+            System.out.println("STEP3-3: Asignando campos Step3 a ficha");
+
             ficha.setAptitudSel(aptitudSel);
             ficha.setDetalleObs(detalleObservaciones);
             ficha.setRecomendaciones(recomendaciones);
@@ -1417,20 +1574,30 @@ public class CentroMedicoCtrl implements Serializable {
             ficha.setMedicoCodigo(medicoCodigo);
             ficha.setFechaEmision(fechaEmision != null ? fechaEmision : ahora);
 
-            // Auditoría
             ficha.setFechaActualizacion(ahora);
             ficha.setUsrActualizacion(usuario);
 
-            // 4) Guardar ficha (update)
+            System.out.println("STEP3-3-OK");
+
+            // =========================================================
+            // 4) GUARDAR FICHA (UPDATE)
+            // =========================================================
+            System.out.println("STEP3-4: Guardando ficha (update)");
+
             ficha = fichaService.guardar(ficha);
 
-            // ============================================================
-            // 5) H: ACTIVIDAD LABORAL (FICHA_ACT_LABORAL) - GUARDA/ACTUALIZA
-            // ============================================================
-            // Asegurar tamaños (evita IndexOutOfBounds)
+            System.out.println("STEP3-4-OK: ficha guardada");
+
+            // =========================================================
+            // 5) ACTIVIDAD LABORAL (H)
+            // =========================================================
+            System.out.println("STEP3-5: Procesando Actividad Laboral");
+
             ensureActLabSize();
 
             for (int i = 0; i < H_ROWS; i++) {
+
+                System.out.println("STEP3-5-FILA " + (i + 1));
 
                 boolean filaTieneDatos
                         = !isBlank(getSafe(actLabCentroTrabajo, i))
@@ -1445,41 +1612,40 @@ public class CentroMedicoCtrl implements Serializable {
                         || !isBlank(getSafe(iessEspecificar, i))
                         || !isBlank(getSafe(actLabObservaciones, i));
 
-                int nroFila = i + 1; // BD: NRO_FILA (1..8)
+                int nroFila = i + 1;
 
                 if (!filaTieneDatos) {
-                    // Si existía en BD y ahora está vacía -> eliminar (opcional pero recomendado)
+                    System.out.println("STEP3-5-FILA " + nroFila + ": sin datos → eliminar si existe");
                     fichaActLaboralService.eliminarPorFichaYFila(ficha.getIdFicha(), nroFila);
                     continue;
                 }
 
-                // UPSERT por (ID_FICHA, NRO_FILA)
-                FichaActLaboral fal = fichaActLaboralService.buscarPorFichaYFila(ficha.getIdFicha(), nroFila);
+                FichaActLaboral fal
+                        = fichaActLaboralService.buscarPorFichaYFila(ficha.getIdFicha(), nroFila);
 
                 if (fal == null) {
                     fal = new FichaActLaboral();
-                    fal.setFicha(ficha);      // FK: ID_FICHA
-                    fal.setNroFila(nroFila);  // NOT NULL
+                    fal.setFicha(ficha);
+                    fal.setNroFila(nroFila);
                     fal.setFCreacion(ahora);
                     fal.setUsrCreacion(usuario);
+                    System.out.println("STEP3-5-FILA " + nroFila + ": creando nuevo registro");
                 } else {
                     fal.setFActualizacion(ahora);
                     fal.setUsrActualizacion(usuario);
+                    System.out.println("STEP3-5-FILA " + nroFila + ": actualizando registro");
                 }
 
                 fal.setCentroTrabajo(getSafe(actLabCentroTrabajo, i));
                 fal.setActividad(getSafe(actLabActividad, i));
                 fal.setTiempo(getSafe(actLabTiempo, i));
 
-                // CHAR(1) 'S'/'N'
                 fal.setEsAnterior(sn(getSafe(actLabTrabajoAnterior, i)));
                 fal.setEsActual(sn(getSafe(actLabTrabajoActual, i)));
                 fal.setIncidente(sn(getSafe(actLabIncidenteChk, i)));
                 fal.setAccidente(sn(getSafe(actLabAccidenteChk, i)));
                 fal.setEnfOcupacional(sn(getSafe(actLabEnfermedadChk, i)));
 
-                // En tu UI lo estás usando como iessFecha / iessEspecificar:
-                // En BD se llama FECHA_EVENTO y ESPECIFICAR.
                 fal.setFechaEvento(getSafe(iessFecha, i));
                 fal.setEspecificar(getSafe(iessEspecificar, i));
                 fal.setObservaciones(getSafe(actLabObservaciones, i));
@@ -1487,87 +1653,55 @@ public class CentroMedicoCtrl implements Serializable {
                 fichaActLaboralService.guardar(fal);
             }
 
-            // ============================================================
-            // 6) I: ACTIVIDADES EXTRALABORALES (NO INSERTAR VACÍAS)
-            // ============================================================
-            if (tipoAct != null) {
-                for (int i = 0; i < tipoAct.size(); i++) {
-                    boolean filaTieneDatos
-                            = !isBlank(getSafe(tipoAct, i))
-                            || getSafe(fechaAct, i) != null
-                            || !isBlank(getSafe(descAct, i));
+            // =========================================================
+            // 6) AUDITORÍA
+            // =========================================================
+            System.out.println("STEP3-6: Registrando auditoría");
 
-                    if (!filaTieneDatos) {
-                        continue;
-                    }
-                    // Aquí guardas si ya tienes entidad/tabla/servicio
-                }
-            }
+            registrarAuditoria(
+                    "GUARDAR_STEP3",
+                    "FICHA_OCUPACIONAL / FICHA_ACT_LABORAL",
+                    "*",
+                    "Step 3 guardado. ID_FICHA=" + ficha.getIdFicha()
+            );
 
-            // ============================================================
-            // 7) J: EXÁMENES (NO INSERTAR VACÍOS)
-            // ============================================================
-            if (examNombre != null) {
-                for (int i = 0; i < examNombre.size(); i++) {
-                    boolean filaTieneDatos
-                            = !isBlank(getSafe(examNombre, i))
-                            || getSafe(examFecha, i) != null
-                            || !isBlank(getSafe(examResultado, i));
-
-                    if (!filaTieneDatos) {
-                        continue;
-                    }
-                    // Aquí guardas si ya tienes entidad/tabla/servicio
-                }
-            }
-
-            // ============================================================
-            // 8) K: DIAGNÓSTICOS (guardar SOLO filas con datos)
-            // ============================================================
-            if (listaDiag != null && !listaDiag.isEmpty()) {
-                for (ConsultaDiagnostico cd : listaDiag) {
-                    if (cd == null) {
-                        continue;
-                    }
-
-                    String cod = cd.getCodigo();
-                    String desc = cd.getDescripcion();
-                    String tipo = cd.getTipoDiag();
-
-                    boolean tieneDatos = !isBlank(cod) || !isBlank(desc) || !isBlank(tipo);
-                    if (!tieneDatos) {
-                        continue;
-                    }
-
-                    // Aquí guardas si ya tienes entidad/tabla/servicio real (FichaDiagnostico)
-                }
-            }
-
-            registrarAuditoria("GUARDAR_STEP3", "FICHA_OCUPACIONAL", "*",
-                    "Step 3 guardado. ID_FICHA=" + ficha.getIdFicha());
+            System.out.println("STEP3-6-OK");
 
             ctx.addMessage(null, new FacesMessage(
                     FacesMessage.SEVERITY_INFO,
                     "OK",
-                    "Step 3 guardado correctamente (incluye Actividades Laborales)."
+                    "Step 3 guardado correctamente."
             ));
 
+            System.out.println("===== [STEP3] FIN OK =====");
+
         } catch (Exception e) {
-            log.error("Error en guardarStep3", e);
+
+            System.out.println("===== [STEP3] ERROR EXCEPCIÓN =====");
+            e.printStackTrace();
+
             ctx.addMessage(null, new FacesMessage(
                     FacesMessage.SEVERITY_ERROR,
                     "Error",
-                    "Ocurrió un error al guardar el Step 3."
+                    "Ocurrió un error al guardar el Step 3. Revise consola."
             ));
+
             ctx.validationFailed();
         }
     }
+    
+    
 
     /**
      * Helpers seguros (para no reventar por índices)
      */
     private <T> T getSafe(List<T> list, int idx) {
-        if (list == null || idx < 0 || idx >= list.size()) {
+        if (list == null) {
+            s3("getSafe() list=null idx=" + idx);
+            return null;
+        }
+        if (idx < 0 || idx >= list.size()) {
+            s3("getSafe() idx fuera de rango idx=" + idx + " size=" + list.size());
             return null;
         }
         return list.get(idx);
@@ -1944,11 +2078,8 @@ public class CentroMedicoCtrl implements Serializable {
     public List<Cie10> completarCie10(String query) {
         return cie10Service.buscarPorCodigoODescripcion(query);
     }
-    // Autocomplete para el campo de CÓDIGO
 
-// ======================
-// AUTOCOMPLETE CIE10
-// ======================
+    // Autocomplete para el campo de CÓDIGO
     public List<String> completarCie10PorCodigo(String query) {
         List<String> codigos = new ArrayList<>();
 
@@ -1961,17 +2092,11 @@ public class CentroMedicoCtrl implements Serializable {
             return codigos;
         }
 
-        // Puedes seguir usando el mismo servicio general...
         List<Cie10> lista = cie10Service.buscarJerarquiaPorTerm(q);
 
         for (Cie10 c : lista) {
             if (c != null && c.getCodigo() != null) {
                 String cod = c.getCodigo().toUpperCase();
-
-                // FILTRO SOLO POR CÓDIGO
-                // si quieres "contenga":
-                // if (cod.contains(q)) {
-                // si quieres "empieza por":
                 if (cod.startsWith(q)) {
                     codigos.add(c.getCodigo());
                 }
@@ -1988,7 +2113,6 @@ public class CentroMedicoCtrl implements Serializable {
             return descripciones;
         }
 
-        // Igual: busca tanto por código como por descripción
         List<Cie10> lista = cie10Service.buscarPorCodigoODescripcion(query);
 
         for (Cie10 c : lista) {
@@ -2062,105 +2186,119 @@ public class CentroMedicoCtrl implements Serializable {
         }
     }
 
-    public void onCie10SelectCodigo(int index) {
-        if (listaDiag == null || index < 0 || index >= listaDiag.size()) {
-            return;
-        }
-
-        ConsultaDiagnostico diag = listaDiag.get(index);
-        String codigo = diag.getCodigo();
-
-        if (codigo == null || codigo.trim().isEmpty()) {
-            diag.setDescripcion(null);
-            return;
-        }
-
-        Cie10 cie = cie10Service.buscarPorCodigo(codigo.trim());
-        if (cie != null) {
-            diag.setDescripcion(cie.getDescripcion());
-        } else {
-            diag.setDescripcion(null);
-        }
-    }
-
-    public void onCie10SelectDescripcion(int index) {
-        if (listaDiag == null || index < 0 || index >= listaDiag.size()) {
-            return;
-        }
-
-        ConsultaDiagnostico diag = listaDiag.get(index);
-        String desc = diag.getDescripcion();
-
-        if (desc == null || desc.trim().isEmpty()) {
-            diag.setCodigo(null);
-            return;
-        }
-
-        Cie10 cie = cie10Service.buscarPrimeroPorDescripcion(desc.trim());
-        if (cie != null) {
-            diag.setCodigo(cie.getCodigo());
-        } else {
-            diag.setCodigo(null);
-        }
-    }
-
+    // =====================
+    // NUEVOS MÉTODOS SIMPLIFICADOS PARA LA SECCIÓN K
+    // =====================
+    // Cuando se selecciona un código en la fila K (NUEVO MÉTODO)
     public void onKCieCodigoSelect(SelectEvent event) {
-        int idx = getIdx(event);
-        onCie10SelectCodigo(idx); // usa tu método existente (int index)
-    }
-
-    public void onKCieCodigoBlur() {
-        // blur NO trae SelectEvent, así que toma idx desde el componente actual:
-        int idx = getIdxFromCurrentComponent();
-        onCie10SelectCodigo(idx);
-    }
-
-    public void onKDescSelect(SelectEvent event) {
-        int idx = getIdx(event);
-        onCie10SelectDescripcion(idx);
-    }
-
-    public void onKDescBlur() {
-        int idx = getIdxFromCurrentComponent();
-        onCie10SelectDescripcion(idx);
-    }
-
-// =====================
-// Helpers
-// =====================
-    private String sn(Boolean b) {
-        return Boolean.TRUE.equals(b) ? "S" : "N";
-    }
-
-    private String sn(boolean b) {
-        return b ? "S" : "N";
-    }
-
-    private int getIdx(SelectEvent event) {
+        String codigo = (String) event.getObject();
         UIComponent comp = event.getComponent();
-        Object o = comp.getAttributes().get("idx");
-        return (o == null) ? -1 : Integer.parseInt(o.toString());
-    }
+        Object idxObj = comp.getAttributes().get("idx");
 
-    private int getIdxFromCurrentComponent() {
-        UIComponent comp = javax.faces.context.FacesContext.getCurrentInstance()
-                .getViewRoot().findComponent(getClientIdFromRequest());
-        if (comp == null) {
-            return -1;
+        if (idxObj != null) {
+            int idx = Integer.parseInt(idxObj.toString());
+            if (idx >= 0 && idx < listaDiag.size()) {
+                ConsultaDiagnostico diag = listaDiag.get(idx);
+                diag.setCodigo(codigo);
+
+                // Buscar automáticamente la descripción
+                if (codigo != null && !codigo.trim().isEmpty()) {
+                    Cie10 cie = cie10Service.buscarPorCodigo(codigo.trim());
+                    if (cie != null) {
+                        diag.setDescripcion(cie.getDescripcion());
+                        diag.setCie10(cie);
+                    } else {
+                        diag.setDescripcion(null);
+                        diag.setCie10(null);
+                    }
+                }
+            }
         }
-        Object o = comp.getAttributes().get("idx");
-        return (o == null) ? -1 : Integer.parseInt(o.toString());
     }
 
-    /**
-     * Si no quieres esto, te doy alternativa más simple.
-     */
-    private String getClientIdFromRequest() {
-        return javax.faces.context.FacesContext.getCurrentInstance()
-                .getExternalContext().getRequestParameterMap().get("javax.faces.source");
+    // Cuando se sale del campo de código (blur) en la fila K (NUEVO MÉTODO)
+    public void onKCieCodigoBlur() {
+        // Obtener el índice desde el contexto
+        String idxParam = FacesContext.getCurrentInstance().getExternalContext()
+                .getRequestParameterMap().get("idx");
+
+        if (idxParam != null) {
+            int idx = Integer.parseInt(idxParam);
+            if (idx >= 0 && idx < listaDiag.size()) {
+                ConsultaDiagnostico diag = listaDiag.get(idx);
+                String codigo = diag.getCodigo();
+
+                // Buscar automáticamente la descripción
+                if (codigo != null && !codigo.trim().isEmpty()) {
+                    Cie10 cie = cie10Service.buscarPorCodigo(codigo.trim());
+                    if (cie != null) {
+                        diag.setDescripcion(cie.getDescripcion());
+                        diag.setCie10(cie);
+                    } else {
+                        diag.setDescripcion(null);
+                        diag.setCie10(null);
+                    }
+                }
+            }
+        }
     }
 
-    public List<Cie10> completarCie10FilaPorCodigo(String query) {
+    // Cuando se selecciona una descripción en la fila K (NUEVO MÉTODO)
+    public void onKDescSelect(SelectEvent event) {
+        String descripcion = (String) event.getObject();
+        UIComponent comp = event.getComponent();
+        Object idxObj = comp.getAttributes().get("idx");
+
+        if (idxObj != null) {
+            int idx = Integer.parseInt(idxObj.toString());
+            if (idx >= 0 && idx < listaDiag.size()) {
+                ConsultaDiagnostico diag = listaDiag.get(idx);
+                diag.setDescripcion(descripcion);
+
+                // Buscar automáticamente el código
+                if (descripcion != null && !descripcion.trim().isEmpty()) {
+                    Cie10 cie = cie10Service.buscarPrimeroPorDescripcion(descripcion.trim());
+                    if (cie != null) {
+                        diag.setCodigo(cie.getCodigo());
+                        diag.setCie10(cie);
+                    } else {
+                        diag.setCodigo(null);
+                        diag.setCie10(null);
+                    }
+                }
+            }
+        }
+    }
+
+    // Cuando se sale del campo de descripción (blur) en la fila K (NUEVO MÉTODO)
+    public void onKDescBlur() {
+        // Obtener el índice desde el contexto
+        String idxParam = FacesContext.getCurrentInstance().getExternalContext()
+                .getRequestParameterMap().get("idx");
+
+        if (idxParam != null) {
+            int idx = Integer.parseInt(idxParam);
+            if (idx >= 0 && idx < listaDiag.size()) {
+                ConsultaDiagnostico diag = listaDiag.get(idx);
+                String descripcion = diag.getDescripcion();
+
+                // Buscar automáticamente el código
+                if (descripcion != null && !descripcion.trim().isEmpty()) {
+                    Cie10 cie = cie10Service.buscarPrimeroPorDescripcion(descripcion.trim());
+                    if (cie != null) {
+                        diag.setCodigo(cie.getCodigo());
+                        diag.setCie10(cie);
+                    } else {
+                        diag.setCodigo(null);
+                        diag.setCie10(null);
+                    }
+                }
+            }
+        }
+    }
+
+    // Método helper para obtener sugerencias de CIE10 por código (para filas K)
+    public List<String> completarCie10FilaPorCodigo(String query) {
         if (query == null) {
             return new ArrayList<>();
         }
@@ -2170,53 +2308,48 @@ public class CentroMedicoCtrl implements Serializable {
         }
 
         List<Cie10> lista = cie10Service.buscarJerarquiaPorTerm(q);
+        List<String> out = new ArrayList<>();
 
-        List<Cie10> out = new ArrayList<>();
         for (Cie10 c : lista) {
             if (c != null && c.getCodigo() != null
                     && c.getCodigo().toUpperCase().startsWith(q)) {
-                out.add(c);
+                out.add(c.getCodigo());
             }
         }
         return out;
     }
 
-    public List<Cie10> completarCie10FilaPorDescripcion(String query) {
-        if (query == null) {
-            return new ArrayList<>();
-        }
-        String q = query.trim();
-        if (q.isEmpty()) {
+    // Método helper para obtener sugerencias de CIE10 por descripción (para filas K)
+    public List<String> completarCie10FilaPorDescripcion(String query) {
+        if (query == null || query.trim().isEmpty()) {
             return new ArrayList<>();
         }
 
-        return cie10Service.buscarPorCodigoODescripcion(q);
-    }
+        List<Cie10> lista = cie10Service.buscarPorCodigoODescripcion(query);
+        List<String> out = new ArrayList<>();
 
-// TAB / ENTER en campo DESCRIPCIÓN
-    public void onCie10BlurDescripcion(int index) {
-        onCie10SelectDescripcion(index);
-    }
-
-    public void onCie10FilaSelect(int index, SelectEvent event) {
-        ConsultaDiagnostico diag = ensureDiag(index);
-
-        Cie10 cie = (Cie10) event.getObject();
-        if (cie == null) {
-            diag.setCodigo(null);
-            diag.setDescripcion(null);
-            diag.setCie10(null);
-            return;
+        for (Cie10 c : lista) {
+            if (c != null && c.getDescripcion() != null) {
+                out.add(c.getDescripcion());
+            }
         }
-
-        diag.setCodigo(cie.getCodigo());
-        diag.setDescripcion(cie.getDescripcion());
-        diag.setCie10(cie);
+        return out;
     }
 
-// -----------------------------------------------------------
-// ABRIR DIÁLOGO DE INGRESO MANUAL (botón "INGRESAR MANUALMENTE")
-// -----------------------------------------------------------
+    // =====================
+    // Helpers
+    // =====================
+    private String sn(Boolean b) {
+        return Boolean.TRUE.equals(b) ? "S" : "N";
+    }
+
+    private String sn(boolean b) {
+        return b ? "S" : "N";
+    }
+
+    // -----------------------------------------------------------
+    // ABRIR DIÁLOGO DE INGRESO MANUAL (botón "INGRESAR MANUALMENTE")
+    // -----------------------------------------------------------
     public void abrirPersonaAuxManual() {
         // Siempre aseguramos que exista el objeto
         if (personaAux == null) {
@@ -2229,22 +2362,14 @@ public class CentroMedicoCtrl implements Serializable {
             personaAux.setCedula(cedulaBusqueda.trim());
         }
 
-//    // Limpiamos los campos auxiliares del diálogo
-//    auxApellido1 = null;
-//    auxApellido2 = null;
-//    auxNombre1  = null;
-//    auxNombre2  = null;
-        // sexo y fechaNacimiento los puedes dejar como estén o limpiar:
-        // sexo = null;
-        // fechaNacimiento = null;
         mostrarDialogoAux = true;
         PrimeFaces.current().executeScript("PF('dlgPersonaAux').show();");
     }
 
-// -----------------------------------------------------------
-// GUARDAR PERSONA AUXILIAR Y USARLA EN LA FICHA
-// (botón "GUARDAR Y USAR EN FICHA")
-// -----------------------------------------------------------
+    // -----------------------------------------------------------
+    // GUARDAR PERSONA AUXILIAR Y USARLA EN LA FICHA
+    // (botón "GUARDAR Y USAR EN FICHA")
+    // -----------------------------------------------------------
     public void guardarPersonaAuxYUsar() {
 
         System.out.println("INGRESA AL METODO DE GUARDAR ");
@@ -2347,7 +2472,6 @@ public class CentroMedicoCtrl implements Serializable {
 
         } catch (Exception e) {
             log.error("Error guardando datos manuales", e);
-            // log.log(Level.SEVERE, "Error guardando datos manuales", e);
             ctx.addMessage(null, new FacesMessage(
                     FacesMessage.SEVERITY_ERROR,
                     "Error",
@@ -2357,9 +2481,6 @@ public class CentroMedicoCtrl implements Serializable {
         }
     }
 
-    /**
-     * REALIZA LA BUSQUEDA POR CEDULA
-     */
     /**
      * REALIZA LA BUSQUEDA POR CEDULA
      */
@@ -2485,7 +2606,7 @@ public class CentroMedicoCtrl implements Serializable {
         this.mostrarDlgCedula = mostrarDlgCedula;
     }
 
-// ayudita
+    // ayudita
     private String esNulo(String s) {
         return s == null ? "" : s;
     }
@@ -2525,10 +2646,6 @@ public class CentroMedicoCtrl implements Serializable {
      * Habilita el ingreso manual de datos desde el diálogo PersonaAux. Se
      * invoca al presionar el botón "Ingresar manualmente".
      */
-    /**
-     * Habilita el ingreso manual de datos desde el diálogo PersonaAux. Se
-     * invoca al presionar el botón "Ingresar manualmente".
-     */
     public void prepararIngresoManual() {
         FacesContext ctx = FacesContext.getCurrentInstance();
 
@@ -2559,9 +2676,9 @@ public class CentroMedicoCtrl implements Serializable {
         permitirIngresoManual = true;
     }
 
-// ===============================
-//   MÉTODOS UTILITARIOS
-// ===============================
+    // ===============================
+    //   MÉTODOS UTILITARIOS
+    // ===============================
     private String primerToken(String texto) {
         if (esVacio(texto)) {
             return null;
@@ -2652,8 +2769,33 @@ public class CentroMedicoCtrl implements Serializable {
     }
 
     private void ensureActLabSize() {
-        int n = H_ROWS; // 8
+        final int n = H_ROWS; // 8
 
+        // ===== LOG INICIO =====
+        try {
+            log.info("[STEP3] ensureActLabSize() INICIO - H_ROWS={}", n);
+            log.info("[STEP3] ensureActLabSize() Estado inicial -> actLabRows={}, centro={}, act={}, tiempo={}, obs={}, "
+                    + "trabAnt={}, trabAct={}, inc={}, acc={}, enf={}, iessSi={}, iessNo={}, iessFecha={}, iessEsp={}",
+                    (actLabRows == null ? "null" : actLabRows.size()),
+                    (actLabCentroTrabajo == null ? "null" : actLabCentroTrabajo.size()),
+                    (actLabActividad == null ? "null" : actLabActividad.size()),
+                    (actLabTiempo == null ? "null" : actLabTiempo.size()),
+                    (actLabObservaciones == null ? "null" : actLabObservaciones.size()),
+                    (actLabTrabajoAnterior == null ? "null" : actLabTrabajoAnterior.size()),
+                    (actLabTrabajoActual == null ? "null" : actLabTrabajoActual.size()),
+                    (actLabIncidenteChk == null ? "null" : actLabIncidenteChk.size()),
+                    (actLabAccidenteChk == null ? "null" : actLabAccidenteChk.size()),
+                    (actLabEnfermedadChk == null ? "null" : actLabEnfermedadChk.size()),
+                    (iessSi == null ? "null" : iessSi.size()),
+                    (iessNo == null ? "null" : iessNo.size()),
+                    (iessFecha == null ? "null" : iessFecha.size()),
+                    (iessEspecificar == null ? "null" : iessEspecificar.size())
+            );
+        } catch (Exception ignore) {
+            // no romper flujo por logs
+        }
+
+        // ===== 1) Inicializar listas si vienen null =====
         if (actLabRows == null) {
             actLabRows = new ArrayList<>();
         }
@@ -2686,6 +2828,7 @@ public class CentroMedicoCtrl implements Serializable {
         if (actLabObservaciones == null) {
             actLabObservaciones = new ArrayList<>();
         }
+
         if (iessSi == null) {
             iessSi = new ArrayList<>();
         }
@@ -2699,52 +2842,134 @@ public class CentroMedicoCtrl implements Serializable {
             iessEspecificar = new ArrayList<>();
         }
 
-        // rows 1..8
+        // ===== 2) Crecer a tamaño n =====
+        // rows 1..n
         while (actLabRows.size() < n) {
-            actLabRows.add(String.valueOf(actLabRows.size() + 1));
+            String val = String.valueOf(actLabRows.size() + 1);
+            actLabRows.add(val);
+            log.info("[STEP3] ensureActLabSize(): +actLabRows -> {}", val);
         }
 
         while (actLabCentroTrabajo.size() < n) {
             actLabCentroTrabajo.add("");
+            log.info("[STEP3] ensureActLabSize(): +actLabCentroTrabajo (blank) idx={}", actLabCentroTrabajo.size() - 1);
         }
         while (actLabActividad.size() < n) {
             actLabActividad.add("");
+            log.info("[STEP3] ensureActLabSize(): +actLabActividad (blank) idx={}", actLabActividad.size() - 1);
         }
         while (actLabTiempo.size() < n) {
             actLabTiempo.add("");
+            log.info("[STEP3] ensureActLabSize(): +actLabTiempo (blank) idx={}", actLabTiempo.size() - 1);
         }
 
         while (actLabTrabajoAnterior.size() < n) {
             actLabTrabajoAnterior.add(Boolean.FALSE);
+            log.info("[STEP3] ensureActLabSize(): +actLabTrabajoAnterior=false idx={}", actLabTrabajoAnterior.size() - 1);
         }
         while (actLabTrabajoActual.size() < n) {
             actLabTrabajoActual.add(Boolean.FALSE);
+            log.info("[STEP3] ensureActLabSize(): +actLabTrabajoActual=false idx={}", actLabTrabajoActual.size() - 1);
         }
         while (actLabIncidenteChk.size() < n) {
             actLabIncidenteChk.add(Boolean.FALSE);
+            log.info("[STEP3] ensureActLabSize(): +actLabIncidenteChk=false idx={}", actLabIncidenteChk.size() - 1);
         }
         while (actLabAccidenteChk.size() < n) {
             actLabAccidenteChk.add(Boolean.FALSE);
+            log.info("[STEP3] ensureActLabSize(): +actLabAccidenteChk=false idx={}", actLabAccidenteChk.size() - 1);
         }
         while (actLabEnfermedadChk.size() < n) {
             actLabEnfermedadChk.add(Boolean.FALSE);
+            log.info("[STEP3] ensureActLabSize(): +actLabEnfermedadChk=false idx={}", actLabEnfermedadChk.size() - 1);
         }
 
         while (actLabObservaciones.size() < n) {
             actLabObservaciones.add("");
+            log.info("[STEP3] ensureActLabSize(): +actLabObservaciones (blank) idx={}", actLabObservaciones.size() - 1);
         }
 
         while (iessSi.size() < n) {
             iessSi.add(Boolean.FALSE);
+            log.info("[STEP3] ensureActLabSize(): +iessSi=false idx={}", iessSi.size() - 1);
         }
         while (iessNo.size() < n) {
             iessNo.add(Boolean.FALSE);
+            log.info("[STEP3] ensureActLabSize(): +iessNo=false idx={}", iessNo.size() - 1);
         }
         while (iessFecha.size() < n) {
             iessFecha.add(null);
+            log.info("[STEP3] ensureActLabSize(): +iessFecha=null idx={}", iessFecha.size() - 1);
         }
         while (iessEspecificar.size() < n) {
             iessEspecificar.add("");
+            log.info("[STEP3] ensureActLabSize(): +iessEspecificar (blank) idx={}", iessEspecificar.size() - 1);
+        }
+
+        // ===== 3) Normalizar nulls internos (evita NPE en Step3) =====
+        for (int i = 0; i < n; i++) {
+            if (actLabCentroTrabajo.get(i) == null) {
+                actLabCentroTrabajo.set(i, "");
+            }
+            if (actLabActividad.get(i) == null) {
+                actLabActividad.set(i, "");
+            }
+            if (actLabTiempo.get(i) == null) {
+                actLabTiempo.set(i, "");
+            }
+            if (actLabObservaciones.get(i) == null) {
+                actLabObservaciones.set(i, "");
+            }
+            if (iessEspecificar.get(i) == null) {
+                iessEspecificar.set(i, "");
+            }
+
+            if (actLabTrabajoAnterior.get(i) == null) {
+                actLabTrabajoAnterior.set(i, Boolean.FALSE);
+            }
+            if (actLabTrabajoActual.get(i) == null) {
+                actLabTrabajoActual.set(i, Boolean.FALSE);
+            }
+            if (actLabIncidenteChk.get(i) == null) {
+                actLabIncidenteChk.set(i, Boolean.FALSE);
+            }
+            if (actLabAccidenteChk.get(i) == null) {
+                actLabAccidenteChk.set(i, Boolean.FALSE);
+            }
+            if (actLabEnfermedadChk.get(i) == null) {
+                actLabEnfermedadChk.set(i, Boolean.FALSE);
+            }
+
+            if (iessSi.get(i) == null) {
+                iessSi.set(i, Boolean.FALSE);
+            }
+            if (iessNo.get(i) == null) {
+                iessNo.set(i, Boolean.FALSE);
+            }
+            // iessFecha puede ser null (correcto)
+        }
+
+        // ===== LOG FIN =====
+        try {
+            log.info("[STEP3] ensureActLabSize() FIN -> actLabRows={}, centro={}, act={}, tiempo={}, obs={}, "
+                    + "trabAnt={}, trabAct={}, inc={}, acc={}, enf={}, iessSi={}, iessNo={}, iessFecha={}, iessEsp={}",
+                    actLabRows.size(),
+                    actLabCentroTrabajo.size(),
+                    actLabActividad.size(),
+                    actLabTiempo.size(),
+                    actLabObservaciones.size(),
+                    actLabTrabajoAnterior.size(),
+                    actLabTrabajoActual.size(),
+                    actLabIncidenteChk.size(),
+                    actLabAccidenteChk.size(),
+                    actLabEnfermedadChk.size(),
+                    iessSi.size(),
+                    iessNo.size(),
+                    iessFecha.size(),
+                    iessEspecificar.size()
+            );
+        } catch (Exception ignore) {
+            // no romper flujo por logs
         }
     }
 
@@ -2811,59 +3036,137 @@ public class CentroMedicoCtrl implements Serializable {
         return ":layoutForm:wiz:" + currentStep;
     }
 
-    
-
     private static final int CONS_ROWS = 3; // 0=Tabaco,1=Alcohol,2=Otras
 
-private void initConsumoVidaCond() {
+    private void initConsumoVidaCond() {
 
-    final int N = CONS_ROWS;
+        final int N = CONS_ROWS;
 
-    if (consTiempoConsumoMeses == null)      consTiempoConsumoMeses = new Integer[N];
-    if (consExConsumidor == null)            consExConsumidor       = new Boolean[N];
-    if (consTiempoAbstinenciaMeses == null)  consTiempoAbstinenciaMeses = new Integer[N];
-    if (consNoConsume == null)               consNoConsume          = new Boolean[N];
+        if (consTiempoConsumoMeses == null) {
+            consTiempoConsumoMeses = new Integer[N];
+        }
+        if (consExConsumidor == null) {
+            consExConsumidor = new Boolean[N];
+        }
+        if (consTiempoAbstinenciaMeses == null) {
+            consTiempoAbstinenciaMeses = new Integer[N];
+        }
+        if (consNoConsume == null) {
+            consNoConsume = new Boolean[N];
+        }
 
-    if (afCual == null)   afCual = new String[N];
-    if (afTiempo == null) afTiempo = new String[N];
+        if (afCual == null) {
+            afCual = new String[N];
+        }
+        if (afTiempo == null) {
+            afTiempo = new String[N];
+        }
 
-    if (medCual == null)  medCual = new String[N];
-    if (medCant == null)  medCant = new Integer[N];
+        if (medCual == null) {
+            medCual = new String[N];
+        }
+        if (medCant == null) {
+            medCant = new Integer[N];
+        }
 
-    // Defaults para evitar null en checkboxes
-    for (int i = 0; i < N; i++) {
-        if (consExConsumidor[i] == null) consExConsumidor[i] = Boolean.FALSE;
-        if (consNoConsume[i] == null)    consNoConsume[i] = Boolean.FALSE;
+        // Defaults para evitar null en checkboxes
+        for (int i = 0; i < N; i++) {
+            if (consExConsumidor[i] == null) {
+                consExConsumidor[i] = Boolean.FALSE;
+            }
+            if (consNoConsume[i] == null) {
+                consNoConsume[i] = Boolean.FALSE;
+            }
+        }
+
+        // Observación (evitar null)
+        if (consumoVidaCondObs == null) {
+            consumoVidaCondObs = "";
+        }
     }
 
-    // Observación (evitar null)
-    if (consumoVidaCondObs == null) consumoVidaCondObs = "";
-}
+    // ===============================
+    // ALIASES para que el XHTML funcione
+    // ===============================
+    public Integer[] getConsTiempoConsumo() {
+        return consTiempoConsumoMeses;
+    }
 
+    public void setConsTiempoConsumo(Integer[] v) {
+        this.consTiempoConsumoMeses = v;
+    }
+
+    public Integer[] getConsTiempoAbstinencia() {
+        return consTiempoAbstinenciaMeses;
+    }
+
+    public void setConsTiempoAbstinencia(Integer[] v) {
+        this.consTiempoAbstinenciaMeses = v;
+    }
+
+    public String getConsObservacion() {
+        return consumoVidaCondObs;
+    }
+
+    public void setConsObservacion(String v) {
+        this.consumoVidaCondObs = v;
+    }
 
     // ===============================
-// ALIASES para que el XHTML funcione
-// ===============================
-public Integer[] getConsTiempoConsumo() {
-    return consTiempoConsumoMeses;
-}
-public void setConsTiempoConsumo(Integer[] v) {
-    this.consTiempoConsumoMeses = v;
-}
+    // Getters/Setters para campos N (retiro)
+    // ===============================
+    public String getNRealizaEvaluacion() {
+        return nRealizaEvaluacion;
+    }
 
-public Integer[] getConsTiempoAbstinencia() {
-    return consTiempoAbstinenciaMeses;
-}
-public void setConsTiempoAbstinencia(Integer[] v) {
-    this.consTiempoAbstinenciaMeses = v;
-}
+    public void setNRealizaEvaluacion(String nRealizaEvaluacion) {
+        this.nRealizaEvaluacion = nRealizaEvaluacion;
+    }
 
-public String getConsObservacion() {
-    return consumoVidaCondObs;
-}
-public void setConsObservacion(String v) {
-    this.consumoVidaCondObs = v;
-}
+    public String getNRelacionTrabajo() {
+        return nRelacionTrabajo;
+    }
 
+    public void setNRelacionTrabajo(String nRelacionTrabajo) {
+        this.nRelacionTrabajo = nRelacionTrabajo;
+    }
+
+    public String getNObsRetiro() {
+        return nObsRetiro;
+    }
+
+    public void setNObsRetiro(String nObsRetiro) {
+        this.nObsRetiro = nObsRetiro;
+    }
+
+    public Map<String, Boolean> getRiesgos() {
+        if (riesgos == null) {
+            riesgos = new java.util.LinkedHashMap<>();
+        }
+        return riesgos;
+    }
+
+    public Map<String, String> getOtrosRiesgos() {
+        if (otrosRiesgos == null) {
+            otrosRiesgos = new java.util.LinkedHashMap<>();
+        }
+        return otrosRiesgos;
+    }
+
+    private void s3(String msg) {
+        // log al servidor (recomendado)
+        log.info("[STEP3] {}", msg);
+
+        // si quieres también consola:
+        System.out.println("[STEP3] " + msg);
+    }
+
+    private void s3e(String msg, Throwable t) {
+        log.error("[STEP3] " + msg, t);
+        System.out.println("[STEP3-ERROR] " + msg);
+        if (t != null) {
+            t.printStackTrace();
+        }
+    }
 
 }

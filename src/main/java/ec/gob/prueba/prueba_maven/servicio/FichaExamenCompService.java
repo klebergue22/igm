@@ -4,6 +4,7 @@
  * and open the template in the editor.
  */
 package ec.gob.prueba.prueba_maven.servicio;
+
 /**
  *
  * @author GUERRA_KLEBER
@@ -21,20 +22,22 @@ import java.util.List;
 public class FichaExamenCompService {
 
     // IMPORTANTE: debe coincidir EXACTO con <persistence-unit name="pruebaPU"> en persistence.xml
-    @PersistenceContext (unitName = "rhPU")
+    @PersistenceContext(unitName = "rhPU")
     private EntityManager em;
 
     public FichaExamenComp find(Long id) {
-        if (id == null) return null;
+        if (id == null) {
+            return null;
+        }
         return em.find(FichaExamenComp.class, id);
     }
 
     public List<FichaExamenComp> listarPorFicha(Long idFicha) {
         TypedQuery<FichaExamenComp> q = em.createQuery(
-                "SELECT e " +
-                "FROM FichaExamenComp e " +
-                "WHERE e.ficha.idFicha = :idFicha " +
-                "ORDER BY e.nroFila, e.fechaExamen",
+                "SELECT e "
+                + "FROM FichaExamenComp e "
+                + "WHERE e.ficha.idFicha = :idFicha "
+                + "ORDER BY e.nroFila, e.fechaExamen",
                 FichaExamenComp.class
         );
         q.setParameter("idFicha", idFicha);
@@ -42,7 +45,9 @@ public class FichaExamenCompService {
     }
 
     public FichaExamenComp guardar(FichaExamenComp e, String usuario) {
-        if (e == null) return null;
+        if (e == null) {
+            return null;
+        }
 
         final String usr = (usuario == null || usuario.trim().isEmpty()) ? "SYSTEM" : usuario.trim();
         final Date ahora = new Date();
@@ -72,6 +77,39 @@ public class FichaExamenCompService {
         return em.createQuery(
                 "DELETE FROM FichaExamenComp e WHERE e.ficha.idFicha = :idFicha"
         ).setParameter("idFicha", idFicha)
-         .executeUpdate();
+                .executeUpdate();
     }
+
+    public FichaExamenComp buscarPorFichaYFila(Long idFicha, Integer nroFila) {
+        if (idFicha == null || nroFila == null) {
+            return null;
+        }
+
+        List<FichaExamenComp> res = em.createQuery(
+                "SELECT e FROM FichaExamenComp e "
+                + "WHERE e.ficha.idFicha = :idFicha AND e.nroFila = :nroFila",
+                FichaExamenComp.class
+        )
+                .setParameter("idFicha", idFicha)
+                .setParameter("nroFila", nroFila)
+                .setMaxResults(1)
+                .getResultList();
+
+        return res.isEmpty() ? null : res.get(0);
+    }
+
+    public int eliminarPorFichaYFila(Long idFicha, Integer nroFila) {
+        if (idFicha == null || nroFila == null) {
+            return 0;
+        }
+
+        return em.createQuery(
+                "DELETE FROM FichaExamenComp e "
+                + "WHERE e.ficha.idFicha = :idFicha AND e.nroFila = :nroFila"
+        )
+                .setParameter("idFicha", idFicha)
+                .setParameter("nroFila", nroFila)
+                .executeUpdate();
+    }
+
 }
