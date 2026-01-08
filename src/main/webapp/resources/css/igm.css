@@ -1477,23 +1477,3 @@ input.ui-inputfield:focus, textarea.ui-inputfield:focus{
 
 /* (Opcional) encabezado pegajoso al hacer scroll */
 .hx-grid thead th{ position:sticky; top:0; z-index:1; box-shadow:0 2px 3px rgba(0,0,0,.05); }
-
-
-/* Diálogo ingreso manual: alineación básica */
-#dlgPersonaAux .grid-manual .col-label-man {
-    width: 130px;          /* ancho fijo de las etiquetas */
-    text-align: left;
-    padding-right: 6px;
-}
-
-#dlgPersonaAux .grid-manual .col-field-man {
-    width: 230px;          /* ajusta si quieres más ancho */
-}
-
-#dlgPersonaAux .grid-manual .w100,
-#dlgPersonaAux .grid-manual .col-field-man .ui-inputfield,
-#dlgPersonaAux .grid-manual .col-field-man .ui-selectonemenu,
-#dlgPersonaAux .grid-manual .col-field-man .ui-calendar input {
-    width: 100%;
-    box-sizing: border-box;
-}

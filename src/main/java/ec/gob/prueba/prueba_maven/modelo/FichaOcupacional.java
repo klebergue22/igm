@@ -1,11 +1,9 @@
 package ec.gob.prueba.prueba_maven.modelo;
+
 /**
  *
  * @author GUERRA_KLEBER
  */
- 
-
-
 
 import lombok.*;
 import javax.persistence.*;
@@ -63,6 +61,9 @@ public class FichaOcupacional implements Serializable {
     @Temporal(TemporalType.DATE)
     @Column(name = "FECHA_EVALUACION", nullable = false)
     private Date fechaEvaluacion;
+
+    @Column(name = "OBSERVACION", length = 2000)
+    private String observacion;
 
     @Column(name = "TIPO_EVALUACION", length = 20, nullable = false)
     private String tipoEvaluacion;
@@ -347,85 +348,174 @@ public class FichaOcupacional implements Serializable {
     // =====================================================
     // BOOLs SOLO UI (no están en BD todavía)
     // =====================================================
-    @Transient private Boolean exfNarizTabiqueBool;
-    @Transient private Boolean exfNarizCornetesBool;
-    @Transient private Boolean exfNarizMucosasBool;
-    @Transient private Boolean exfNarizSenosBool;
+    @Transient
+    private Boolean exfNarizTabiqueBool;
+    @Transient
+    private Boolean exfNarizCornetesBool;
+    @Transient
+    private Boolean exfNarizMucosasBool;
+    @Transient
+    private Boolean exfNarizSenosBool;
 
-    @Transient private Boolean exfOroLabiosBool;
-    @Transient private Boolean exfOroLenguaBool;
-    @Transient private Boolean exfOroDentaduraBool;
-    @Transient private Boolean exfOroAmigdalasBool;
-    @Transient private Boolean exfOroFaringeBool;
+    @Transient
+    private Boolean exfOroLabiosBool;
+    @Transient
+    private Boolean exfOroLenguaBool;
+    @Transient
+    private Boolean exfOroDentaduraBool;
+    @Transient
+    private Boolean exfOroAmigdalasBool;
+    @Transient
+    private Boolean exfOroFaringeBool;
 
-    @Transient private Boolean exfCuelloMovilidadBool;
-    @Transient private Boolean exfCuelloTiroidesBool;
+    @Transient
+    private Boolean exfCuelloMovilidadBool;
+    @Transient
+    private Boolean exfCuelloTiroidesBool;
 
-    @Transient private Boolean exfToraxMamasBool;
-    @Transient private Boolean exfToraxParrillaBool;
-    @Transient private Boolean exfToraxPulmonesBool;
-    @Transient private Boolean exfToraxCorazonBool;
+    @Transient
+    private Boolean exfToraxMamasBool;
+    @Transient
+    private Boolean exfToraxParrillaBool;
+    @Transient
+    private Boolean exfToraxPulmonesBool;
+    @Transient
+    private Boolean exfToraxCorazonBool;
 
-    @Transient private Boolean exfAbdomenParedBool;
-    @Transient private Boolean exfAbdomenViscerasBool;
+    @Transient
+    private Boolean exfAbdomenParedBool;
+    @Transient
+    private Boolean exfAbdomenViscerasBool;
 
-    @Transient private Boolean exfPelvisPelvisBool;
-    @Transient private Boolean exfPelvisGenitalesBool;
+    @Transient
+    private Boolean exfPelvisPelvisBool;
+    @Transient
+    private Boolean exfPelvisGenitalesBool;
 
-    @Transient private Boolean exfExtSupBool;
-    @Transient private Boolean exfExtInfBool;
-    @Transient private Boolean exfExtVascularBool;
+    @Transient
+    private Boolean exfExtSupBool;
+    @Transient
+    private Boolean exfExtInfBool;
+    @Transient
+    private Boolean exfExtVascularBool;
 
-    @Transient private Boolean exfColumnaDesviacionBool;
-    @Transient private Boolean exfColumnaFlexibilidadBool;
-    @Transient private Boolean exfColumnaDolorBool;
+    @Transient
+    private Boolean exfColumnaDesviacionBool;
+    @Transient
+    private Boolean exfColumnaFlexibilidadBool;
+    @Transient
+    private Boolean exfColumnaDolorBool;
 
-    @Transient private Boolean exfNeuroFuerzaBool;
-    @Transient private Boolean exfNeuroSensibilidadBool;
-    @Transient private Boolean exfNeuroReflejosBool;
-    @Transient private Boolean exfNeuroMarchaBool;
+    @Transient
+    private Boolean exfNeuroFuerzaBool;
+    @Transient
+    private Boolean exfNeuroSensibilidadBool;
+    @Transient
+    private Boolean exfNeuroReflejosBool;
+    @Transient
+    private Boolean exfNeuroMarchaBool;
 
     // =====================================================
     // Conversión S/N <-> Boolean
     // =====================================================
-    private static boolean snToBool(String v) { return "S".equalsIgnoreCase(v); }
-    private static String boolToSn(Boolean b) { return (b != null && b) ? "S" : "N"; }
+    private static boolean snToBool(String v) {
+        return "S".equalsIgnoreCase(v);
+    }
+
+    private static String boolToSn(Boolean b) {
+        return (b != null && b) ? "S" : "N";
+    }
 
     // =====================================================
     // PROPIEDADES ...Bool para campos S/N persistentes
     // =====================================================
-    public Boolean getExfPielCicatricesBool() { return snToBool(exfPielCicatrices); }
-    public void setExfPielCicatricesBool(Boolean v) { this.exfPielCicatrices = boolToSn(v); }
+    public Boolean getExfPielCicatricesBool() {
+        return snToBool(exfPielCicatrices);
+    }
 
-    public Boolean getExfOjosParpadosBool() { return snToBool(exfOjosParpados); }
-    public void setExfOjosParpadosBool(Boolean v) { this.exfOjosParpados = boolToSn(v); }
+    public void setExfPielCicatricesBool(Boolean v) {
+        this.exfPielCicatrices = boolToSn(v);
+    }
 
-    public Boolean getExfOjosConjuntivasBool() { return snToBool(exfOjosConjuntivas); }
-    public void setExfOjosConjuntivasBool(Boolean v) { this.exfOjosConjuntivas = boolToSn(v); }
+    public Boolean getExfOjosParpadosBool() {
+        return snToBool(exfOjosParpados);
+    }
 
-    public Boolean getExfOjosPupilasBool() { return snToBool(exfOjosPupilas); }
-    public void setExfOjosPupilasBool(Boolean v) { this.exfOjosPupilas = boolToSn(v); }
+    public void setExfOjosParpadosBool(Boolean v) {
+        this.exfOjosParpados = boolToSn(v);
+    }
 
-    public Boolean getExfOjosCorneaBool() { return snToBool(exfOjosCornea); }
-    public void setExfOjosCorneaBool(Boolean v) { this.exfOjosCornea = boolToSn(v); }
+    public Boolean getExfOjosConjuntivasBool() {
+        return snToBool(exfOjosConjuntivas);
+    }
 
-    public Boolean getExfOjosMotilidadBool() { return snToBool(exfOjosMotilidad); }
-    public void setExfOjosMotilidadBool(Boolean v) { this.exfOjosMotilidad = boolToSn(v); }
+    public void setExfOjosConjuntivasBool(Boolean v) {
+        this.exfOjosConjuntivas = boolToSn(v);
+    }
 
-    public Boolean getExfOidoConductoBool() { return snToBool(exfOidoConducto); }
-    public void setExfOidoConductoBool(Boolean v) { this.exfOidoConducto = boolToSn(v); }
+    public Boolean getExfOjosPupilasBool() {
+        return snToBool(exfOjosPupilas);
+    }
 
-    public Boolean getExfOidoPabellonBool() { return snToBool(exfOidoPabellon); }
-    public void setExfOidoPabellonBool(Boolean v) { this.exfOidoPabellon = boolToSn(v); }
+    public void setExfOjosPupilasBool(Boolean v) {
+        this.exfOjosPupilas = boolToSn(v);
+    }
 
-    public Boolean getExfOidoTimpanosBool() { return snToBool(exfOidoTimpanos); }
-    public void setExfOidoTimpanosBool(Boolean v) { this.exfOidoTimpanos = boolToSn(v); }
+    public Boolean getExfOjosCorneaBool() {
+        return snToBool(exfOjosCornea);
+    }
 
-    public Boolean getNRetEvalBool() { return snToBool(nRetEval); }
-    public void setNRetEvalBool(Boolean v) { this.nRetEval = boolToSn(v); }
+    public void setExfOjosCorneaBool(Boolean v) {
+        this.exfOjosCornea = boolToSn(v);
+    }
 
-    public Boolean getNRetRelTrabBool() { return snToBool(nRetRelTrab); }
-    public void setNRetRelTrabBool(Boolean v) { this.nRetRelTrab = boolToSn(v); }
+    public Boolean getExfOjosMotilidadBool() {
+        return snToBool(exfOjosMotilidad);
+    }
+
+    public void setExfOjosMotilidadBool(Boolean v) {
+        this.exfOjosMotilidad = boolToSn(v);
+    }
+
+    public Boolean getExfOidoConductoBool() {
+        return snToBool(exfOidoConducto);
+    }
+
+    public void setExfOidoConductoBool(Boolean v) {
+        this.exfOidoConducto = boolToSn(v);
+    }
+
+    public Boolean getExfOidoPabellonBool() {
+        return snToBool(exfOidoPabellon);
+    }
+
+    public void setExfOidoPabellonBool(Boolean v) {
+        this.exfOidoPabellon = boolToSn(v);
+    }
+
+    public Boolean getExfOidoTimpanosBool() {
+        return snToBool(exfOidoTimpanos);
+    }
+
+    public void setExfOidoTimpanosBool(Boolean v) {
+        this.exfOidoTimpanos = boolToSn(v);
+    }
+
+    public Boolean getNRetEvalBool() {
+        return snToBool(nRetEval);
+    }
+
+    public void setNRetEvalBool(Boolean v) {
+        this.nRetEval = boolToSn(v);
+    }
+
+    public Boolean getNRetRelTrabBool() {
+        return snToBool(nRetRelTrab);
+    }
+
+    public void setNRetRelTrabBool(Boolean v) {
+        this.nRetRelTrab = boolToSn(v);
+    }
 
     // =====================================================
     // Auditoría / defaults
@@ -434,38 +524,90 @@ public class FichaOcupacional implements Serializable {
     public void prePersist() {
         Date ahora = new Date();
 
-        if (fechaCreacion == null) fechaCreacion = ahora;
-        if (estado == null || estado.trim().isEmpty()) estado = "BORRADOR";
+        if (fechaCreacion == null) {
+            fechaCreacion = ahora;
+        }
+        if (estado == null || estado.trim().isEmpty()) {
+            estado = "BORRADOR";
+        }
 
-        if (apEmbarazada == null) apEmbarazada = "N";
-        if (apDiscapacidad == null) apDiscapacidad = "N";
-        if (apCatastrofica == null) apCatastrofica = "N";
-        if (apLactancia == null) apLactancia = "N";
-        if (apAdultoMayor == null) apAdultoMayor = "N";
+        if (apEmbarazada == null) {
+            apEmbarazada = "N";
+        }
+        if (apDiscapacidad == null) {
+            apDiscapacidad = "N";
+        }
+        if (apCatastrofica == null) {
+            apCatastrofica = "N";
+        }
+        if (apLactancia == null) {
+            apLactancia = "N";
+        }
+        if (apAdultoMayor == null) {
+            apAdultoMayor = "N";
+        }
 
-        if (tabExCons == null) tabExCons = "N";
-        if (tabNoCons == null) tabNoCons = "N";
-        if (alcExCons == null) alcExCons = "N";
-        if (alcNoCons == null) alcNoCons = "N";
-        if (otrExCons == null) otrExCons = "N";
-        if (otrNoCons == null) otrNoCons = "N";
+        if (tabExCons == null) {
+            tabExCons = "N";
+        }
+        if (tabNoCons == null) {
+            tabNoCons = "N";
+        }
+        if (alcExCons == null) {
+            alcExCons = "N";
+        }
+        if (alcNoCons == null) {
+            alcNoCons = "N";
+        }
+        if (otrExCons == null) {
+            otrExCons = "N";
+        }
+        if (otrNoCons == null) {
+            otrNoCons = "N";
+        }
 
-        if (exfPielCicatrices == null) exfPielCicatrices = "N";
-        if (exfOjosParpados == null) exfOjosParpados = "N";
-        if (exfOjosConjuntivas == null) exfOjosConjuntivas = "N";
-        if (exfOjosPupilas == null) exfOjosPupilas = "N";
-        if (exfOjosCornea == null) exfOjosCornea = "N";
-        if (exfOjosMotilidad == null) exfOjosMotilidad = "N";
-        if (exfOidoConducto == null) exfOidoConducto = "N";
-        if (exfOidoPabellon == null) exfOidoPabellon = "N";
-        if (exfOidoTimpanos == null) exfOidoTimpanos = "N";
+        if (exfPielCicatrices == null) {
+            exfPielCicatrices = "N";
+        }
+        if (exfOjosParpados == null) {
+            exfOjosParpados = "N";
+        }
+        if (exfOjosConjuntivas == null) {
+            exfOjosConjuntivas = "N";
+        }
+        if (exfOjosPupilas == null) {
+            exfOjosPupilas = "N";
+        }
+        if (exfOjosCornea == null) {
+            exfOjosCornea = "N";
+        }
+        if (exfOjosMotilidad == null) {
+            exfOjosMotilidad = "N";
+        }
+        if (exfOidoConducto == null) {
+            exfOidoConducto = "N";
+        }
+        if (exfOidoPabellon == null) {
+            exfOidoPabellon = "N";
+        }
+        if (exfOidoTimpanos == null) {
+            exfOidoTimpanos = "N";
+        }
 
-        if (nRetEval == null) nRetEval = "N";
-        if (nRetRelTrab == null) nRetRelTrab = "N";
+        if (nRetEval == null) {
+            nRetEval = "N";
+        }
+        if (nRetRelTrab == null) {
+            nRetRelTrab = "N";
+        }
 
         if (!"BORRADOR".equalsIgnoreCase(estado)) {
-            if (fechaEmision == null) fechaEmision = ahora;
-            if (aptitudSel == null || aptitudSel.trim().isEmpty()) aptitudSel = "APTO";
+            if (fechaEmision == null) {
+                fechaEmision = ahora;
+            }
+            if (aptitudSel == null || aptitudSel.trim().isEmpty()) {
+                aptitudSel = "APTO";
+            }
         }
     }
 

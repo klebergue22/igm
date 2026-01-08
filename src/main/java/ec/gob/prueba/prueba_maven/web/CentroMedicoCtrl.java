@@ -87,6 +87,7 @@ public class CentroMedicoCtrl implements Serializable {
     // -----------------------------
     private String currentStep = "step1";
     private boolean mostrarDlgCedula = true;
+    private boolean preRenderDone = false;
     private boolean mostrarDialogoAux;
     private boolean permitirIngresoManual;
 
@@ -128,6 +129,7 @@ public class CentroMedicoCtrl implements Serializable {
 
     private String grupoSanguineo;
     private String lateralidad;
+    private String motivoObs;
 
     // -----------------------------
     // ATENCIÓN PRIORITARIA
@@ -319,6 +321,27 @@ public class CentroMedicoCtrl implements Serializable {
 
     @EJB
     private FichaExamenCompService fichaExamenCompService;
+    
+    public void preRenderInit() {
+    // NO hacer lógica pesada aquí.
+    // Solo fuerza que el bean exista temprano (antes del render).
+    // Si quieres, puedes asegurar listas del step3:
+    try {
+            if (preRenderDone) {
+        return;
+    }
+    preRenderDone = true;
+
+    // Si no hay empleado seleccionado, forzamos el diálogo de búsqueda
+    if (empleadoSel == null) {
+        mostrarDlgCedula = true;
+    }
+        ensureActLabSize();
+    } catch (Exception ignore) {
+        // no romper por inicialización
+    }
+}
+
 
     private void initExamenes(int n) {
         examNombre = new ArrayList<>(java.util.Collections.nCopies(n, ""));
@@ -488,8 +511,23 @@ public class CentroMedicoCtrl implements Serializable {
         initActLab(H_ROWS); // o initActLab(8)
         ensureActLabSize();
         initConsumoVidaCond();
+        if (personaAux == null) {
+            personaAux = new PersonaAux();
+        }
+        permitirIngresoManual = false;
 
     }
+    
+
+
+/**
+ * Se llama cuando el cliente va a mostrar el diálogo (via remoteCommand).
+ * Sirve para que NO se vuelva a abrir al cambiar de step (AJAX updates).
+ */
+public void onDlgCedulaShown() {
+    mostrarDlgCedula = false;
+}
+
 
     private ConsultaDiagnostico ensureDiag(int index) {
         // si la lista es muy corta, agrándala
@@ -2606,119 +2644,113 @@ public class CentroMedicoCtrl implements Serializable {
     /**
      * REALIZA LA BUSQUEDA POR CEDULA
      */
-    public void buscarCedula() {
-        FacesContext ctx = FacesContext.getCurrentInstance();
-        permitirIngresoManual = false;
+public void buscarCedula() {
 
-        if (cedulaBusqueda == null || cedulaBusqueda.trim().isEmpty()) {
+    FacesContext ctx = FacesContext.getCurrentInstance();
+    permitirIngresoManual = false;
+
+    boolean encontrado = false;
+
+    if (cedulaBusqueda == null || cedulaBusqueda.trim().isEmpty()) {
+        ctx.addMessage(null, new FacesMessage(
+                FacesMessage.SEVERITY_WARN,
+                "Búsqueda",
+                "Ingrese una cédula para realizar la búsqueda."
+        ));
+
+        PrimeFaces.current().ajax().addCallbackParam("encontrado", false);
+        return;
+    }
+
+    String cedula = cedulaBusqueda.trim();
+
+    try {
+        if (ficha == null) {
+            ficha = new FichaOcupacional();
+        }
+        if (personaAux == null) {
+            personaAux = new PersonaAux();
+        }
+
+        DatEmpleado emp = empleadoService.buscarPorCedula(cedula);
+
+        if (emp != null) {
+            // ===== ENCONTRADO =====
+            encontrado = true;
+
+            empleadoSel = emp;
+            noPersonaSel = emp.getNoPersona();
+
+            apellido1 = emp.getPriApellido();
+            apellido2 = emp.getSegApellido();
+            nombre1 = emp.getNombres();
+            nombre2 = null;
+
+            sexo = emp.getSexo() != null ? emp.getSexo().getCodigo() : null;
+            fechaNacimiento = emp.getFNacimiento();
+            edad = calcularEdad(fechaNacimiento);
+
+            ficha.setNoHistoriaClinica(emp.getNoCedula());
+            ficha.setEmpleado(emp);
+            ficha.setPersonaAux(null);
+
+            mostrarDlgCedula = false;
+            permitirIngresoManual = false;
+
+            ctx.addMessage(null, new FacesMessage(
+                    FacesMessage.SEVERITY_INFO,
+                    "Búsqueda",
+                    "Información cargada desde RRHH."
+            ));
+
+        } else {
+            // ===== NO ENCONTRADO =====
+            encontrado = false;
+
+            empleadoSel = null;
+            noPersonaSel = null;
+
+            personaAux.setCedula(cedula);
+            personaAux.setApellido1(null);
+            personaAux.setApellido2(null);
+            personaAux.setNombre1(null);
+            personaAux.setNombre2(null);
+            personaAux.setSexo(null);
+            personaAux.setFechaNac(null);
+
+            ficha.setNoHistoriaClinica(cedula);
+
+            mostrarDlgCedula = true;
+            permitirIngresoManual = true;
+
             ctx.addMessage(null, new FacesMessage(
                     FacesMessage.SEVERITY_WARN,
                     "Búsqueda",
-                    "Ingrese una cédula para realizar la búsqueda."
+                    "No se encontró la cédula. Puede ingresar los datos manualmente."
             ));
-            return;
         }
 
-        String cedula = cedulaBusqueda.trim();
+        // 🔥 SOLO actualizar el wizard (EXISTE)
+        PrimeFaces.current().ajax().update("layoutForm:wiz");
 
-        try {
-            // Asegurar objetos
-            if (ficha == null) {
-                ficha = new FichaOcupacional();
-            }
-            if (personaAux == null) {
-                personaAux = new PersonaAux();
-            }
+        // 🔥 SOLO callback
+        PrimeFaces.current().ajax().addCallbackParam("encontrado", encontrado);
 
-            DatEmpleado emp = empleadoService.buscarPorCedula(cedula);
+    } catch (Exception e) {
+        log.error("Error buscarCedula()", e);
 
-            if (emp != null) {
-                // =========================
-                // EMPLEADO ENCONTRADO
-                // =========================
-                this.empleadoSel = emp;
-                this.noPersonaSel = emp.getNoPersona();
+        ctx.addMessage(null, new FacesMessage(
+                FacesMessage.SEVERITY_ERROR,
+                "Error",
+                "Ocurrió un error al buscar la cédula."
+        ));
 
-                this.apellido1 = emp.getPriApellido();
-                this.apellido2 = emp.getSegApellido();
-
-                // Si en RRHH viene todo en "NOMBRES", lo dejas así (o separas luego)
-                this.nombre1 = emp.getNombres();
-                this.nombre2 = null;
-
-                this.sexo = (emp.getSexo() != null) ? emp.getSexo().getCodigo() : null;
-                this.fechaNacimiento = emp.getFNacimiento();
-                this.edad = calcularEdad(this.fechaNacimiento);
-
-                // ✅ HISTORIA CLÍNICA (fuente de verdad)
-                String cedEmp = emp.getNoCedula();
-                ficha.setNoHistoriaClinica(cedEmp);
-
-                // (Opcional) si sigues usando noHistoria en PDF viejo:
-                this.noHistoria = cedEmp;
-
-                // Amarrar paciente a la ficha
-                ficha.setEmpleado(emp);
-                ficha.setPersonaAux(null);
-
-                mostrarDlgCedula = false;
-                permitirIngresoManual = false;
-
-                ctx.addMessage(null, new FacesMessage(
-                        FacesMessage.SEVERITY_INFO,
-                        "Búsqueda",
-                        "Se cargó la información del empleado desde RRHH."
-                ));
-
-            } else {
-                // =========================
-                // NO ENCONTRADO -> MANUAL
-                // =========================
-                this.empleadoSel = null;
-                this.noPersonaSel = null;
-
-                // Prellenar para auxiliar
-                personaAux.setCedula(cedula);
-                personaAux.setApellido1(null);
-                personaAux.setApellido2(null);
-                personaAux.setNombre1(null);
-                personaAux.setNombre2(null);
-                personaAux.setSexo(null);
-                personaAux.setFechaNac(null);
-                personaAux.setNoPersona(null);
-
-                // ✅ Historia clínica igual se llena con la cédula ingresada
-                ficha.setNoHistoriaClinica(cedula);
-                this.noHistoria = cedula;
-
-                mostrarDlgCedula = true;
-                permitirIngresoManual = true;
-
-                ctx.addMessage(null, new FacesMessage(
-                        FacesMessage.SEVERITY_WARN,
-                        "Búsqueda",
-                        "No se encontró la cédula en RRHH. Puede ingresarla manualmente."
-                ));
-            }
-
-            // ✅ Actualiza lo correcto: el campo que muestra historia clínica y los datos visibles
-            PrimeFaces.current().ajax().update(
-                    "layoutForm:wiz",
-                    "layoutForm:noHistoriaClinica"
-            );
-
-        } catch (Exception e) {
-            permitirIngresoManual = false;
-            mostrarDlgCedula = true;
-
-            ctx.addMessage(null, new FacesMessage(
-                    FacesMessage.SEVERITY_ERROR,
-                    "Error",
-                    "Ocurrió un error al buscar la cédula. Intente nuevamente."
-            ));
-            log.error("Error buscarCedula()", e);
-        }
+        PrimeFaces.current().ajax().addCallbackParam("encontrado", false);
     }
+}
+
+
+
 
     public boolean isMostrarDlgCedula() {
         return mostrarDlgCedula;
@@ -3289,6 +3321,10 @@ public class CentroMedicoCtrl implements Serializable {
         if (t != null) {
             t.printStackTrace();
         }
+    }
+
+    public long getTs() {
+        return System.currentTimeMillis();
     }
 
 }

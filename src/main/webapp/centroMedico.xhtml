@@ -5,56 +5,46 @@
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
 
-    <ui:define name="content"> Evaluación Médica Ocupacional
+    <f:metadata>
+        <f:viewAction action="#{centroMedicoCtrl.preRenderInit}" onPostback="false" />
+    </f:metadata>
 
-        <!-- DIALOGO BUSCAR CEDULA -->
-        <p:dialog id="dlgCedula"
-                  widgetVar="dlgCedula"
-                  modal="true"
-                  header="Buscar por cédula"
-                  closable="false"
-                  visible="#{centroMedicoCtrl.mostrarDlgCedula}">
+    <ui:define name="content">
+        <h:outputText value="Evaluación Médica Ocupacional" />
+ 
 
-            <p:messages id="msgCedula"   closable="true"/>
+        <!-- IMPORTANTE: para que funcionen tus update=":layoutForm:..." -->
+<p:remoteCommand name="rcShowCedula"
+                 autoRun="true"
+                 rendered="#{centroMedicoCtrl.mostrarDlgCedula}"
+                 oncomplete="PF('dlgCedula').show();" />
 
-            <h:panelGrid columns="2" columnClasses="etq, val">
-                <h:outputLabel for="cedula" value="Cédula:"/>
-                <p:inputText id="cedula"
-                             value="#{centroMedicoCtrl.cedulaBusqueda}"
-                             maxlength="10"/>
 
-                <!-- Botón BUSCAR -->
-                <h:outputText/>
-                <p:commandButton value="Buscar"
-                                 actionListener="#{centroMedicoCtrl.buscarCedula}"
-                                 process="@form"
-                                 update="@form"/>
 
-                <!-- Botón INGRESAR MANUALMENTE -->
-                <h:outputText/>
-                <h:panelGroup rendered="#{centroMedicoCtrl.permitirIngresoManual}">
-                    <p:commandButton value="INGRESAR MANUALMENTE"
-                                     actionListener="#{centroMedicoCtrl.prepararIngresoManual}"
-                                     process="@this"
-                                     update=":layoutForm:dlgPersonaAux"
-                                     oncomplete="if (!args.validationFailed) PF('dlgPersonaAux').show();"/>
-                </h:panelGroup>
-            </h:panelGrid>
-        </p:dialog>
 
-        <!-- igm.css se carga en el template. Aquí sólo iconos -->
+
+        <!-- mensajes globales dentro del mismo form -->
+        <p:messages id="msgsGlobal" showDetail="true" closable="true"/>
+
+ 
+
+
+
+        <!-- Iconos -->
         <h:outputStylesheet library="primefaces" name="primeicons/primeicons.css"/>
+
 
         <!-- ====================================== -->
         <!--  WIZARD SIN BARRA (barra propia abajo) -->
         <!-- ====================================== -->
-        <p:wizard id="wiz" widgetVar="wiz" showNavBar="false" showStepStatus="true"
+        <p:wizard id="wiz" widgetVar="wiz"
+                  showNavBar="false" showStepStatus="true"
                   nextLabel="Siguiente" backLabel="Anterior">
 
-            <!-- ===================================================== -->
-            <!-- STEP 1: FORMULARIO DE EVALUACIÓN MÉDICA (A–F)         -->
-            <!-- ===================================================== -->
-            <p:tab id="step1" title="Formulario (A–F)">
+            <!-- ========================= -->
+            <!-- STEP 1                    -->
+            <!-- ========================= -->
+              <p:tab id="step1" title="Formulario (A–F)">
                 <!-- A. DATOS DEL ESTABLECIMIENTO / USUARIO -->
                 <p:fieldset legend="A. DATOS DEL ESTABLECIMIENTO / USUARIO" toggleable="true">
 
@@ -1839,37 +1829,69 @@
         <p:toolbar styleClass="mt-3">
             <p:toolbarGroup>
 
-                <!-- ANTERIOR: solo mueve el step en el bean y en el wizard -->
                 <p:commandButton value="Anterior" icon="pi pi-angle-left"
                                  actionListener="#{centroMedicoCtrl.retrocederStep}"
                                  process="@this"
-                                 update=":layoutForm"
+                                 update="layoutForm"
                                  oncomplete="PF('wiz').back();"/>
 
                 <p:spacer width="8"/>
 
-  <p:commandButton value="Siguiente" icon="pi pi-angle-right"
-                 action="#{centroMedicoCtrl.guardarStepActual}"
-                 process="@this wiz"
-                 update="@form"
-                 oncomplete="if(!args.validationFailed){ PF('wiz').next(); }"/>
-
-
+                <p:commandButton value="Siguiente" icon="pi pi-angle-right"
+                                 action="#{centroMedicoCtrl.guardarStepActual}"
+                                 process="@this wiz"
+                                 update="layoutForm"
+                                 oncomplete="if(!args.validationFailed){ PF('wiz').next(); }"/>
 
             </p:toolbarGroup>
         </p:toolbar>
+    </ui:define>
 
-        <h:outputScript target="body">
-            PrimeFaces.ready(function() {
-            if (#{centroMedicoCtrl.mostrarDlgCedula}) {
-            PF('dlgCedula').show();
-            }
-            });
-        </h:outputScript>
+        <!-- ============ DIÁLOGO PERSONA AUX ============ -->
+<ui:define name="dialogs">
 
-        <!-- ============ DIÁLOGO DE INGRESO MANUAL PERSONA AUX ============ -->
-<p:outputPanel id="dialogPersonaAuxZone" layout="block">
-    <!-- DIALOGO PERSONA AUXILIAR -->
+    <!-- ===== DIALOGO BUSCAR CEDULA ===== -->
+    <p:dialog id="dlgCedula"
+              widgetVar="dlgCedula"
+              modal="true"
+              header="Buscar por cédula"
+              closable="false"
+              resizable="false"
+              appendTo="@(body)">
+
+        <h:form id="cedulaForm">
+            <p:messages id="msgCedula" closable="true"/>
+
+            <h:panelGrid columns="2" styleClass="ui-fluid">
+                <h:outputLabel for="cedula" value="Cédula:"/>
+
+                <p:inputText id="cedula"
+                             value="#{centroMedicoCtrl.cedulaBusqueda}"
+                             maxlength="10"/>
+
+                <h:outputText/>
+                <p:commandButton value="Buscar"
+                                 actionListener="#{centroMedicoCtrl.buscarCedula}"
+                                 process="@this cedula"
+                                 update="msgCedula
+                                         :layoutForm:msgsGlobal
+                                         :layoutForm:wiz
+                                         :layoutForm:noHistoriaClinica"
+                                 oncomplete="if(args.encontrado){ PF('dlgCedula').hide(); }"/>
+
+                <h:outputText/>
+                <p:commandButton value="INGRESAR MANUALMENTE"
+                                 rendered="#{centroMedicoCtrl.permitirIngresoManual}"
+                                 actionListener="#{centroMedicoCtrl.prepararIngresoManual}"
+                                 process="@this"
+                                 update=":dlgPersonaAuxForm:gridManual :dlgPersonaAuxForm:msgPersonaAux"
+                                 oncomplete="PF('dlgPersonaAux').show();"/>
+            </h:panelGrid>
+        </h:form>
+    </p:dialog>
+
+
+    <!-- ===== DIALOGO PERSONA AUX ===== -->
     <p:dialog id="dlgPersonaAux"
               widgetVar="dlgPersonaAux"
               header="Ingreso manual de datos"
@@ -1878,75 +1900,74 @@
               resizable="false"
               appendTo="@(body)">
 
-        <!-- IMPORTANTE:
-             NO pongas <h:form> aquí si ya existe :layoutForm envolviendo la página,
-             para evitar FORM dentro de FORM (causa NPE en Wizard.processDecodes) -->
+        <h:form id="dlgPersonaAuxForm">
+            <p:messages id="msgPersonaAux" autoUpdate="true" closable="true"/>
 
-        <p:messages id="msgPersonaAux" autoUpdate="true" closable="true"/>
+            <h:panelGrid id="gridManual" columns="2"
+                         columnClasses="col-label-man,col-field-man"
+                         styleClass="grid-manual">
 
-        <h:panelGrid id="gridManual"
-                     columns="2"
-                     columnClasses="col-label-man,col-field-man"
-                     styleClass="grid-manual">
+                <h:outputLabel for="cedManual" value="Cédula *"/>
+                <p:inputText id="cedManual"
+                             value="#{centroMedicoCtrl.personaAux.cedula}"
+                             maxlength="10"
+                             readonly="true"/>
 
-            <h:outputLabel for="cedManual" value="Cédula * *"/>
-            <p:inputText id="cedManual"
-                         value="#{centroMedicoCtrl.personaAux.cedula}"
-                         maxlength="10"
-                         styleClass="w100"
-                         readonly="true"/>
+                <h:outputLabel for="ap1" value="Primer apellido *"/>
+                <p:inputText id="ap1" value="#{centroMedicoCtrl.personaAux.apellido1}" required="true"/>
 
-            <h:outputLabel for="ap1" value="Primer apellido * *"/>
-            <p:inputText id="ap1"
-                         value="#{centroMedicoCtrl.personaAux.apellido1}"
-                         styleClass="w100"/>
+                <h:outputLabel for="ap2" value="Segundo apellido"/>
+                <p:inputText id="ap2" value="#{centroMedicoCtrl.personaAux.apellido2}"/>
 
-            <h:outputLabel for="ap2" value="Segundo apellido"/>
-            <p:inputText id="ap2"
-                         value="#{centroMedicoCtrl.personaAux.apellido2}"
-                         styleClass="w100"/>
+                <h:outputLabel for="nom1" value="Primer nombre *"/>
+                <p:inputText id="nom1" value="#{centroMedicoCtrl.personaAux.nombre1}" required="true"/>
 
-            <h:outputLabel for="nom1" value="Primer nombre * *"/>
-            <p:inputText id="nom1"
-                         value="#{centroMedicoCtrl.personaAux.nombre1}"
-                         styleClass="w100"/>
+                <h:outputLabel for="nom2" value="Segundo nombre"/>
+                <p:inputText id="nom2" value="#{centroMedicoCtrl.personaAux.nombre2}"/>
 
-            <h:outputLabel for="nom2" value="Segundo nombre"/>
-            <p:inputText id="nom2"
-                         value="#{centroMedicoCtrl.personaAux.nombre2}"
-                         styleClass="w100"/>
+                <h:outputLabel for="sexoManual" value="Sexo *"/>
+                <p:selectOneMenu id="sexoManual" value="#{centroMedicoCtrl.personaAux.sexo}" required="true">
+                    <f:selectItem itemLabel="-- Seleccione --" itemValue=""/>
+                    <f:selectItem itemLabel="Masculino" itemValue="M"/>
+                    <f:selectItem itemLabel="Femenino" itemValue="F"/>
+                </p:selectOneMenu>
 
-            <h:outputLabel for="sexoManual" value="Sexo * *"/>
-            <p:selectOneMenu id="sexoManual"
-                             value="#{centroMedicoCtrl.personaAux.sexo}"
-                             styleClass="w100">
-                <f:selectItem itemLabel="-- Seleccione --" itemValue="#{null}"/>
-                <f:selectItem itemLabel="Masculino" itemValue="M"/>
-                <f:selectItem itemLabel="Femenino" itemValue="F"/>
-            </p:selectOneMenu>
+                <h:outputLabel for="fnManual" value="Fecha nacimiento *"/>
+                <p:calendar id="fnManual"
+                            value="#{centroMedicoCtrl.personaAux.fechaNac}"
+                            pattern="dd/MM/yyyy"
+                            navigator="true"
+                            yearRange="1924:2007"
+                            required="true"/>
+            </h:panelGrid>
 
-            <h:outputLabel for="fnManual" value="Fecha nacimiento * *"/>
-            <p:calendar id="fnManual"
-                        value="#{centroMedicoCtrl.personaAux.fechaNac}"
-                        pattern="dd/MM/yyyy"
-                        navigator="true"
-                        yearRange="1924:2007"
-                        styleClass="w100"/>
-        </h:panelGrid>
+            <p:separator/>
 
-        <p:separator/>
-
-        <!-- BOTÓN GUARDAR -->
-        <p:commandButton value="GUARDAR Y USAR EN FICHA"
-                         action="#{centroMedicoCtrl.guardarPersonaAuxYUsar}"
-                         process=":layoutForm:dlgPersonaAux"
-                         update=":layoutForm"
-                         style="width:100%;"/>
-
+            <p:commandButton id="btnGuardarPersonaAux"
+                             value="GUARDAR Y USAR EN FICHA"
+                             action="#{centroMedicoCtrl.guardarPersonaAuxYUsar}"
+                             process="@form"
+                             update=":layoutForm:noHistoriaClinica
+                                     :layoutForm:msgsGlobal
+                                     :layoutForm:wiz
+                                     msgPersonaAux"
+                             style="width:100%;"
+                             oncomplete="if(!args.validationFailed){
+                                            PF('dlgPersonaAux').hide();
+                                            PF('dlgCedula').hide();
+                                         }"/>
+        </h:form>
     </p:dialog>
-</p:outputPanel>
 
-        <!-- ============ FIN DIÁLOGO PERSONA AUX ============ -->
+</ui:define>
 
-    </ui:define>
+
+
+
+
+        
+
+
+
+
 </ui:composition>
