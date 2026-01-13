@@ -63,6 +63,7 @@ import java.util.Arrays;
 import lombok.extern.slf4j.Slf4j;
 import org.primefaces.PrimeFaces;
 import javax.faces.component.UIComponent;
+import org.primefaces.event.FlowEvent;
 import org.primefaces.event.SelectEvent;
 
 @Slf4j
@@ -85,7 +86,9 @@ public class CentroMedicoCtrl implements Serializable {
     // -----------------------------
     // WIZARD / NAVEGACIÓN
     // -----------------------------
-    private String currentStep = "step1";
+  
+    private String activeStep = "step1";
+
     private boolean mostrarDlgCedula = true;
     private boolean preRenderDone = false;
     private boolean mostrarDialogoAux;
@@ -248,8 +251,6 @@ public class CentroMedicoCtrl implements Serializable {
     private List<Date> iessFecha;
     private List<Date> fechaAct;
 
-    private List<Date> examFecha = new ArrayList<>();
-
     // I. Actividades extralaborales
     private List<String> tipoAct;
 
@@ -290,8 +291,9 @@ public class CentroMedicoCtrl implements Serializable {
     private List<String> actLabObservaciones;
 
     // J. Exámenes
-    private List<String> examNombre;
-    private List<String> examResultado;
+    private List<String> examNombre = new ArrayList<>();
+    private List<String> examResultado = new ArrayList<>();
+    private List<Date> examFecha = new ArrayList<>();
 
     private int stepIndex = 1;
 
@@ -321,24 +323,58 @@ public class CentroMedicoCtrl implements Serializable {
 
     @EJB
     private FichaExamenCompService fichaExamenCompService;
-    
-    public void preRenderInit() {
-    // NO hacer lógica pesada aquí.
-    // Solo fuerza que el bean exista temprano (antes del render).
-    // Si quieres, puedes asegurar listas del step3:
-    try {
-            if (preRenderDone) {
-        return;
-    }
-    preRenderDone = true;
 
-    // Si no hay empleado seleccionado, forzamos el diálogo de búsqueda
-    if (empleadoSel == null) {
-        mostrarDlgCedula = true;
-    }
+ public void preRenderInit() {
+    try {
+        FacesContext fc = FacesContext.getCurrentInstance();
+
+        // Evita NPE raro si no hay FacesContext (casos no comunes)
+        if (fc == null) {
+            return;
+        }
+
+        final boolean postback = fc.isPostback();
+
+        // =========================================================
+        // 1) Decisión del diálogo SOLO en la primera carga (GET)
+        //    y SOLO si estamos en step1
+        // =========================================================
+        if (!postback && !preRenderDone) {
+            // Solo Step1 puede mostrar el diálogo
+            mostrarDlgCedula = ("step1".equals(activeStep) && empleadoSel == null);
+        }
+
+        // Si ya NO estás en Step1, apaga el diálogo SIEMPRE
+        // (por seguridad para que nunca se reabra en step2/3/4)
+        if (!"step1".equals(activeStep)) {
+            mostrarDlgCedula = false;
+        }
+
+        // =========================================================
+        // 2) Inicialización pesada SOLO una vez
+        // =========================================================
+        if (preRenderDone) {
+            // Aun así, asegurar tamaño de listas para evitar NPE si el XHTML las usa
+            ensureActLabSize();
+            return;
+        }
+        preRenderDone = true;
+
+        // =========================================================
+        // 3) Solo en GET inicial
+        // =========================================================
+        if (!postback) {
+            initExamenes(5);
+        }
+
+        // =========================================================
+        // 4) Asegurar listas SIEMPRE
+        // =========================================================
         ensureActLabSize();
-    } catch (Exception ignore) {
-        // no romper por inicialización
+
+    } catch (Exception e) {
+        // log si quieres
+        // log.error("preRenderInit error", e);
     }
 }
 
@@ -390,7 +426,7 @@ public class CentroMedicoCtrl implements Serializable {
         fechaAtencion = new Date();
         initActLab(3);
         initActividadesExtra(3);
-        initExamenes(5);
+
         tipoEval = "INGRESO";
         sexo = "M";
         grupoSanguineo = "";
@@ -494,10 +530,11 @@ public class CentroMedicoCtrl implements Serializable {
         hEspecificacion = new String[H_ROWS];
         hObservacion = new String[H_ROWS];
 
-        consTiempoConsumoMeses = new Integer[3];
-        consExConsumidor = new Boolean[3];
-        consTiempoAbstinenciaMeses = new Integer[3];
-        consNoConsume = new Boolean[3];
+        consTiempoConsumoMeses = new Integer[]{0, 0, 0};
+        consTiempoAbstinenciaMeses = new Integer[]{0, 0, 0};
+
+        consExConsumidor = new Boolean[]{false, false, false};
+        consNoConsume = new Boolean[]{false, false, false};
 
         afCual = new String[3];
         afTiempo = new String[3];
@@ -517,17 +554,22 @@ public class CentroMedicoCtrl implements Serializable {
         permitirIngresoManual = false;
 
     }
-    
 
+    public void onNoConsumeChange(int idx) {
+        if (Boolean.TRUE.equals(consNoConsume[idx])) {
+            consExConsumidor[idx] = false;
+            consTiempoConsumoMeses[idx] = 0;
+            consTiempoAbstinenciaMeses[idx] = 0;
+        }
+    }
 
-/**
- * Se llama cuando el cliente va a mostrar el diálogo (via remoteCommand).
- * Sirve para que NO se vuelva a abrir al cambiar de step (AJAX updates).
- */
-public void onDlgCedulaShown() {
-    mostrarDlgCedula = false;
-}
-
+    /**
+     * Se llama cuando el cliente va a mostrar el diálogo (via remoteCommand).
+     * Sirve para que NO se vuelva a abrir al cambiar de step (AJAX updates).
+     */
+    public void onDlgCedulaShown() {
+        mostrarDlgCedula = false;
+    }
 
     private ConsultaDiagnostico ensureDiag(int index) {
         // si la lista es muy corta, agrándala
@@ -586,6 +628,17 @@ public void onDlgCedulaShown() {
         this.fechaNacimiento = f;
         this.edad = calcularEdad(f);
     }
+public String onFlow(FlowEvent event) {
+    this.activeStep = event.getNewStep();
+
+    // Si sales de step1, apaga diálogo sí o sí
+    if (!"step1".equals(this.activeStep)) {
+        this.mostrarDlgCedula = false;
+    }
+
+    return event.getNewStep();
+}
+
     // ===========================================================
     // CÁLCULO EDAD
     // ===========================================================
@@ -704,20 +757,20 @@ public void onDlgCedulaShown() {
     // ===========================================================
     public void guardarStepActual() {
         FacesContext ctx = FacesContext.getCurrentInstance();
-        s3("guardarStepActual() INICIO - currentStep=" + currentStep);
+        s3("guardarStepActual() INICIO - currentStep=" + activeStep);
 
         try {
-            if ("step1".equals(currentStep)) {
+            if ("step1".equals(activeStep)) {
                 s3("Ejecutando guardarStep1()");
                 guardarStep1();
                 s3("Fin guardarStep1() validationFailed=" + ctx.isValidationFailed());
                 if (!ctx.isValidationFailed()) {
-                    currentStep = "step2";
+                    activeStep = "step2";
                 }
                 return;
             }
 
-            if ("step2".equals(currentStep)) {
+            if ("step2".equals(activeStep)) {
                 s3("Validando Step2...");
                 if (!validarStep2()) {
                     s3("validarStep2()=false -> NO avanza");
@@ -728,22 +781,22 @@ public void onDlgCedulaShown() {
                 guardarStep2();
                 s3("Fin guardarStep2() validationFailed=" + ctx.isValidationFailed());
                 if (!ctx.isValidationFailed()) {
-                    currentStep = "step3";
+                    activeStep = "step3";
                 }
                 return;
             }
 
-            if ("step3".equals(currentStep)) {
+            if ("step3".equals(activeStep)) {
                 s3("Ejecutando guardarStep3()");
                 guardarStep3();
                 s3("Fin guardarStep3() validationFailed=" + ctx.isValidationFailed());
                 if (!ctx.isValidationFailed()) {
-                    currentStep = "step4";
+                    activeStep = "step4";
                 }
                 return;
             }
 
-            s3("No hay acción para currentStep=" + currentStep);
+            s3("No hay acción para currentStep=" + activeStep);
 
         } catch (Exception ex) {
             s3e("Excepción en guardarStepActual()", ex);
@@ -755,12 +808,12 @@ public void onDlgCedulaShown() {
     }
 
     public void retrocederStep() {
-        if ("step2".equals(currentStep)) {
-            currentStep = "step1";
-        } else if ("step3".equals(currentStep)) {
-            currentStep = "step2";
-        } else if ("step4".equals(currentStep)) {
-            currentStep = "step3";
+        if ("step2".equals(activeStep)) {
+            activeStep = "step1";
+        } else if ("step3".equals(activeStep)) {
+            activeStep = "step2";
+        } else if ("step4".equals(activeStep)) {
+            activeStep = "step3";
         }
     }
 
@@ -1110,7 +1163,7 @@ public void onDlgCedulaShown() {
             }
 
             // ==============================
-            // 1) VALIDACIONES (solo Step1 / BD)
+            //1) VALIDACIONES (solo Step1 / BD)
             // ==============================
             if (fechaAtencion == null) {
                 warn("Debe ingresar la fecha de atención.");
@@ -1153,7 +1206,7 @@ public void onDlgCedulaShown() {
             }
 
             // ==============================
-            // 2) ORIGEN DEL PACIENTE (SIN guardar ficha aquí)
+            //2) ORIGEN DEL PACIENTE (SIN guardar ficha aquí)
             // ==============================
             String cedulaPaciente;
 
@@ -1177,7 +1230,7 @@ public void onDlgCedulaShown() {
             ficha.setNoHistoriaClinica(cedulaPaciente);
 
             // ==============================
-            // 3) MAPEO A FICHA_OCUPACIONAL (Step1)
+            //3) MAPEO A FICHA_OCUPACIONAL (Step1)
             // ==============================
             ficha.setFechaEvaluacion(fechaAtencion);
             ficha.setTipoEvaluacion(tipoEval);
@@ -1211,7 +1264,7 @@ public void onDlgCedulaShown() {
             mapConsumoVidaCondToFicha(ficha);
 
             // ==============================
-            // 4) ARMAR / GUARDAR SIGNOS_VITALES
+            //4) ARMAR / GUARDAR SIGNOS_VITALES
             // ==============================
             Integer paSis, paDias;
             try {
@@ -1256,7 +1309,7 @@ public void onDlgCedulaShown() {
             ficha.setSignos(sv);
 
             // ==============================
-            // 5) GUARDAR FICHA (BORRADOR) - ÚNICO GUARDADO
+            //5) GUARDAR FICHA (BORRADOR) - ÚNICO GUARDADO
             // ==============================
             ficha.setEstado("BORRADOR"); // ✅ Step1 siempre BORRADOR
 
@@ -1284,8 +1337,28 @@ public void onDlgCedulaShown() {
             info("Step 1 guardado correctamente (BORRADOR).");
 
         } catch (Exception e) {
+
+            System.out.println("===== [STEP1] ERROR EXCEPCIÓN =====");
+            e.printStackTrace();
+
+            // --- AGREGA ESTO PARA VER EL ERROR EN PANTALLA ---
+            // Convertimos la excepción en texto largo para verla en el navegador
+            java.io.StringWriter sw = new java.io.StringWriter();
+            java.io.PrintWriter pw = new java.io.PrintWriter(sw);
+            e.printStackTrace(pw);
+            String detalleError = sw.toString();
+
+            // Enviamos el mensaje a la pantalla
+            ctx.addMessage(null, new FacesMessage(
+                    FacesMessage.SEVERITY_ERROR,
+                    "Error detallado en Paso 1",
+                    "Ha ocurrido un error:\n" + detalleError
+            ));
+            // --------------------------------------------------
+
+            // Mantenemos el log original por si acaso
             log.error("Error en guardarStep1", e);
-            error("Ocurrió un error al guardar el Step 1: " + e.getMessage());
+
             ctx.validationFailed();
         }
     }
@@ -1347,120 +1420,147 @@ public void onDlgCedulaShown() {
     public void guardarStep2() {
         FacesContext ctx = FacesContext.getCurrentInstance();
 
-        if (!validarStep2()) {
-            ctx.validationFailed();
-            return;
-        }
-
-        final Date ahora = new Date();
-        final String usr = "USR_APP"; // luego lo cambiamos por el usuario logueado
-
-        if (ficha == null || ficha.getIdFicha() == null) {
-            ctx.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR,
-                    "Step 2", "Primero debe existir y estar guardada la ficha (ID_FICHA)."));
-            ctx.validationFailed();
-            return;
-        }
-
-        // =========================
-        // 1) ENCABEZADO: FICHA_RIESGO
-        // =========================
-        if (fichaRiesgo == null) {
-            fichaRiesgo = new FichaRiesgo();
-        }
-        fichaRiesgo.setFicha(ficha);
-
-        // Actividades
-        fichaRiesgo.setActividad1(getSafe(actividadesLab, 0));
-        fichaRiesgo.setActividad2(getSafe(actividadesLab, 1));
-        fichaRiesgo.setActividad3(getSafe(actividadesLab, 2));
-        fichaRiesgo.setActividad4(getSafe(actividadesLab, 3));
-        fichaRiesgo.setActividad5(getSafe(actividadesLab, 4));
-        fichaRiesgo.setActividad6(getSafe(actividadesLab, 5));
-        fichaRiesgo.setActividad7(getSafe(actividadesLab, 6));
-
-        // Medidas
-        fichaRiesgo.setMedidasPreventivas(construirMedidas(medidasPreventivas));
-
-        // Auditoría (ENCABEZADO)
-        if (fichaRiesgo.getIdFichaRiesgo() == null) {
-            fichaRiesgo.setEstado("BORRADOR");
-            fichaRiesgo.setFCreacion(ahora);
-            fichaRiesgo.setUsrCreacion(usr);
-        } else {
-            fichaRiesgo.setFActualizacion(ahora);
-            fichaRiesgo.setUsrActualizacion(usr);
-        }
-
-        fichaRiesgo = fichaRiesgoService.guardar(fichaRiesgo);
-
-        // =========================
-        // 2) DETALLE: FICHA_RIESGO_DET
-        //    estrategia: REEMPLAZAR todo (delete + insert)
-        // =========================
-        fichaRiesgoDetService.eliminarPorFicha(ficha.getIdFicha());
-
-        // 2.1) checks marcados
-        if (riesgos != null && !riesgos.isEmpty()) {
-            int orden = 1;
-
-            for (Map.Entry<String, Boolean> e : riesgos.entrySet()) {
-                if (!Boolean.TRUE.equals(e.getValue())) {
-                    continue;
-                }
-
-                RiskKey rk = parseRiskKey(e.getKey()); // ej: FIS_TEMP_ALTAS_1
-                if (rk == null) {
-                    continue;
-                }
-
-                FichaRiesgoDet det = new FichaRiesgoDet();
-                det.setFicha(ficha);
-                det.setGrupo(rk.grupo);
-                det.setItem(rk.item);
-                det.setActividadNro(rk.actividad);
-                det.setMarcado("S");
-                det.setOrden(orden++);
-
-                // ✅ IMPORTANTE: pasar usuario (auditoría en servicio)
-                fichaRiesgoDetService.guardar(det, usr);
+        try {
+            // Validaciones iniciales
+            if (!validarStep2()) {
+                ctx.validationFailed();
+                return;
             }
-        }
 
-        // 2.2) “otros”
-        if (otrosRiesgos != null && !otrosRiesgos.isEmpty()) {
-            int ordenOtros = 10000;
+            final Date ahora = new Date();
+            final String usr = "USR_APP"; // luego lo cambiamos por el usuario logueado
 
-            for (Map.Entry<String, String> e : otrosRiesgos.entrySet()) {
-                String val = e.getValue();
-                if (isBlank(val)) {
-                    continue;
-                }
-
-                RiskKey rk = parseRiskKeyOtros(e.getKey()); // ej: FIS_OTROS_1
-                if (rk == null) {
-                    continue;
-                }
-
-                FichaRiesgoDet det = new FichaRiesgoDet();
-                det.setFicha(ficha);
-                det.setGrupo(rk.grupo);
-                det.setItem("OTROS: " + val.trim());
-                det.setActividadNro(rk.actividad);
-                det.setMarcado("S");
-                det.setOrden(ordenOtros++);
-
-                // ✅ IMPORTANTE: pasar usuario
-                fichaRiesgoDetService.guardar(det, usr);
+            if (ficha == null || ficha.getIdFicha() == null) {
+                ctx.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                        "Step 2", "Primero debe existir y estar guardada la ficha (ID_FICHA)."));
+                ctx.validationFailed();
+                return;
             }
+
+            // =========================
+            // 1) ENCABEZADO: FICHA_RIESGO
+            // =========================
+            if (fichaRiesgo == null) {
+                fichaRiesgo = new FichaRiesgo();
+            }
+            fichaRiesgo.setFicha(ficha);
+
+            // Actividades
+            fichaRiesgo.setActividad1(getSafe(actividadesLab, 0));
+            fichaRiesgo.setActividad2(getSafe(actividadesLab, 1));
+            fichaRiesgo.setActividad3(getSafe(actividadesLab, 2));
+            fichaRiesgo.setActividad4(getSafe(actividadesLab, 3));
+            fichaRiesgo.setActividad5(getSafe(actividadesLab, 4));
+            fichaRiesgo.setActividad6(getSafe(actividadesLab, 5));
+            fichaRiesgo.setActividad7(getSafe(actividadesLab, 6));
+
+            // Medidas
+            fichaRiesgo.setMedidasPreventivas(construirMedidas(medidasPreventivas));
+
+            // Auditoría (ENCABEZADO)
+            if (fichaRiesgo.getIdFichaRiesgo() == null) {
+                fichaRiesgo.setEstado("BORRADOR");
+                fichaRiesgo.setFCreacion(ahora);
+                fichaRiesgo.setUsrCreacion(usr);
+            } else {
+                fichaRiesgo.setFActualizacion(ahora);
+                fichaRiesgo.setUsrActualizacion(usr);
+            }
+
+            fichaRiesgo = fichaRiesgoService.guardar(fichaRiesgo);
+
+            // =========================
+            // 2) DETALLE: FICHA_RIESGO_DET
+            //    estrategia: REEMPLAZAR todo (delete + insert)
+            // =========================
+            fichaRiesgoDetService.eliminarPorFicha(ficha.getIdFicha());
+
+            // 2.1) checks marcados
+            if (riesgos != null && !riesgos.isEmpty()) {
+                int orden = 1;
+
+                for (Map.Entry<String, Boolean> e : riesgos.entrySet()) {
+                    if (!Boolean.TRUE.equals(e.getValue())) {
+                        continue;
+                    }
+
+                    RiskKey rk = parseRiskKey(e.getKey()); // ej: FIS_TEMP_ALTAS_1
+                    if (rk == null) {
+                        continue;
+                    }
+
+                    FichaRiesgoDet det = new FichaRiesgoDet();
+                    det.setFicha(ficha);
+                    det.setGrupo(rk.grupo);
+                    det.setItem(rk.item);
+                    det.setActividadNro(rk.actividad);
+                    det.setMarcado("S");
+                    det.setOrden(orden++);
+
+                    // ✅ IMPORTANTE: pasar usuario (auditoría en servicio)
+                    fichaRiesgoDetService.guardar(det, usr);
+                }
+            }
+
+            // 2.2) “otros”
+            if (otrosRiesgos != null && !otrosRiesgos.isEmpty()) {
+                int ordenOtros = 10000;
+
+                for (Map.Entry<String, String> e : otrosRiesgos.entrySet()) {
+                    String val = e.getValue();
+                    if (isBlank(val)) {
+                        continue;
+                    }
+
+                    RiskKey rk = parseRiskKeyOtros(e.getKey()); // ej: FIS_OTROS_1
+                    if (rk == null) {
+                        continue;
+                    }
+
+                    FichaRiesgoDet det = new FichaRiesgoDet();
+                    det.setFicha(ficha);
+                    det.setGrupo(rk.grupo);
+                    det.setItem("OTROS: " + val.trim());
+                    det.setActividadNro(rk.actividad);
+                    det.setMarcado("S");
+                    det.setOrden(ordenOtros++);
+
+                    // ✅ IMPORTANTE: pasar usuario
+                    fichaRiesgoDetService.guardar(det, usr);
+                }
+            }
+
+            registrarAuditoria("GUARDAR_STEP2", "FICHA_RIESGO / FICHA_RIESGO_DET", "*",
+                    "Step 2 guardado. ID_FICHA=" + ficha.getIdFicha());
+
+            ctx.addMessage(null, new FacesMessage(
+                    FacesMessage.SEVERITY_INFO, "Step 2",
+                    "Riesgos laborales guardados correctamente (encabezado + detalle)."));
+
+        } catch (Exception e) {
+
+            System.out.println("===== [STEP2] ERROR EXCEPCIÓN =====");
+            e.printStackTrace();
+
+            // --- AGREGA ESTO PARA VER EL ERROR EN PANTALLA ---
+            FacesContext ctxCatch = FacesContext.getCurrentInstance();
+
+            // Convertimos la excepción en texto largo para verla en el navegador
+            java.io.StringWriter sw = new java.io.StringWriter();
+            java.io.PrintWriter pw = new java.io.PrintWriter(sw);
+            e.printStackTrace(pw);
+            String detalleError = sw.toString();
+
+            // Enviamos el mensaje a la pantalla
+            ctxCatch.addMessage(null, new FacesMessage(
+                    FacesMessage.SEVERITY_ERROR,
+                    "Error detallado en Paso 2",
+                    "Ha ocurrido un error:\n" + detalleError
+            ));
+            // --------------------------------------------------
+
+            ctx.validationFailed();
         }
-
-        registrarAuditoria("GUARDAR_STEP2", "FICHA_RIESGO / FICHA_RIESGO_DET", "*",
-                "Step 2 guardado. ID_FICHA=" + ficha.getIdFicha());
-
-        ctx.addMessage(null, new FacesMessage(
-                FacesMessage.SEVERITY_INFO, "Step 2",
-                "Riesgos laborales guardados correctamente (encabezado + detalle)."));
     }
 
     /**
@@ -1559,11 +1659,10 @@ public void onDlgCedulaShown() {
             // =========================================================
             // 1) VALIDACIONES STEP 3
             // =========================================================
-            if (!validarStep3()) {
-                ctx.validationFailed();
-                return;
-            }
-
+//            if (!validarStep3()) {
+//                ctx.validationFailed();
+//                return;
+//            }
             final Date ahora = new Date();
             final String usuario = "USR_APP";
 
@@ -1599,11 +1698,19 @@ public void onDlgCedulaShown() {
             System.out.println("===== [STEP3] ERROR EXCEPCIÓN =====");
             e.printStackTrace();
 
+            // Convertimos la excepción en texto largo para verla en el navegador
+            java.io.StringWriter sw = new java.io.StringWriter();
+            java.io.PrintWriter pw = new java.io.PrintWriter(sw);
+            e.printStackTrace(pw);
+            String detalleError = sw.toString();
+
+            // Enviamos el mensaje a la pantalla
             ctx.addMessage(null, new FacesMessage(
                     FacesMessage.SEVERITY_ERROR,
-                    "Error",
-                    "Ocurrió un error al guardar el Step 3. Revise consola."
+                    "Error detallado en Paso 3",
+                    "Ha ocurrido un error:\n" + detalleError
             ));
+            // --------------------------------------------------
 
             ctx.validationFailed();
         }
@@ -2647,36 +2754,43 @@ public void onDlgCedulaShown() {
 public void buscarCedula() {
 
     FacesContext ctx = FacesContext.getCurrentInstance();
-    permitirIngresoManual = false;
+    PrimeFaces pf = PrimeFaces.current();
 
+    permitirIngresoManual = false;
     boolean encontrado = false;
+    boolean mostrarManual = false;
 
     if (cedulaBusqueda == null || cedulaBusqueda.trim().isEmpty()) {
-        ctx.addMessage(null, new FacesMessage(
+
+        ctx.addMessage("cedulaForm:cedula", new FacesMessage(
                 FacesMessage.SEVERITY_WARN,
                 "Búsqueda",
                 "Ingrese una cédula para realizar la búsqueda."
         ));
 
-        PrimeFaces.current().ajax().addCallbackParam("encontrado", false);
+        pf.ajax().addCallbackParam("encontrado", false);
+        pf.ajax().addCallbackParam("mostrarManual", false);
+
+        safeUpdate(":dlgCedula:cedulaForm:msgCedula");
+        safeUpdate(":dlgCedula:cedulaForm:panelBtnManualWrap");
         return;
     }
 
     String cedula = cedulaBusqueda.trim();
 
     try {
-        if (ficha == null) {
-            ficha = new FichaOcupacional();
-        }
-        if (personaAux == null) {
-            personaAux = new PersonaAux();
-        }
+        if (ficha == null) ficha = new FichaOcupacional();
+        if (personaAux == null) personaAux = new PersonaAux();
+
+        // ✅ CLAVE: dejar la cédula lista SIEMPRE para el dialog manual
+        personaAux.setCedula(cedula);
 
         DatEmpleado emp = empleadoService.buscarPorCedula(cedula);
 
         if (emp != null) {
-            // ===== ENCONTRADO =====
             encontrado = true;
+            mostrarManual = false;
+            permitirIngresoManual = false;
 
             empleadoSel = emp;
             noPersonaSel = emp.getNoPersona();
@@ -2686,7 +2800,7 @@ public void buscarCedula() {
             nombre1 = emp.getNombres();
             nombre2 = null;
 
-            sexo = emp.getSexo() != null ? emp.getSexo().getCodigo() : null;
+            sexo = (emp.getSexo() != null) ? emp.getSexo().getCodigo() : null;
             fechaNacimiento = emp.getFNacimiento();
             edad = calcularEdad(fechaNacimiento);
 
@@ -2695,22 +2809,22 @@ public void buscarCedula() {
             ficha.setPersonaAux(null);
 
             mostrarDlgCedula = false;
-            permitirIngresoManual = false;
 
-            ctx.addMessage(null, new FacesMessage(
+            ctx.addMessage("cedulaForm:cedula", new FacesMessage(
                     FacesMessage.SEVERITY_INFO,
                     "Búsqueda",
                     "Información cargada desde RRHH."
             ));
 
         } else {
-            // ===== NO ENCONTRADO =====
             encontrado = false;
+            mostrarManual = true;
+            permitirIngresoManual = true;
 
             empleadoSel = null;
             noPersonaSel = null;
 
-            personaAux.setCedula(cedula);
+            // ✅ limpiar manual (pero mantener cédula ya seteada arriba)
             personaAux.setApellido1(null);
             personaAux.setApellido2(null);
             personaAux.setNombre1(null);
@@ -2719,38 +2833,55 @@ public void buscarCedula() {
             personaAux.setFechaNac(null);
 
             ficha.setNoHistoriaClinica(cedula);
-
             mostrarDlgCedula = true;
-            permitirIngresoManual = true;
 
-            ctx.addMessage(null, new FacesMessage(
+            ctx.addMessage("cedulaForm:cedula", new FacesMessage(
                     FacesMessage.SEVERITY_WARN,
                     "Búsqueda",
                     "No se encontró la cédula. Puede ingresar los datos manualmente."
             ));
         }
 
-        // 🔥 SOLO actualizar el wizard (EXISTE)
-        PrimeFaces.current().ajax().update("layoutForm:wiz");
+        // Updates del dialog de cédula
+        safeUpdate(":dlgCedula:cedulaForm:msgCedula");
+        safeUpdate(":dlgCedula:cedulaForm:panelBtnManualWrap");
 
-        // 🔥 SOLO callback
-        PrimeFaces.current().ajax().addCallbackParam("encontrado", encontrado);
+        // ✅ CLAVE: si va a abrir manual, refresca su form para que se pinte la cédula
+        if (mostrarManual) {
+            safeUpdate(":dlgPersonaAuxForm:cedManual");
+            safeUpdate(":dlgPersonaAuxForm:gridManual");
+            safeUpdate(":dlgPersonaAuxForm:msgPersonaAux");
+        }
+
+        pf.ajax().addCallbackParam("encontrado", encontrado);
+        pf.ajax().addCallbackParam("mostrarManual", mostrarManual);
 
     } catch (Exception e) {
-        log.error("Error buscarCedula()", e);
 
-        ctx.addMessage(null, new FacesMessage(
+        ctx.addMessage("cedulaForm:cedula", new FacesMessage(
                 FacesMessage.SEVERITY_ERROR,
                 "Error",
                 "Ocurrió un error al buscar la cédula."
         ));
 
-        PrimeFaces.current().ajax().addCallbackParam("encontrado", false);
+        pf.ajax().addCallbackParam("encontrado", false);
+        pf.ajax().addCallbackParam("mostrarManual", false);
+
+        safeUpdate(":dlgCedula:cedulaForm:msgCedula");
+        safeUpdate(":dlgCedula:cedulaForm:panelBtnManualWrap");
     }
 }
 
 
 
+    private void safeUpdate(String clientId) {
+        try {
+
+            PrimeFaces.current().ajax().update(clientId);
+        } catch (Exception ex) {
+            // opcional: log debug
+        }
+    }
 
     public boolean isMostrarDlgCedula() {
         return mostrarDlgCedula;
@@ -2870,11 +3001,11 @@ public void buscarCedula() {
     }
 
     public String getStepActual() {
-        return currentStep;
+        return activeStep ;
     }
 
     public void setStepActual(String stepActual) {
-        this.currentStep = stepActual;
+        this.activeStep  = stepActual;
     }
 
     public Date getFechaAtencion() {
@@ -2945,8 +3076,8 @@ public void buscarCedula() {
                     (iessFecha == null ? "null" : iessFecha.size()),
                     (iessEspecificar == null ? "null" : iessEspecificar.size())
             );
-        } catch (Exception ignore) {
-            // no romper flujo por logs
+        } catch (Exception e) {
+            e.printStackTrace(); // o Logger
         }
 
         // ===== 1) Inicializar listas si vienen null =====
@@ -3122,8 +3253,8 @@ public void buscarCedula() {
                     iessFecha.size(),
                     iessEspecificar.size()
             );
-        } catch (Exception ignore) {
-            // no romper flujo por logs
+        } catch (Exception e) {
+            e.printStackTrace(); // o Logger
         }
     }
 
@@ -3187,7 +3318,7 @@ public void buscarCedula() {
 
     public String getProcessStepId() {
         // Ajusta el id del form si NO es layoutForm
-        return ":layoutForm:wiz:" + currentStep;
+        return ":layoutForm:wiz:" + activeStep ;
     }
 
     private static final int CONS_ROWS = 3; // 0=Tabaco,1=Alcohol,2=Otras

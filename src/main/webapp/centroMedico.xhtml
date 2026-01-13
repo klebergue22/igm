@@ -5,46 +5,42 @@
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
 
-    <f:metadata>
-        <f:viewAction action="#{centroMedicoCtrl.preRenderInit}" onPostback="false" />
-    </f:metadata>
+    <!-- se ejecuta dentro de template -->
+    <ui:define name="metadata">
+        <f:viewAction action="#{centroMedicoCtrl.preRenderInit}" onPostback="false"/>
+    </ui:define>
 
+
+
+
+
+
+
+    <!-- ===================================================== -->
+    <!-- ===================== CONTENIDO ====================== -->
+    <!-- ===================================================== -->
     <ui:define name="content">
+        <p:remoteCommand name="rcShowCedula"
+                         autoRun="true"
+                         rendered="#{centroMedicoCtrl.mostrarDlgCedula}"
+                         oncomplete="PF('dlgCedula').show();" />
+
         <h:outputText value="Evaluación Médica Ocupacional" />
- 
-
-        <!-- IMPORTANTE: para que funcionen tus update=":layoutForm:..." -->
-<p:remoteCommand name="rcShowCedula"
-                 autoRun="true"
-                 rendered="#{centroMedicoCtrl.mostrarDlgCedula}"
-                 oncomplete="PF('dlgCedula').show();" />
-
-
-
-
-
-        <!-- mensajes globales dentro del mismo form -->
-        <p:messages id="msgsGlobal" showDetail="true" closable="true"/>
-
- 
-
-
-
         <!-- Iconos -->
         <h:outputStylesheet library="primefaces" name="primeicons/primeicons.css"/>
-
 
         <!-- ====================================== -->
         <!--  WIZARD SIN BARRA (barra propia abajo) -->
         <!-- ====================================== -->
         <p:wizard id="wiz" widgetVar="wiz"
                   showNavBar="false" showStepStatus="true"
-                  nextLabel="Siguiente" backLabel="Anterior">
+                  nextLabel="Siguiente" backLabel="Anterior"
+                  flowListener="#{centroMedicoCtrl.onFlow}">
 
             <!-- ========================= -->
             <!-- STEP 1                    -->
             <!-- ========================= -->
-              <p:tab id="step1" title="Formulario (A–F)">
+            <p:tab id="step1" title="Formulario (A–F)">
                 <!-- A. DATOS DEL ESTABLECIMIENTO / USUARIO -->
                 <p:fieldset legend="A. DATOS DEL ESTABLECIMIENTO / USUARIO" toggleable="true">
 
@@ -1383,7 +1379,7 @@
                                 <ui:repeat value="#{actividades}" var="a" varStatus="st">
                                     <tr>
 
-                                        <!-- TIPO DE ACTIVIDAD -->
+                                        TIPO DE ACTIVIDAD 
                                         <td>
                                             <p:inputText id="tipoAct_#{st.index}"
                                                          value="#{centroMedicoCtrl.tipoAct[st.index]}"
@@ -1391,7 +1387,7 @@
                                                          placeholder="Tipo #{st.index+1}"/>
                                         </td>
 
-                                        <!-- FECHA -->
+                                        FECHA 
                                         <td class="i-date">
                                             <p:calendar id="fechaAct_#{st.index}"
                                                         value="#{centroMedicoCtrl.fechaAct[st.index]}"
@@ -1400,7 +1396,7 @@
                                                         showOn="button"/>
                                         </td>
 
-                                        <!-- DESCRIPCIÓN -->
+                                        DESCRIPCIÓN 
                                         <td>
                                             <p:inputTextarea id="descAct_#{st.index}"
                                                              value="#{centroMedicoCtrl.descAct[st.index]}"
@@ -1418,7 +1414,7 @@
                     </h:panelGroup>
                 </p:fieldset>
 
-                <!-- J -->
+                <!--J -->
                 <p:fieldset legend="J. Resultados de exámenes generales y específicos según riesgo/puesto"
                             toggleable="true" collapsed="true">
                     <h:panelGroup layout="block" styleClass="ui-fluid panel-scroll">
@@ -1444,7 +1440,7 @@
                                 <ui:repeat value="#{rowsJ}" var="r" varStatus="st">
                                     <tr>
 
-                                        <!-- NOMBRE DEL EXAMEN -->
+                                        NOMBRE DEL EXAMEN 
                                         <td>
                                             <p:inputText id="examNombre_#{st.index}"
                                                          value="#{centroMedicoCtrl.examNombre[st.index]}"
@@ -1452,7 +1448,7 @@
                                                          placeholder="Examen #{st.index+1}"/>
                                         </td>
 
-                                        <!-- FECHA -->
+                                        FECHA 
                                         <td class="j-date">
                                             <p:calendar id="examFecha_#{st.index}"
                                                         value="#{centroMedicoCtrl.examFecha[st.index]}"
@@ -1461,7 +1457,7 @@
                                                         showOn="button"/>
                                         </td>
 
-                                        <!-- RESULTADOS -->
+                                        RESULTADOS 
                                         <td>
                                             <p:inputText id="examResultado_#{st.index}"
                                                          value="#{centroMedicoCtrl.examResultado[st.index]}"
@@ -1474,12 +1470,12 @@
                             </tbody>
                         </table>
 
-                        <!-- Observaciones generales -->
+                        Observaciones generales 
                         <h:panelGrid columns="1" style="margin-top:10px; width:100%;" styleClass="ui-fluid">
-                            <h:outputLabel for="obsJ"
+                            <h:outputLabel for="obsJtxt"
                                            value="OBSERVACIONES:"
                                            style="font-weight:bold; display:block; margin-bottom:4px;"/>
-                            <p:inputTextarea id="obsJ"
+                            <p:inputTextarea id="obsJtxt"
                                              value="#{centroMedicoCtrl.obsJ}"
                                              rows="4"
                                              autoResize="true"
@@ -1490,13 +1486,13 @@
                     </h:panelGroup>
                 </p:fieldset>
 
-                <!-- K -->
+                <!--      K    -->
                 <p:fieldset legend="K. Diagnóstico — PRE: Presuntivo  DEF: Definitivo"
                             toggleable="true" collapsed="true">
 
                     <h:panelGroup layout="block" styleClass="ui-fluid panel-scroll">
 
-                        <!-- CONTENEDOR FIJO PARA UPDATE (evita ComponentNotFoundException) -->
+                        CONTENEDOR FIJO PARA UPDATE (evita ComponentNotFoundException) 
                         <p:outputPanel id="kPanel" layout="block">
 
                             <ui:param name="kRows" value="#{['1','2','3','4','5','6']}" />
@@ -1527,98 +1523,70 @@
                                 <tbody>
                                     <ui:repeat value="#{kRows}" var="r" varStatus="st">
                                         <tr>
-
-                                            <!-- ===================== -->
-                                            <!-- AUTOCOMPLETE CÓDIGO   -->
-                                            <!-- ===================== -->
+                                            -->                                            <!-- CIE -->
                                             <td>
-                                                <p:autoComplete id="k_cie_#{st.index}"
+                                                <p:autoComplete id="k_cie"
                                                                 value="#{centroMedicoCtrl.listaDiag[st.index].codigo}"
                                                                 completeMethod="#{centroMedicoCtrl.completarCie10FilaPorCodigo}"
-                                                                dropdown="true"
-                                                                cache="false"
-                                                                minQueryLength="1"
-                                                                forceSelection="false"
-                                                                styleClass="cell-input"
-                                                                onkeydown="if (event.keyCode === 13) {
-                                                                            this.blur();
-                                                                            return false;
-                                                                        }">
-
-                                                    <!-- índice de la fila -->
+                                                                dropdown="true" cache="false" minQueryLength="1"
+                                                                forceSelection="false" styleClass="cell-input">
                                                     <f:attribute name="idx" value="#{st.index}"/>
-
-                                                    <!-- selecciona sugerencia -->
                                                     <p:ajax event="itemSelect"
                                                             listener="#{centroMedicoCtrl.onKCieCodigoSelect}"
                                                             process="@this"
                                                             update=":layoutForm:kPanel"/>
-
-
-                                                    <!-- escribe y sale (TAB/CLICK/ENTER->blur) -->
                                                     <p:ajax event="blur"
                                                             listener="#{centroMedicoCtrl.onKCieCodigoBlur}"
                                                             process="@this"
-                                                            update=":layoutForm:kPanel">
-
-                                                        <f:param name="idx" value="#{st.index}"/>
-                                                    </p:ajax>
-
+                                                            update=":layoutForm:kPanel"/>
                                                 </p:autoComplete>
                                             </td>
 
-                                            <!-- ========================= -->
-                                            <!-- AUTOCOMPLETE DESCRIPCIÓN  -->
-                                            <!-- ========================= -->
+                                            <!-- DESC -->
                                             <td>
-                                                <p:autoComplete id="k_desc_#{st.index}"
+                                                <p:autoComplete id="k_desc"
                                                                 value="#{centroMedicoCtrl.listaDiag[st.index].descripcion}"
                                                                 completeMethod="#{centroMedicoCtrl.completarCie10FilaPorDescripcion}"
-                                                                dropdown="true"
-                                                                cache="false"
-                                                                minQueryLength="2"
-                                                                forceSelection="false"
-                                                                styleClass="cell-input"
-                                                                onkeydown="if (event.keyCode === 13) {
-                                                                            this.blur();
-                                                                            return false;
-                                                                        }">
-
-                                                    <!-- índice de la fila -->
+                                                                dropdown="true" cache="false" minQueryLength="2"
+                                                                forceSelection="false" styleClass="cell-input">
                                                     <f:attribute name="idx" value="#{st.index}"/>
-
-                                                    <!-- selecciona sugerencia -->
                                                     <p:ajax event="itemSelect"
                                                             listener="#{centroMedicoCtrl.onKDescSelect}"
                                                             process="@this"
                                                             update=":layoutForm:kPanel"/>
-
-                                                    <!-- escribe y sale -->
                                                     <p:ajax event="blur"
                                                             listener="#{centroMedicoCtrl.onKDescBlur}"
                                                             process="@this"
-                                                            update=":layoutForm:kPanel">
-                                                        <f:param name="idx" value="#{st.index}"/>
-                                                    </p:ajax>
-
+                                                            update=":layoutForm:kPanel"/>
                                                 </p:autoComplete>
                                             </td>
 
-                                            <!-- ===================== -->
-                                            <!-- RADIO PRE / DEF       -->
-                                            <!-- ===================== -->
-                                            <td class="txt-c">
-                                                <h:selectOneRadio value="#{centroMedicoCtrl.listaDiag[st.index].tipoDiag}">
-                                                    <f:selectItem itemLabel="PRE" itemValue="PRE"/>
-                                                    <f:selectItem itemLabel="DEF" itemValue="DEF"/>
-                                                </h:selectOneRadio>
+                                            <!-- PRE / DEF (envuelto para que el for resuelva) -->
+                                            <td colspan="2" style="padding:0; border:0;">
+                                                <h:panelGroup id="kRow_#{st.index}" layout="block">
+                                                    <!-- radio real -->
+                                                    <p:selectOneRadio id="k_tipo"
+                                                                      value="#{centroMedicoCtrl.listaDiag[st.index].tipoDiag}"
+                                                                      layout="custom">
+                                                        <f:selectItem itemLabel="PRE" itemValue="PRE"/>
+                                                        <f:selectItem itemLabel="DEF" itemValue="DEF"/>
+                                                    </p:selectOneRadio>
+
+                                                    <table style="width:100%; border-collapse:collapse;">
+                                                        <tr>
+                                                            <td class="txt-c" style="width:50%;">
+                                                                <p:radioButton for="k_tipo" itemIndex="0"/>
+                                                            </td>
+                                                            <td class="txt-c" style="width:50%;">
+                                                                <p:radioButton for="k_tipo" itemIndex="1"/>
+                                                            </td>
+                                                        </tr>
+                                                    </table>
+                                                </h:panelGroup>
                                             </td>
-
-                                            <!-- celda vacía para mantener 4 columnas (si tu grid lo requiere) -->
-                                            <td class="txt-c"></td>
-
                                         </tr>
                                     </ui:repeat>
+
                                 </tbody>
 
                             </table>
@@ -1628,11 +1596,11 @@
                     </h:panelGroup>
                 </p:fieldset>
 
-                <!-- L -->
+                L 
                 <p:fieldset legend="L. APTITUD MÉDICA PARA EL TRABAJO" toggleable="true">
                     <h:panelGroup layout="block" styleClass="ui-fluid">
 
-                        <!-- Radio REAL (oculto) -->
+                        Radio REAL (oculto) 
                         <p:selectOneRadio id="aptitud" layout="custom"
                                           value="#{centroMedicoCtrl.aptitudSel}">
                             <f:selectItem itemLabel="APTO" itemValue="APTO"/>
@@ -1690,23 +1658,23 @@
                     </h:panelGroup>
                 </p:fieldset>
 
-                <!-- M -->
+                M 
                 <p:fieldset legend="M. Recomendaciones y/o tratamiento" toggleable="true" collapsed="true">
                     <p:inputTextarea id="i_rec" rows="3" style="width:100%" value="#{centroMedicoCtrl.recomendaciones}"/>
                 </p:fieldset>
 
-                <!-- N -->
+                N 
                 <p:fieldset legend="N. RETIRO (evaluación)" toggleable="true">
                     <h:panelGroup layout="block" styleClass="ui-fluid">
 
-                        <!-- Radio 1: SE REALIZA LA EVALUACIÓN -->
+                        Radio 1: SE REALIZA LA EVALUACIÓN 
                         <p:selectOneRadio id="n_realiza_eval" layout="custom"
                                           value="#{centroMedicoCtrl.NRealizaEvaluacion}">
                             <f:selectItem itemLabel="SI" itemValue="S"/>
                             <f:selectItem itemLabel="NO" itemValue="N"/>
                         </p:selectOneRadio>
 
-                        <!-- Radio 2: RELACIONADA CON EL TRABAJO -->
+                        Radio 2: RELACIONADA CON EL TRABAJO 
                         <p:selectOneRadio id="n_relacion_trabajo" layout="custom"
                                           value="#{centroMedicoCtrl.NRelacionTrabajo}">
                             <f:selectItem itemLabel="SI" itemValue="S"/>
@@ -1751,14 +1719,14 @@
                     </h:panelGroup>
                 </p:fieldset>
 
-                <!-- O -->
+                O 
                 <p:fieldset legend="O. Datos del profesional" toggleable="true" collapsed="true">
                     <h:panelGrid columns="4" styleClass="ui-fluid">
 
                         <h:outputText value="Nombre y apellido"/><p:inputText id="nombreMedico"  value="#{centroMedicoCtrl.medicoNombre}"/>
                         <h:outputText value="Código médico"/><p:inputText id="codigoMedico" value="#{centroMedicoCtrl.medicoCodigo}"/>
                     </h:panelGrid>
-                </p:fieldset>
+                </p:fieldset>-->
 
             </p:tab>
 
@@ -1847,125 +1815,220 @@
         </p:toolbar>
     </ui:define>
 
-        <!-- ============ DIÁLOGO PERSONA AUX ============ -->
-<ui:define name="dialogs">
+    <!-- ============ DIÁLOGO PERSONA AUX ============ -->
+    <ui:define name="dialogs">
 
-    <!-- ===== DIALOGO BUSCAR CEDULA ===== -->
+    <!-- ===================================================== -->
+    <!-- Mostrar dlgCedula SOLO si corresponde (Step1)          -->
+    <!-- ===================================================== -->
+    <h:outputScript target="body">
+        PrimeFaces.ready(function () {
+            var show = #{(centroMedicoCtrl.mostrarDlgCedula and centroMedicoCtrl.activeStep eq 'step1') ? 'true' : 'false'};
+            if (show === 'true') {
+                var w = PF('dlgCedula');
+                if (w) { w.show(); }
+            }
+        });
+    </h:outputScript>
+
+    <!-- ===================== -->
+    <!-- DIALOGO BUSCAR CEDULA -->
+    <!-- ===================== -->
     <p:dialog id="dlgCedula"
               widgetVar="dlgCedula"
-              modal="true"
               header="Buscar por cédula"
+              modal="true"
               closable="false"
               resizable="false"
-              appendTo="@(body)">
+              draggable="false"
+              appendTo="@(body)"
+              width="560">
 
-        <h:form id="cedulaForm">
-            <p:messages id="msgCedula" closable="true"/>
+        <h:form id="dlgCedulaForm">
 
-            <h:panelGrid columns="2" styleClass="ui-fluid">
-                <h:outputLabel for="cedula" value="Cédula:"/>
+            <p:messages id="msgCedula" showDetail="true" closable="true"/>
 
-                <p:inputText id="cedula"
-                             value="#{centroMedicoCtrl.cedulaBusqueda}"
-                             maxlength="10"/>
-
-                <h:outputText/>
-                <p:commandButton value="Buscar"
-                                 actionListener="#{centroMedicoCtrl.buscarCedula}"
-                                 process="@this cedula"
-                                 update="msgCedula
-                                         :layoutForm:msgsGlobal
-                                         :layoutForm:wiz
-                                         :layoutForm:noHistoriaClinica"
-                                 oncomplete="if(args.encontrado){ PF('dlgCedula').hide(); }"/>
-
-                <h:outputText/>
-                <p:commandButton value="INGRESAR MANUALMENTE"
-                                 rendered="#{centroMedicoCtrl.permitirIngresoManual}"
-                                 actionListener="#{centroMedicoCtrl.prepararIngresoManual}"
-                                 process="@this"
-                                 update=":dlgPersonaAuxForm:gridManual :dlgPersonaAuxForm:msgPersonaAux"
-                                 oncomplete="PF('dlgPersonaAux').show();"/>
-            </h:panelGrid>
-        </h:form>
-    </p:dialog>
-
-
-    <!-- ===== DIALOGO PERSONA AUX ===== -->
-    <p:dialog id="dlgPersonaAux"
-              widgetVar="dlgPersonaAux"
-              header="Ingreso manual de datos"
-              modal="true"
-              closable="true"
-              resizable="false"
-              appendTo="@(body)">
-
-        <h:form id="dlgPersonaAuxForm">
-            <p:messages id="msgPersonaAux" autoUpdate="true" closable="true"/>
-
-            <h:panelGrid id="gridManual" columns="2"
+            <h:panelGrid id="gridCedula" columns="2"
                          columnClasses="col-label-man,col-field-man"
                          styleClass="grid-manual">
 
-                <h:outputLabel for="cedManual" value="Cédula *"/>
-                <p:inputText id="cedManual"
-                             value="#{centroMedicoCtrl.personaAux.cedula}"
+                <h:outputLabel for="cedulaBusqueda" value="Cédula *"/>
+                <p:inputText id="cedulaBusqueda"
+                             value="#{centroMedicoCtrl.cedulaBusqueda}"
                              maxlength="10"
-                             readonly="true"/>
+                             autocomplete="off"/>
 
-                <h:outputLabel for="ap1" value="Primer apellido *"/>
-                <p:inputText id="ap1" value="#{centroMedicoCtrl.personaAux.apellido1}" required="true"/>
+                <h:outputLabel/>
+                <h:panelGroup layout="block" style="text-align:right;">
 
-                <h:outputLabel for="ap2" value="Segundo apellido"/>
-                <p:inputText id="ap2" value="#{centroMedicoCtrl.personaAux.apellido2}"/>
+                    <!-- IMPORTANTE: process SOLO del input del dialog -->
+                    <p:commandButton id="btnBuscarCedula"
+                                     value="BUSCAR"
+                                     icon="pi pi-search"
+                                     action="#{centroMedicoCtrl.buscarCedula}"
+                                     process="@this cedulaBusqueda"
+                                     update="msgCedula panelBtnManualWrap
+                                             :layoutForm:msgs
+                                             :layoutForm:wiz
+                                             :dlgPersonaAuxForm:cedManual
+                                             :dlgPersonaAuxForm:gridManual
+                                             :dlgPersonaAuxForm:msgPersonaAux"
+                                     oncomplete="
+                                         if (args) {
+                                             if (args.encontrado) {
+                                                 PF('dlgCedula').hide();
+                                             } else if (args.mostrarManual) {
+                                                 PF('dlgPersonaAux').show();
+                                             }
+                                         }
+                                     "/>
 
-                <h:outputLabel for="nom1" value="Primer nombre *"/>
-                <p:inputText id="nom1" value="#{centroMedicoCtrl.personaAux.nombre1}" required="true"/>
+                    <p:commandButton id="btnCerrarCedula"
+                                     value="Cerrar"
+                                     icon="pi pi-times"
+                                     type="button"
+                                     onclick="PF('dlgCedula').hide();"
+                                     styleClass="ui-button-secondary"
+                                     style="margin-left:.5rem;"/>
+                </h:panelGroup>
 
-                <h:outputLabel for="nom2" value="Segundo nombre"/>
-                <p:inputText id="nom2" value="#{centroMedicoCtrl.personaAux.nombre2}"/>
-
-                <h:outputLabel for="sexoManual" value="Sexo *"/>
-                <p:selectOneMenu id="sexoManual" value="#{centroMedicoCtrl.personaAux.sexo}" required="true">
-                    <f:selectItem itemLabel="-- Seleccione --" itemValue=""/>
-                    <f:selectItem itemLabel="Masculino" itemValue="M"/>
-                    <f:selectItem itemLabel="Femenino" itemValue="F"/>
-                </p:selectOneMenu>
-
-                <h:outputLabel for="fnManual" value="Fecha nacimiento *"/>
-                <p:calendar id="fnManual"
-                            value="#{centroMedicoCtrl.personaAux.fechaNac}"
-                            pattern="dd/MM/yyyy"
-                            navigator="true"
-                            yearRange="1924:2007"
-                            required="true"/>
             </h:panelGrid>
 
-            <p:separator/>
+            <!-- =============================================== -->
+            <!-- Panel que antes "no salía"                       -->
+            <!-- Se muestra SOLO cuando permitirIngresoManual=true -->
+            <!-- =============================================== -->
+            <p:outputPanel id="panelBtnManualWrap"
+                           layout="block"
+                           style="margin-top:14px;"
+                           rendered="#{centroMedicoCtrl.permitirIngresoManual}">
 
-            <p:commandButton id="btnGuardarPersonaAux"
-                             value="GUARDAR Y USAR EN FICHA"
-                             action="#{centroMedicoCtrl.guardarPersonaAuxYUsar}"
-                             process="@form"
-                             update=":layoutForm:noHistoriaClinica
-                                     :layoutForm:msgsGlobal
-                                     :layoutForm:wiz
-                                     msgPersonaAux"
-                             style="width:100%;"
-                             oncomplete="if(!args.validationFailed){
-                                            PF('dlgPersonaAux').hide();
-                                            PF('dlgCedula').hide();
-                                         }"/>
+                <p:separator/>
+
+                <h:panelGroup layout="block" style="text-align:center;">
+                    <h:outputText value="No se encontró el empleado. Puede ingresar los datos manualmente."
+                                  style="display:block; margin-bottom:10px; font-weight:600;"/>
+
+                    <!-- Este botón abre manual SIN volver a procesar wizard -->
+                    <p:commandButton id="btnIngresoManual"
+                                     value="INGRESAR DATOS MANUALMENTE"
+                                     icon="pi pi-user-plus"
+                                     type="button"
+                                     styleClass="ui-button-warning"
+                                     onclick="PF('dlgPersonaAux').show();"/>
+
+                    <!-- Opcional: limpiar para reintentar -->
+                    <p:commandButton id="btnReintentar"
+                                     value="Limpiar / Reintentar"
+                                     icon="pi pi-refresh"
+                                     styleClass="ui-button-secondary"
+                                     style="margin-left:.5rem;"
+                                     action="#{centroMedicoCtrl.limpiarBusquedaCedula}"
+                                     process="@this"
+                                     update="msgCedula panelBtnManualWrap cedulaBusqueda"/>
+                </h:panelGroup>
+
+            </p:outputPanel>
+
         </h:form>
     </p:dialog>
 
+    <!-- ======================= -->
+    <!-- DIALOGO PERSONA AUX     -->
+    <!-- ======================= -->
+    <p:dialog id="dlgPersonaAux"
+          widgetVar="dlgPersonaAux"
+          header="Ingreso manual de datos"
+          modal="true"
+          closable="true"
+          resizable="false"
+          draggable="false"
+          appendTo="@(body)"
+          width="680">
+
+    <h:form id="dlgPersonaAuxForm">
+
+        <p:messages id="msgPersonaAux" showDetail="true" closable="true"/>
+
+        <!-- TEXTO ARRIBA -->
+        <h:panelGroup layout="block" styleClass="manual-info">
+            <i class="pi pi-exclamation-triangle" style="margin-right:.5rem;"></i>
+            <h:outputText value="No se encontró el empleado. Puede ingresar los datos manualmente."/>
+        </h:panelGroup>
+
+        <!-- GRID 2 COLUMNAS: LABEL | INPUT -->
+        <p:panelGrid id="gridManual"
+                     columns="2"
+                     layout="grid"
+                     styleClass="ui-fluid manual-grid"
+                     columnClasses="manual-label,manual-field">
+
+            <h:outputLabel for="cedManual" value="Cédula *"/>
+            <p:inputText id="cedManual"
+                         value="#{centroMedicoCtrl.personaAux.cedula}"
+                         maxlength="10"
+                         readonly="true"/>
+
+            <h:outputLabel for="ap1" value="Primer apellido *"/>
+            <p:inputText id="ap1"
+                         value="#{centroMedicoCtrl.personaAux.apellido1}"
+                         required="true"/>
+
+            <h:outputLabel for="ap2" value="Segundo apellido"/>
+            <p:inputText id="ap2"
+                         value="#{centroMedicoCtrl.personaAux.apellido2}"/>
+
+            <h:outputLabel for="nom1" value="Primer nombre *"/>
+            <p:inputText id="nom1"
+                         value="#{centroMedicoCtrl.personaAux.nombre1}"
+                         required="true"/>
+
+            <h:outputLabel for="nom2" value="Segundo nombre"/>
+            <p:inputText id="nom2"
+                         value="#{centroMedicoCtrl.personaAux.nombre2}"/>
+
+            <h:outputLabel for="sexoManual" value="Sexo *"/>
+            <p:selectOneMenu id="sexoManual"
+                             value="#{centroMedicoCtrl.personaAux.sexo}"
+                             required="true">
+                <f:selectItem itemLabel="-- Seleccione --" itemValue=""/>
+                <f:selectItem itemLabel="Masculino" itemValue="M"/>
+                <f:selectItem itemLabel="Femenino" itemValue="F"/>
+            </p:selectOneMenu>
+
+            <h:outputLabel for="fnManual" value="Fecha nacimiento *"/>
+            <p:calendar id="fnManual"
+                        value="#{centroMedicoCtrl.personaAux.fechaNac}"
+                        pattern="dd/MM/yyyy"
+                        navigator="true"
+                        yearRange="1924:2007"
+                        required="true"
+                        showOn="button"/>
+
+        </p:panelGrid>
+
+        <p:separator/>
+
+        <p:commandButton id="btnGuardarPersonaAux"
+                         value="GUARDAR Y USAR EN FICHA"
+                         icon="pi pi-save"
+                         action="#{centroMedicoCtrl.guardarPersonaAuxYUsar}"
+                         process="@form"
+                         update=":layoutForm:noHistoriaClinica
+                                 :layoutForm:msgs
+                                 :layoutForm:wiz
+                                 msgPersonaAux"
+                         styleClass="manual-btn-guardar"
+                         oncomplete="if(!args.validationFailed){
+                             PF('dlgPersonaAux').hide();
+                             PF('dlgCedula').hide();
+                         }"/>
+
+    </h:form>
+</p:dialog>
+
+
 </ui:define>
-
-
-
-
-
-        
 
 
 

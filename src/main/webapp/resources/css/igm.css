@@ -1477,3 +1477,34 @@ input.ui-inputfield:focus, textarea.ui-inputfield:focus{
 
 /* (Opcional) encabezado pegajoso al hacer scroll */
 .hx-grid thead th{ position:sticky; top:0; z-index:1; box-shadow:0 2px 3px rgba(0,0,0,.05); }
+
+.manual-info{
+  background:#fff3cd;
+  border:1px solid #ffeeba;
+  color:#856404;
+  padding:.6rem .8rem;
+  margin: .6rem 0 1rem 0;
+  border-radius:6px;
+  font-weight:600;
+}
+
+.manual-grid .manual-label{
+  text-align:left;
+  font-weight:600;
+  padding-top:.45rem;
+}
+
+.manual-grid .manual-field{
+  padding-left:.5rem;
+}
+
+.manual-grid .ui-inputfield,
+.manual-grid .ui-selectonemenu,
+.manual-grid .ui-calendar{
+  width:100% !important;
+}
+
+.manual-btn-guardar{
+  width:100%;
+  font-weight:700;
+}
