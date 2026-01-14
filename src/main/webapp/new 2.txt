@@ -1,3 +1,10 @@
+
+
+
+
+
+
+
  	
 User  RH
 	
@@ -12,3 +19,30 @@ driverClass oracle.jdbc.OracleDriver
 serverName 192.168.35.88
 	
 databaseName IGM1
+
+1755187323
+
+
+PENDIENTE 
+27-11-2025
+
+
+
+Datos: 
+Nombres: KLEBER DAVID GUERRA GALARZA 
+Cédula : 1715112395
+Dirección de envío: NO SE SI TU ME PUEDES ENTREGAR por que no puedo recibirte en la oficina es complicado 
+Email kleberguerra22@hotmail.com	
+Celular 0984555993
+Fecha de Nacimiento 17/04/1982
+
+
+=CONCATENAR(
+"INSERT INTO COA.T_COMPRAS_RESPALDO (ID,CODIGO_CREDITO_TRIBUTARIO,L_DEVOLUCION,TIPO_PROVEEDOR,RUC_PROVEEDOR,CODIGO_TRANSACCION,";
+"FECHA_REGISTRO,NO_SERIE_COMPROBANTE,NO_SERIE_ESTABLECIMIENTO,NO_SEC_COMPROBANTE,FECHA_EMISION,NO_AUTORIZACION_COMPROBANTE,BASE_IMPONIBLE_0,BASE_IMPONIBLE_IVA) VALUES (";
+A2;",'";B2;"','";C2;"',";D2;",";F2;",";G2;","; 
+SI(M2="";"NULL";CONCATENAR("TO_DATE('";TEXTO(M2;"yyyy-mm-dd");"','YYYY-MM-DD')"));
+",";I2;",";J2;",";K2;","; 
+SI(N2="";"NULL";CONCATENAR("TO_DATE('";TEXTO(N2;"yyyy-mm-dd");"','YYYY-MM-DD')"));
+",'" ;L2;"',";Q2;",";R2;");"
+)

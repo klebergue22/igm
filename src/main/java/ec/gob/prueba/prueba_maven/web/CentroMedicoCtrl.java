@@ -431,6 +431,7 @@ public class CentroMedicoCtrl implements Serializable {
         sexo = "M";
         grupoSanguineo = "";
         lateralidad = "";
+        examenReproMasculino="";
 
         FacesContext.getCurrentInstance().getViewRoot().setLocale(new Locale("es"));
 
