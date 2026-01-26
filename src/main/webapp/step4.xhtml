@@ -1,0 +1,60 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:h="http://xmlns.jcp.org/jsf/html"
+    xmlns:f="http://xmlns.jcp.org/jsf/core"
+    xmlns:p="http://primefaces.org/ui"
+    xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+
+<p:fieldset legend="Vista previa del certificado" styleClass="igm-fieldset">
+                    <!-- Mensajes dentro del mismo form -->
+                    <p:messages id="msg" showDetail="true" closable="true" />
+
+                    <p:toolbar style="margin-bottom:.5rem">
+                        <p:toolbarGroup>
+                            <p:commandButton id="btnVisualizar"
+                                             value="Visualizar"
+                                             icon="pi pi-eye"
+                                             ajax="true"
+                                             process="@this"
+                                             action="#{centroMedicoCtrl.prepararVistaPrevia}"
+                                             update="@form prevCert btnDescargar msg"/>
+                            <p:commandButton id="btnDescargar"
+                                             value="Descargar PDF"
+                                             icon="pi pi-download"
+                                             disabled="#{!centroMedicoCtrl.certificadoListo}"
+                                             onclick="PF('dlgDescarga').show();
+                                                     return false;"
+                                             update="@form msg"/>
+                        </p:toolbarGroup>
+                    </p:toolbar>
+
+                    <p:outputPanel id="prevCert" layout="block">
+                        <h:panelGroup rendered="#{centroMedicoCtrl.certificadoListo}">
+                            <!-- Vista previa embebida -->
+                            <object id="pdf_informe"
+                                    type="application/pdf"
+                                    data="#{request.contextPath}/pdf?token=#{centroMedicoCtrl.pdfToken}&amp;t=#{now.time}"
+                                    width="100%" height="600">
+                                Su navegador no soporta la visualización de PDF.
+                                Puede descargar el documento:
+                                <h:outputLink value="#{request.contextPath}/pdf?token=#{centroMedicoCtrl.pdfToken}">
+                                    Descargar
+                                </h:outputLink>
+                            </object>
+                        </h:panelGroup>
+
+                        <h:outputText value="Presione 'Visualizar' para generar la vista previa."
+                                      rendered="#{!centroMedicoCtrl.certificadoListo}"/>
+                    </p:outputPanel>
+
+                </p:fieldset>
+
+                <p:dialog widgetVar="dlgDescarga" header="Descargar Certificado"
+                          modal="true" resizable="false" width="420">
+                    <h:panelGroup layout="block" style="text-align:center">
+                        <h:outputLink value="#{request.contextPath}/pdf?token=#{centroMedicoCtrl.pdfToken}&amp;t=#{now.time}">
+                            Haga clic aquí para descargar
+                        </h:outputLink>
+                    </h:panelGroup>
+                </p:dialog>
+
+</ui:composition>

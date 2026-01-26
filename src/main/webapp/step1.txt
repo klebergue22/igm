@@ -1,4 +1,4 @@
- <ui:composition xmlns="http://www.w3.org/1999/xhtml"
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
                 xmlns:h="http://xmlns.jcp.org/jsf/html"
                 xmlns:f="http://xmlns.jcp.org/jsf/core"
                 xmlns:p="http://primefaces.org/ui"
@@ -94,14 +94,14 @@
                      columnClasses="w-15rem, w-35rem, w-15rem, w-35rem"
                      styleClass="ui-fluid" style="margin-top:.5rem">
 
-            <h:outputLabel for="sexowd" value="Sexo"/>
+            <h:outputLabel for="sexo" value="Sexo"/>
 
-            <p:selectOneRadio id="sexowd" value="#{centroMedicoCtrl.sexo}">
+            <p:selectOneRadio id="sexo" value="#{centroMedicoCtrl.sexo}">
                 <f:selectItem itemLabel="Hombre" itemValue="M"/>
                 <f:selectItem itemLabel="Mujer"  itemValue="F"/>
 
                 <p:ajax event="change"
-                         process="@form"
+                        process="@this"
                         update="sexoBlocks"/>
             </p:selectOneRadio>
 
@@ -118,12 +118,12 @@
 
                 <p:ajax event="dateSelect"
                         listener="#{centroMedicoCtrl.onFechaNacimientoSelect}"
-                         process="@form"
+                        process="@this"
                          update="edad :layoutForm:msgs" />
 
                 <p:ajax event="change"
                         listener="#{centroMedicoCtrl.onFechaNacimientoChange}"
-                         process="@form"
+                        process="@this"
                         update="edad :layoutForm:msgs"/>
             </p:calendar>
 
@@ -182,7 +182,7 @@
                     <!-- Re-renderiza el bloque de fechas al cambiar -->
                     <p:ajax event="valueChange"
                             listener="#{centroMedicoCtrl.syncTipoEvaluacion}"
-                             process="@form" update="fechasPanel"
+                            process="@this" update="fechasPanel"
                             />
                 </p:selectOneRadio>
             </h:panelGrid>

@@ -11,77 +11,85 @@
   <packaging>war</packaging>
   <name>prueba_maven</name>
 
+  <!-- ======================
+       Java 8 (compilación)
+       ====================== -->
   <properties>
+    <!-- Java 8 -->
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
+
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+
+    <!-- Para proyectos Servlet 3.1 (Java EE 7) -->
     <failOnMissingWebXml>false</failOnMissingWebXml>
   </properties>
 
-<dependencies>
-  <!-- Java EE 7 API (GF 4.1 provee implementaciones) -->
-  <dependency>
-    <groupId>javax</groupId>
-    <artifactId>javaee-api</artifactId>
-    <version>7.0</version>
-    <scope>provided</scope>
-  </dependency>
+  <dependencies>
+    <!-- Java EE 7 API (GlassFish 4.1 provee implementaciones) -->
+    <dependency>
+      <groupId>javax</groupId>
+      <artifactId>javaee-api</artifactId>
+      <version>7.0</version>
+      <scope>provided</scope>
+    </dependency>
 
-  <!-- PrimeFaces 8 -->
-  <dependency>
-    <groupId>org.primefaces</groupId>
-    <artifactId>primefaces</artifactId>
-    <version>8.0</version>
-  </dependency>
+    <!-- PrimeFaces 8 -->
+    <dependency>
+      <groupId>org.primefaces</groupId>
+      <artifactId>primefaces</artifactId>
+      <version>8.0</version>
+    </dependency>
 
-  <!-- Theme Bootstrap (opcional) -->
-  <dependency>
-    <groupId>org.primefaces.themes</groupId>
-    <artifactId>bootstrap</artifactId>
-    <version>1.1.0</version>
-  </dependency>
+    <!-- Theme Bootstrap (opcional) -->
+    <dependency>
+      <groupId>org.primefaces.themes</groupId>
+      <artifactId>bootstrap</artifactId>
+      <version>1.1.0</version>
+    </dependency>
 
-  <!-- Lombok (solo compilación) -->
-  <dependency>
-    <groupId>org.projectlombok</groupId>
-    <artifactId>lombok</artifactId>
-    <version>1.18.32</version>
-    <scope>provided</scope>
-  </dependency>
+    <!-- Lombok (solo compilación) -->
+    <dependency>
+      <groupId>org.projectlombok</groupId>
+      <artifactId>lombok</artifactId>
+      <version>1.18.32</version>
+      <scope>provided</scope>
+    </dependency>
 
-  <!-- SLF4J -->
-  <dependency>
-    <groupId>org.slf4j</groupId>
-    <artifactId>slf4j-api</artifactId>
-    <version>1.7.36</version>
-  </dependency>
-  <dependency>
-    <groupId>org.slf4j</groupId>
-    <artifactId>slf4j-jdk14</artifactId>
-    <version>1.7.36</version>
-    <scope>runtime</scope>
-  </dependency>
+    <!-- SLF4J -->
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+      <version>1.7.36</version>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-jdk14</artifactId>
+      <version>1.7.36</version>
+      <scope>runtime</scope>
+    </dependency>
 
-  <!-- Flying-Saucer HTML -> PDF (usa iText 2.x) -->
-   <dependency>
-    <groupId>org.xhtmlrenderer</groupId>
-    <artifactId>flying-saucer-core</artifactId>
-    <version>9.0.7</version>
-  </dependency>
-  <dependency>
-    <groupId>org.xhtmlrenderer</groupId>
-    <artifactId>flying-saucer-pdf</artifactId>
-    <version>9.0.3</version>
-  </dependency>
-  <dependency>
-    <groupId>com.lowagie</groupId>
-    <artifactId>itext</artifactId>
-    <version>2.1.7</version>
-  </dependency>
-</dependencies>
+    <!-- Flying-Saucer HTML -> PDF (usa iText 2.x) -->
+    <dependency>
+      <groupId>org.xhtmlrenderer</groupId>
+      <artifactId>flying-saucer-core</artifactId>
+      <version>9.0.7</version>
+    </dependency>
+    <dependency>
+      <groupId>org.xhtmlrenderer</groupId>
+      <artifactId>flying-saucer-pdf</artifactId>
+      <version>9.0.3</version>
+    </dependency>
+    <dependency>
+      <groupId>com.lowagie</groupId>
+      <artifactId>itext</artifactId>
+      <version>2.1.7</version>
+    </dependency>
+  </dependencies>
 
-
+  <!-- Repositorio central (puedes omitirlo porque Maven ya lo trae por defecto,
+       pero lo dejo tal cual lo tenías) -->
   <repositories>
     <repository>
       <id>central</id>
@@ -90,6 +98,7 @@
       <snapshots><enabled>false</enabled></snapshots>
     </repository>
   </repositories>
+
   <pluginRepositories>
     <pluginRepository>
       <id>central</id>
@@ -101,6 +110,7 @@
 
   <build>
     <finalName>prueba_maven</finalName>
+
     <plugins>
       <!-- Compatibles con Maven 3.0.5 (NetBeans 8.2) -->
       <plugin>
@@ -114,23 +124,26 @@
         <artifactId>maven-resources-plugin</artifactId>
         <version>2.7</version>
         <configuration>
-          <encoding>UTF-8</encoding>
+          <encoding>${project.build.sourceEncoding}</encoding>
         </configuration>
       </plugin>
 
-      <!-- ↓ 3.1 funciona con Maven 3.0.5 -->
+      <!-- maven-compiler-plugin 3.1 funciona con Maven 3.0.5 -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
         <version>3.1</version>
         <configuration>
-          <encoding>UTF-8</encoding>
+          <encoding>${project.build.sourceEncoding}</encoding>
           <source>${maven.compiler.source}</source>
           <target>${maven.compiler.target}</target>
+
+          <!-- Importante en NetBeans/GlassFish viejos: fuerza a usar el javac del JDK configurado -->
+          <fork>true</fork>
         </configuration>
       </plugin>
 
-      <!-- ↓ 2.6 funciona con Maven 3.0.5 -->
+      <!-- WAR -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-war-plugin</artifactId>
@@ -145,9 +158,6 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
         <version>2.19.1</version>
-        <!-- Si no tienes tests:
-        <configuration><skipTests>true</skipTests></configuration>
-        -->
       </plugin>
     </plugins>
   </build>
